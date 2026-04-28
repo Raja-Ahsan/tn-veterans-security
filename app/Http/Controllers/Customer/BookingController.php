@@ -3,18 +3,24 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Models\Service;
-use App\Models\ServiceBooking;
+use App\Mail\AdminNewBookingAlertMail;
+use App\Mail\AdminPaymentReceivedAlertMail;
+use App\Mail\BookingConfirmedMail;
+use App\Mail\BookingPendingPaymentMail;
 use App\Models\ClassSchedule;
 use App\Models\Payment;
-use App\Services\QuickBooksService;
-use App\Services\QuickBooksPaymentsService;
+use App\Models\Service;
+use App\Models\ServiceBooking;
+use App\Models\User;
 use App\Services\BankIntegrationService;
+use App\Services\QuickBooksPaymentsService;
+use App\Services\QuickBooksService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
@@ -58,7 +64,7 @@ class BookingController extends Controller
     public function showCheckout($serviceId)
     {
         $service = Service::where('is_active', true)->findOrFail($serviceId);
-        $inquiry = session('booking_inquiry_' . $service->id);
+        $inquiry = session('booking_inquiry_'.$service->id);
         if (! $inquiry) {
             return redirect()->route('service.details', $service->id)
                 ->with('error', 'Please complete the booking form first.');
@@ -102,7 +108,7 @@ class BookingController extends Controller
 
         $customer = Auth::guard('customer')->user();
         $service = Service::where('is_active', true)->findOrFail($serviceId);
-        $inquiry = session('booking_inquiry_' . $service->id);
+        $inquiry = session('booking_inquiry_'.$service->id);
         if (! $inquiry) {
             return redirect()->route('service.details', $service->id)
                 ->with('error', 'Session expired. Please complete the booking form again.');
@@ -169,14 +175,20 @@ class BookingController extends Controller
                 'payment_status' => 'pending',
             ]);
             DB::commit();
+
+            $this->sendBookingPendingPaymentEmail($booking);
+            $this->sendAdminNewBookingEmail($booking);
+
             return redirect()->route('customer.booking.payment', $booking->id)
                 ->with('success', 'Please complete payment for your booking.');
         } catch (\RuntimeException $e) {
             DB::rollBack();
+
             return redirect()->route('customer.services.checkout', $service->id)
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->route('customer.services.checkout', $service->id)
                 ->with('error', 'An error occurred. Please try again.');
         }
@@ -197,14 +209,14 @@ class BookingController extends Controller
                 ->firstOrFail();
 
             // Check if schedule has available spots
-            if (!$schedule->hasAvailableSpots()) {
+            if (! $schedule->hasAvailableSpots()) {
                 return redirect()->route('customer.available-classes', $service->id)
                     ->with('error', 'This class is full. Please select another schedule.');
             }
         }
 
         // Get available schedules if no specific schedule selected
-        if (!$schedule) {
+        if (! $schedule) {
             $schedules = ClassSchedule::where('service_id', $service->id)
                 ->where('status', 'scheduled')
                 ->where('class_date', '>=', now()->toDateString())
@@ -360,6 +372,9 @@ class BookingController extends Controller
 
             DB::commit();
 
+            $this->sendBookingPendingPaymentEmail($booking);
+            $this->sendAdminNewBookingEmail($booking);
+
             return redirect()->route('customer.booking.payment', $booking->id)
                 ->with('success', 'Please complete your deposit payment.');
         } catch (\RuntimeException $e) {
@@ -411,11 +426,12 @@ class BookingController extends Controller
             return response()->json(['error' => 'Deposit already paid.'], 400);
         }
         $qbPayments = app(QuickBooksPaymentsService::class);
-        if (!$qbPayments->isEnabled()) {
+        if (! $qbPayments->isEnabled()) {
             return response()->json(['error' => 'QuickBooks Payments not configured.'], 400);
         }
         try {
             $token = $qbPayments->getAccessToken();
+
             return response()->json(['token' => $token]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -444,7 +460,7 @@ class BookingController extends Controller
         ]);
 
         $qbPayments = app(QuickBooksPaymentsService::class);
-        if (!$qbPayments->isEnabled()) {
+        if (! $qbPayments->isEnabled()) {
             return redirect()->route('customer.booking.payment', $booking->id)
                 ->with('error', 'QuickBooks Payments is not configured.');
         }
@@ -458,9 +474,9 @@ class BookingController extends Controller
             $chargeAmount
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return redirect()->route('customer.booking.payment', $booking->id)
-                ->with('error', 'Payment failed: ' . ($result['message'] ?? 'Please try again.'));
+                ->with('error', 'Payment failed: '.($result['message'] ?? 'Please try again.'));
         }
 
         $isFullPayment = $chargeAmount >= $booking->total_amount;
@@ -513,8 +529,12 @@ class BookingController extends Controller
             return redirect()->route('customer.booking.payment', $booking->id)
                 ->with('error', $e->getMessage());
         }
+        $this->sendBookingConfirmedEmail($booking, $payment);
+        $this->sendAdminPaymentReceivedEmail($booking, $payment);
+
         $redirect = redirect()->route('customer.bookings.show', $booking->id)
             ->with('success', 'Deposit payment received. Your booking is confirmed!');
+
         // if ($quickBooksSyncError !== null) {
         //     $redirect->with('warning', 'QuickBooks sync failed: ' . $quickBooksSyncError . ' You can retry from Admin → Payments → Sync to QuickBooks.');
         // }
@@ -583,7 +603,7 @@ class BookingController extends Controller
                 // Sync to QuickBooks
                 $quickBooksService = app(QuickBooksService::class);
                 $quickBooksResult = $quickBooksService->syncPayment($payment);
-                if (!$quickBooksResult['success']) {
+                if (! $quickBooksResult['success']) {
                     Log::warning('QuickBooks auto-sync failed', [
                         'payment_id' => $payment->id,
                         'error' => $quickBooksResult['message'],
@@ -600,7 +620,7 @@ class BookingController extends Controller
                 // Sync to Bank
                 $bankService = app(BankIntegrationService::class);
                 $bankResult = $bankService->syncPayment($payment);
-                if (!$bankResult['success']) {
+                if (! $bankResult['success']) {
                     Log::warning('Bank auto-sync failed', [
                         'payment_id' => $payment->id,
                         'error' => $bankResult['message'],
@@ -613,6 +633,9 @@ class BookingController extends Controller
                 ]);
             }
         }
+
+        $this->sendBookingConfirmedEmail($booking, $payment);
+        $this->sendAdminPaymentReceivedEmail($booking, $payment);
 
         return redirect()->route('customer.bookings.show', $booking->id)
             ->with('success', 'Deposit payment received. Your booking is confirmed!');
@@ -629,5 +652,73 @@ class BookingController extends Controller
             ->findOrFail($id);
 
         return view('customer.booking-details', compact('booking'));
+    }
+
+    private function sendBookingPendingPaymentEmail(ServiceBooking $booking): void
+    {
+        try {
+            $booking->loadMissing(['customer', 'service', 'classSchedule']);
+            Mail::to($booking->customer->email)->send(new BookingPendingPaymentMail($booking));
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to send booking pending payment email', [
+                'booking_id' => $booking->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function sendBookingConfirmedEmail(ServiceBooking $booking, Payment $payment): void
+    {
+        try {
+            $booking->loadMissing(['customer', 'service', 'classSchedule']);
+            Mail::to($booking->customer->email)->send(new BookingConfirmedMail($booking, $payment));
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to send booking confirmed email', [
+                'booking_id' => $booking->id,
+                'payment_id' => $payment->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function sendAdminNewBookingEmail(ServiceBooking $booking): void
+    {
+        $this->sendAdminEmail(new AdminNewBookingAlertMail($booking), $booking, null, 'new booking');
+    }
+
+    private function sendAdminPaymentReceivedEmail(ServiceBooking $booking, Payment $payment): void
+    {
+        $this->sendAdminEmail(new AdminPaymentReceivedAlertMail($booking, $payment), $booking, $payment, 'payment received');
+    }
+
+    private function sendAdminEmail(
+        mixed $mailable,
+        ServiceBooking $booking,
+        ?Payment $payment,
+        string $context
+    ): void {
+        try {
+            $booking->loadMissing(['customer', 'service', 'classSchedule']);
+            $adminEmails = User::query()
+                ->whereNotNull('email')
+                ->pluck('email')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if ($adminEmails === []) {
+                return;
+            }
+
+            Mail::to($adminEmails)->send($mailable);
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to send admin notification email', [
+                'context' => $context,
+                'booking_id' => $booking->id,
+                'payment_id' => $payment?->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }
