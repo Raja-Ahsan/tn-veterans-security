@@ -77,7 +77,7 @@
     <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm">Total Services</p>
+                <p class="text-gray-600 text-sm">Total Classes</p>
                 <p class="text-2xl font-bold text-gray-800 mt-1">{{ $servicesCount }}</p>
                 <p class="text-green-600 text-xs mt-1">{{ $activeServicesCount }} Active</p>
             </div>
