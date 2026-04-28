@@ -16,7 +16,7 @@ Route::get('/', function () {
     foreach ($allServices as $service) {
         $cats = $service->categories ?? [];
         foreach ($cats as $cat) {
-            if (!$servicesByCategory->has($cat)) {
+            if (! $servicesByCategory->has($cat)) {
                 $servicesByCategory->put($cat, collect());
             }
             $servicesByCategory->get($cat)->push($service);
@@ -35,6 +35,14 @@ Route::get('/', function () {
 Route::get('/about', function () {
     return view('about');
 })->name('about');
+
+Route::get('/privacy-policy', function () {
+    return view('legal.privacy-policy');
+})->name('legal.privacy-policy');
+
+Route::get('/terms-and-conditions', function () {
+    return view('legal.terms-and-conditions');
+})->name('legal.terms-and-conditions');
 
 Route::get('/all-services', function () {
     $allServices = \App\Models\Service::where('is_active', true)
@@ -81,14 +89,11 @@ Route::get('/nra-services', function () {
 })->name('nra-services');
 // Services by Page
 
-
-
-
-
 Route::get('/training-services/enhanced-armed-guard-security-subcategories', function () {
     $rifleService = \App\Models\Service::where('is_active', true)->find(34);
     $shotgunService = \App\Models\Service::where('is_active', true)->find(35);
     $services = collect([$rifleService, $shotgunService])->filter();
+
     return view('enhanced-armed-guard-subcategories', compact('services'));
 })->name('handgun.subcategories');
 
@@ -158,7 +163,7 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
     }
 
     $validated['number_of_students'] = $numStudents;
-    session()->put('booking_inquiry_' . $service->id, $validated);
+    session()->put('booking_inquiry_'.$service->id, $validated);
 
     // Create customer account if guest, so they don't need to sign up separately
     $wasNewCustomer = false;
@@ -205,6 +210,7 @@ Route::get('/intial-security', function () {
         ->get()
         ->filter(fn ($s) => ! in_array('renewals', $s->categories ?? []))
         ->values();
+
     return view('intial-security', compact('services'));
 })->name('intial-security');
 
@@ -215,15 +221,12 @@ Route::get('/renewals', function () {
         ->orderBy('order')
         ->orderBy('created_at', 'desc')
         ->get();
+
     return view('renewals', compact('services'));
 })->name('renewals');
 
 // Dallas Law training page (canonical URL; same content as /service/dallas-law)
 Route::get('/dallas-law', fn () => app(ServicePageController::class)->showBySlug('dallas-law'))->name('dallas-law');
-
-
-
-
 
 Route::get('/testimonials', function () {
     return view('testimonials');
@@ -279,7 +282,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::post('/bookings', [App\Http\Controllers\Customer\BookingController::class, 'store'])->name('booking.store');
 
         // Checkout – create booking from inquiry and go to payment
-        
+
         Route::post('/services/{serviceId}/checkout', [App\Http\Controllers\Customer\BookingController::class, 'processCheckout'])->name('services.checkout.process');
 
         // Payment Routes
@@ -327,7 +330,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
     });
 });
-
 
 Route::get('/admin/quickbooks/connect', [QuickBooksController::class, 'connect'])
     ->name('quickbooks.connect');

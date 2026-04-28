@@ -15,6 +15,8 @@
                     <li><a href="{{ route('security-training') }}" class="footer-link">Security Training</a></li>
                     <li><a href="{{ route('testimonials') }}" class="footer-link">Testimonials</a></li>
                     <li><a href="{{ route('contact') }}" class="footer-link">Contact Us</a></li>
+                    <li><a href="{{ route('legal.privacy-policy') }}" class="footer-link">Privacy Policy</a></li>
+                    <li><a href="{{ route('legal.terms-and-conditions') }}" class="footer-link">Terms & Conditions</a></li>
                 </ul>
             </div>
 
