@@ -301,6 +301,14 @@ a.training-card:hover {
     @apply text-white text-[18px] md:text-[24px] font-normal max-w-[700px] leading-relaxed opacity-90;
 }
 
+.legal-section-heading {
+    @apply mt-10 sm:mt-12 mb-4 scroll-mt-24 text-lg sm:text-xl md:text-2xl font-bold text-[var(--text-color)] uppercase tracking-wide border-b border-gray-200 pb-2;
+}
+
+article.legal-privacy-act > header + h2.legal-section-heading {
+    @apply mt-6 sm:mt-8;
+}
+
 .about-overview-section {
     @apply py-16 lg:py-28 bg-white;
 }

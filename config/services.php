@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'quickbooks' => [
+        /*
+         * Optional: force the exact OAuth redirect URI (must match what is registered in the Intuit Developer app).
+         * If empty, the app will use: {APP_URL}/admin/quickbooks/callback
+         */
+        'redirect_uri' => env('QUICKBOOKS_REDIRECT_URI'),
+    ],
+
 ];

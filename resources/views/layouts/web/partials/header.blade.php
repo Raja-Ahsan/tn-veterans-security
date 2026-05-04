@@ -37,6 +37,7 @@
         ['name' => 'SafetyTN Security Solutions', 'url' => 'https://www.safetytennessee.com/', 'external' => true],
         ['name' => 'Shooter\'s Nashville', 'url' => 'https://www.shootersnashville.com/', 'external' => true],
         ['name' => 'US Law Shield', 'url' => 'https://members.uslawshield.com/login', 'external' => true],
+        ['name' => 'Vanguard Security Training LLC', 'url' => 'https://vanguardsecuritytrainingllc.com/index.php', 'external' => true],
     ];
     $nraAffiliates = [
         ['name' => 'Join NRA', 'url' => 'https://membership.nra.org/recruiters/Join/XI048340', 'external' => true],

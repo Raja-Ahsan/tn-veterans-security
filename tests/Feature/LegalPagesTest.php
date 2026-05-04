@@ -20,6 +20,6 @@ class LegalPagesTest extends TestCase
     {
         $this->get('/terms-and-conditions')
             ->assertOk()
-            ->assertSee('TERMS & CONDITIONS', false);
+            ->assertSee('RELEASE OF LIABILITY', false);
     }
 }
