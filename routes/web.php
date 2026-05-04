@@ -7,6 +7,20 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
+/*
+| Laravel's "auth" middleware and exception handler fall back to route("login").
+| This app uses admin.login and customer.login instead; register "login" here.
+*/
+Route::get('/login', function (\Illuminate\Http\Request $request) {
+    $intended = (string) $request->session()->get('url.intended', '');
+
+    if ($intended !== '' && str_contains($intended, '/customer/')) {
+        return redirect()->route('customer.login');
+    }
+
+    return redirect()->route('admin.login');
+})->name('login');
+
 Route::get('/', function () {
     // Get services (grouped structure: each service can appear in multiple categories)
     $allServices = \App\Models\Service::where('is_active', true)

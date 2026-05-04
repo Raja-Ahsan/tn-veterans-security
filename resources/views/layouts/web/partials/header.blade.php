@@ -289,7 +289,7 @@
             <!-- Mobile Training Services Accordion -->
             <div class="mobile-nav-group">
                 <button id="mobileServiceToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none {{ $navActive['training'] ? 'nav-link-active' : '' }}">
-                    <span>Training Services</span>
+                    <span>Training & Classes</span>
                     <svg id="mobileServiceIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -308,10 +308,7 @@
                             <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $mCatItemActive ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">
                                 {{ $cat['name'] }}
                             </a>
-                        @endforeach
-                        <a href="{{ route('services') }}" class="mobile-nav-links text-[16px]! py-3 px-4 font-bold {{ $navActive['services_all'] ? 'nav-link-active' : 'text-(--primary-color)' }}">
-                            View All Services →
-                        </a>
+                        @endforeach 
                     </div>
                 </div>
             </div>
@@ -320,7 +317,7 @@
             <div class="mobile-nav-group">
 
                 <button id="mobileServicesToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none {{ $navActive['affiliated'] ? 'nav-link-active' : '' }}">
-                    <span>Services</span>
+                    <span>Affiliated</span>
                     <svg id="mobileServicesIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
