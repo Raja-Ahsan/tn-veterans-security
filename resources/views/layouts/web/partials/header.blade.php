@@ -28,8 +28,7 @@
         'services_all' => request()->routeIs('services') && ! request()->filled('category') && ! request()->filled('subcategory'),
     ];
     $servicesAffiliates = [
-        ['name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'external' => true],
-        ['name' => 'Code One Safety', 'url' => 'https://www.codeonesafety.com/', 'external' => true],
+        ['name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'external' => true], 
         ['name' => 'Code Blue CPR Services', 'url' => 'https://codebluecprservices.com/', 'external' => true],
         ['name' => 'Elite Security Service', 'url' => 'https://www.elitesecuritytn.org/', 'external' => true],
         ['name' => 'Guns & Leather', 'url' => 'https://www.gunsandleather.com/', 'external' => true],

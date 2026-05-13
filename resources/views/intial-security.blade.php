@@ -18,6 +18,31 @@
             </div>
         </section>
 
+        <div id="prequal-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 md:p-8 animate-fade-in">
+                <p class="text-sm font-semibold text-[var(--primary-color)] mb-4">Question <span id="prequal-num">1</span> of 3</p>
+                <h3 id="prequal-question" class="text-lg md:text-xl font-bold text-[var(--text-color)] mb-6"></h3>
+                <div class="flex gap-4">
+                    <button type="button" id="prequal-btn-yes" class="flex-1 py-3 px-4 rounded-lg font-semibold bg-[var(--primary-color)] text-white hover:opacity-90 transition">YES</button>
+                    <button type="button" id="prequal-btn-no" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition">NO</button>
+                </div>
+            </div>
+        </div>
+        <div id="required-msg-overlay" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-black/50">
+            <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
+                <p id="required-msg-text" class="text-lg font-semibold text-[var(--text-color)] mb-6"></p>
+                <button type="button" id="required-msg-ok" class="w-full py-3 px-4 rounded-lg font-semibold bg-[var(--primary-color)] text-white hover:opacity-90 transition">OK</button>
+            </div>
+        </div>
+
+        <div id="main-content-after-prequal" class="hidden">
+        <section id="required-training-section" class="py-10 lg:py-14 bg-amber-50/80 border-y border-amber-200/80 hidden">
+            <div class="container mx-auto px-4 lg:px-10">
+                <h2 class="text-xl md:text-2xl font-bold text-[var(--text-color)] mb-4">Recommended required training for you</h2>
+                <div id="required-training-list" class="flex flex-wrap gap-3"></div>
+            </div>
+        </section>
+
         <!-- Initial Security Classes - Cards Section (dynamic from admin) -->
         <section class="py-16 lg:py-24 bg-gradient-to-b from-white to-[#F8F8F8]">
             <div class="container mx-auto px-4 lg:px-10">
@@ -87,5 +112,69 @@
             </div>
         </section>
 
+        </div>{{-- end #main-content-after-prequal --}}
+
     </main>
+
+    <script>
+    (function() {
+        var questions = [
+            { q: 'Are you going to be working around alcohol?', yesMsg: 'Dallas Law is mandatory.', key: 'Dallas Law' },
+            { q: 'Are you going to be working around schools or day care?', yesMsg: 'Active Shooter is mandatory.', key: 'Active Shooter' },
+            { q: 'Are you going to be working at a hospital?', yesMsg: 'BLS is mandatory.', key: 'BLS' }
+        ];
+        var step = 0;
+        var requiredTrainings = [];
+        var modal = document.getElementById('prequal-modal');
+        var mainContent = document.getElementById('main-content-after-prequal');
+        var progressNum = document.getElementById('prequal-num');
+        var questionEl = document.getElementById('prequal-question');
+        var btnYes = document.getElementById('prequal-btn-yes');
+        var btnNo = document.getElementById('prequal-btn-no');
+        var overlay = document.getElementById('required-msg-overlay');
+        var msgText = document.getElementById('required-msg-text');
+        var msgOk = document.getElementById('required-msg-ok');
+        var requiredSection = document.getElementById('required-training-section');
+        var requiredList = document.getElementById('required-training-list');
+
+        function showQuestion() {
+            if (step >= questions.length) {
+                modal.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                if (requiredTrainings.length) {
+                    requiredSection.classList.remove('hidden');
+                    requiredList.innerHTML = requiredTrainings.map(function(t) {
+                        return '<span class="inline-block px-4 py-2 rounded-lg bg-amber-200/90 text-[var(--text-color)] font-semibold">' + t + '</span>';
+                    }).join('');
+                }
+                return;
+            }
+            progressNum.textContent = step + 1;
+            questionEl.textContent = questions[step].q;
+        }
+
+        function nextQuestion() {
+            step++;
+            showQuestion();
+        }
+
+        btnYes.addEventListener('click', function() {
+            var cur = questions[step];
+            requiredTrainings.push(cur.key);
+            msgText.textContent = cur.yesMsg;
+            overlay.classList.remove('hidden');
+        });
+
+        btnNo.addEventListener('click', function() {
+            nextQuestion();
+        });
+
+        msgOk.addEventListener('click', function() {
+            overlay.classList.add('hidden');
+            nextQuestion();
+        });
+
+        showQuestion();
+    })();
+    </script>
 @endsection
