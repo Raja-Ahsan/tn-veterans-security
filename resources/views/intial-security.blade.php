@@ -20,7 +20,7 @@
 
         <div id="prequal-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 md:p-8 animate-fade-in">
-                <p class="text-sm font-semibold text-[var(--primary-color)] mb-4">Question <span id="prequal-num">1</span> of 3</p>
+                <p class="text-sm font-semibold text-[var(--primary-color)] mb-4">Question <span id="prequal-num">1</span> of <span id="prequal-total">4</span></p>
                 <h3 id="prequal-question" class="text-lg md:text-xl font-bold text-[var(--text-color)] mb-6"></h3>
                 <div class="flex gap-4">
                     <button type="button" id="prequal-btn-yes" class="flex-1 py-3 px-4 rounded-lg font-semibold bg-[var(--primary-color)] text-white hover:opacity-90 transition">YES</button>
@@ -121,7 +121,8 @@
         var questions = [
             { q: 'Are you going to be working around alcohol?', yesMsg: 'Dallas Law is mandatory.', key: 'Dallas Law' },
             { q: 'Are you going to be working around schools or day care?', yesMsg: 'Active Shooter is mandatory.', key: 'Active Shooter' },
-            { q: 'Are you going to be working at a hospital?', yesMsg: 'BLS is mandatory.', key: 'BLS' }
+            { q: 'Are you going to be working at a hospital?', yesMsg: 'BLS is mandatory.', key: 'BLS' },
+            { q: 'Are you going to carry a baton, OC Spray, Taser?', yesMsg: 'Less than Lethal is mandatory.', key: 'Less than Lethal' }
         ];
         var step = 0;
         var requiredTrainings = [];
@@ -136,6 +137,9 @@
         var msgOk = document.getElementById('required-msg-ok');
         var requiredSection = document.getElementById('required-training-section');
         var requiredList = document.getElementById('required-training-list');
+        var progressTotal = document.getElementById('prequal-total');
+
+        progressTotal.textContent = questions.length;
 
         function showQuestion() {
             if (step >= questions.length) {
