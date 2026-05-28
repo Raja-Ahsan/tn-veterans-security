@@ -23,7 +23,7 @@
 
         .sd-hero {
             position: relative;
-            min-height: 420px;
+            min-height: clamp(320px, 42vw, 560px);
             display: flex;
             align-items: flex-end;
             overflow: hidden;
@@ -37,18 +37,22 @@
         .sd-hero-bg img {
             width: 100%;
             height: 100%;
+            display: block;
             object-fit: cover;
+            object-position:top center;
         }
 
         .sd-hero-shade {
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .4) 40%, rgba(0, 0, 0, .85) 100%);
+            z-index: 2;
+            background: linear-gradient(180deg, rgba(0, 0, 0, .2) 0%, rgba(0, 0, 0, .45) 45%, rgba(0, 0, 0, .88) 100%);
+            pointer-events: none;
         }
 
         .sd-hero-cap {
             position: relative;
-            z-index: 2;
+            z-index: 3;
             width: 100%;
             padding: 3rem 0 2.5rem;
         }
@@ -66,6 +70,12 @@
             opacity: .95;
             max-width: 36rem;
             margin-top: .5rem;
+        }
+
+        @media (max-width: 768px) {
+            .sd-hero {
+                min-height: 280px;
+            }
         }
 
         .sd-card {
@@ -482,11 +492,7 @@
         {{-- Banner: always shows service image (or placeholder) --}}
         <section class="sd-hero">
             <div class="sd-hero-bg">
-                @if ($service->image)
-                    <img src="{{ $service->image_url }}" alt="{{ $service->title }}">
-                @else
-                    <img src="{{ asset('images/training-img-1.png') }}" alt="{{ $service->title }}">
-                @endif
+                <img src="{{ $service->display_image_url }}" alt="{{ $service->title }}">
             </div>
             <div class="sd-hero-shade"></div>
             <div class="sd-hero-cap">
@@ -969,12 +975,7 @@
                             <a href="{{ route('service.details', $rel->id) }}"
                                 class="sd-rel-card group block w-full">
                                 <div class="sd-rel-img">
-                                    @if ($rel->image)
-                                        <img src="{{ $rel->image_url }}" alt="{{ $rel->title }}">
-                                    @else
-                                        <img src="{{ asset('images/training-img-' . (($index % 6) + 1) . '.png') }}"
-                                            alt="{{ $rel->title }}">
-                                    @endif
+                                    <img src="{{ $rel->display_image_url }}" alt="{{ $rel->title }}">
                                 </div>
                                 <div class="sd-rel-body p-4 sm:p-5 lg:p-6">
                                     <h3 class="sd-rel-title mb-1.5 sm:mb-2 text-base sm:text-lg">{{ $rel->title }}</h3>

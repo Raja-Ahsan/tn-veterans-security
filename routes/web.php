@@ -11,6 +11,17 @@ use Illuminate\Validation\ValidationException;
 | Laravel's "auth" middleware and exception handler fall back to route("login").
 | This app uses admin.login and customer.login instead; register "login" here.
 */
+Route::get('/route-clear', function () {
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('config:cache');
+    $cache = 'Route cache cleared <br /> View cache cleared <br /> Cache cleared <br /> Config cleared <br /> Config cache cleared';
+
+    return $cache;
+});
+
 Route::get('/login', function (\Illuminate\Http\Request $request) {
     $intended = (string) $request->session()->get('url.intended', '');
 

@@ -81,15 +81,9 @@
                                 <div class="service-detail-card bg-white rounded-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
                                     <!-- Image Section -->
                                     <div class="relative h-[280px] overflow-hidden">
-                                        @if($service->image)
-                                            <img src="{{ $service->image_url }}" 
+                                        <img src="{{ $service->display_image_url }}"
                                                  alt="{{ $service->title }}" 
                                                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                                        @else
-                                            <img src="{{ asset('images/training-img-' . (($index % 6) + 1) . '.png') }}" 
-                                                 alt="{{ $service->title }}" 
-                                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                                        @endif
                                         <!-- Overlay Gradient -->
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                         <!-- Hover Badge -->

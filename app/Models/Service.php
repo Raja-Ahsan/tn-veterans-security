@@ -87,6 +87,22 @@ class Service extends Model
     }
 
     /**
+     * Deterministic placeholder when no uploaded image (same on list + detail pages).
+     */
+    public function getFallbackImageUrlAttribute(): string
+    {
+        return asset('images/training-img-'.(($this->id % 6) + 1).'.png');
+    }
+
+    /**
+     * Uploaded image URL, or placeholder fallback.
+     */
+    public function getDisplayImageUrlAttribute(): string
+    {
+        return $this->image_url ?? $this->fallback_image_url;
+    }
+
+    /**
      * Primary category (first of multiple) for backward compatibility.
      */
     public function getCategoryAttribute(): ?string
