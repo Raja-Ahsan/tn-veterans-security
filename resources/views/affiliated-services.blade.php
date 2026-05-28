@@ -36,8 +36,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     @php
                         $affiliates = [
-                            ['initials' => 'ASG', 'name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'blurb' => 'Security services and professional protection.'],
-                            ['initials' => 'C1S', 'name' => 'Code One Safety', 'url' => 'https://www.codeonesafety.com/', 'blurb' => 'Safety training and workplace preparedness.'],
+                            ['initials' => 'ASG', 'name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'blurb' => 'Security services and professional protection.'], 
                             ['initials' => 'CBP', 'name' => 'Code Blue CPR Services', 'url' => 'https://codebluecprservices.com/', 'blurb' => 'CPR and first aid training and certification.'],
                             ['initials' => 'ESS', 'name' => 'Elite Security Service', 'url' => 'https://www.elitesecuritytn.org/', 'blurb' => 'Tennessee-based security and protective services.'],
                             ['initials' => 'G+L', 'name' => 'Guns & Leather', 'url' => 'https://www.gunsandleather.com/', 'blurb' => 'Firearms, gear, and related retail services.'],
@@ -45,6 +44,7 @@
                             ['initials' => 'STN', 'name' => 'SafetyTN Security Solutions', 'url' => 'https://www.safetytennessee.com/', 'blurb' => 'Security solutions across Tennessee.'],
                             ['initials' => 'SN', 'name' => "Shooter's Nashville", 'url' => 'https://www.shootersnashville.com/', 'blurb' => 'Shooting sports and range-related services in Nashville.'],
                             ['initials' => 'USLS', 'name' => 'US Law Shield', 'url' => 'https://members.uslawshield.com/login', 'blurb' => 'Legal defense and education for responsible gun owners.'],
+                            ['initials' => 'VST', 'name' => 'Vanguard Security Training LLC', 'url' => 'https://vanguardsecuritytrainingllc.com/index.php', 'blurb' => 'Security training and certification.'],
                         ];
                     @endphp
                     @foreach ($affiliates as $index => $affiliate)
