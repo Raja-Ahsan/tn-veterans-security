@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClassCalendarController;
 use App\Http\Controllers\QuickBooksController;
 use App\Http\Controllers\ServicePageController;
 use App\Models\ClassSchedule;
@@ -76,6 +77,8 @@ Route::get('/all-services', function () {
 
     return view('all-services', compact('allServices'));
 })->name('all-services');
+
+Route::get('/class-calendar', [ClassCalendarController::class, 'index'])->name('class-calendar');
 
 Route::get('/training-services', function () {
     $category = request()->query('category');
