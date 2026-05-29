@@ -59,8 +59,11 @@
                     </p>
 
                     <!-- CTA Button -->
-                    <div class="mb-10 md:mb-16" data-aos="fade-up" data-aos-delay="600" data-aos-duration="1000">
-                        <a href="{{ route('security-training') }}" class="btn primary-button ">
+                    <div class="mb-10 md:mb-16 flex flex-col sm:flex-row gap-4" data-aos="fade-up" data-aos-delay="600" data-aos-duration="1000">
+                        <a href="{{ route('class-calendar') }}" class="btn secondary-button !text-center">
+                            View Class Calendar
+                        </a>
+                        <a href="{{ route('security-training') }}" class="btn primary-button !text-center">
                             Get Security Training Today
                         </a>
                     </div>

@@ -20,7 +20,7 @@
     $isAffiliatedPage = $isAffiliatedServicesPage || $isNraServicesPage;
     $activeNavSection = match (true) {
         $isAffiliatedPage => 'affiliated',
-        (request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
+        (        request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories', 'class-calendar'])
             || str_starts_with($path, 'training-services')) && ! $isDallasLawPage && ! $isAsp4HrPage => 'training',
         request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage || $isAsp4HrPage => 'security',
         request()->routeIs('about') => 'about',
@@ -31,6 +31,7 @@
     $navActive = [
         'home' => $path === '' || $path === '/',
         'about' => request()->routeIs('about'),
+        'class_calendar' => request()->routeIs('class-calendar'),
         'training' => (request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
             || str_starts_with($path, 'training-services')) && ! $isDallasLawPage && ! $isAsp4HrPage,
         'affiliated' => $isAffiliatedPage,
@@ -175,9 +176,11 @@
                 <a href="{{ url('/') }}" data-nav-section="home" class="destop-nav-link {{ $navActive['home'] ? 'nav-link-active' : '' }}">Home</a>
                 <a href="{{ route('about') }}" data-nav-section="about" class="destop-nav-link {{ $navActive['about'] ? 'nav-link-active' : '' }}">About Us</a>
                 
+                <a href="{{ route('class-calendar') }}" data-nav-section="training" class="destop-nav-link {{ $navActive['class_calendar'] ? 'nav-link-active' : '' }}">Class Calendar</a>
+
                 <!-- Training Services with Mega Menu -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('services') }}" data-nav-section="training" class="destop-nav-link flex items-center gap-1 py-8 {{ $navActive['training'] ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('services') }}" data-nav-section="training" class="destop-nav-link flex items-center gap-1 py-8 {{ $navActive['training'] && ! $navActive['class_calendar'] ? 'nav-link-active' : '' }}">
                         Training & Classes
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -186,6 +189,9 @@
                     
                     <div class="dropdown-simple">
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
+                            <a href="{{ route('class-calendar') }}" class="category-item {{ request()->routeIs('class-calendar') ? 'category-item-active' : '' }}">
+                                Class Calendar
+                            </a>
                             @foreach($trainingCategories as $cat)
                                 @php
                                     $catItemActive = false;
@@ -298,6 +304,7 @@
         <nav class="flex flex-col p-6 space-y-1 mt-[60px]">
             <a href="{{ url('/') }}" data-nav-section="home" class="mobile-nav-links {{ $navActive['home'] ? 'nav-link-active' : '' }}">Home</a>
             <a href="{{ route('about') }}" data-nav-section="about" class="mobile-nav-links {{ $navActive['about'] ? 'nav-link-active' : '' }}">About Us</a>
+            <a href="{{ route('class-calendar') }}" data-nav-section="training" class="mobile-nav-links {{ $navActive['class_calendar'] ? 'nav-link-active' : '' }}">Class Calendar</a>
             
             <!-- Mobile Training Services Accordion -->
             <div class="mobile-nav-group">
@@ -309,6 +316,9 @@
                 </button>
                 <div id="mobileServiceMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
+                        <a href="{{ route('class-calendar') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('class-calendar') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">
+                            Class Calendar
+                        </a>
                         @foreach($trainingCategories as $cat)
                             @php
                                 $mCatItemActive = false;
