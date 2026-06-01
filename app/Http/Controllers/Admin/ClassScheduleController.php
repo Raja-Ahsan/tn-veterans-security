@@ -7,6 +7,7 @@ use App\Models\ClassSchedule;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ClassScheduleController extends Controller
 {
@@ -141,6 +142,15 @@ class ClassScheduleController extends Controller
 
                 // Only insert if we have valid schedules
                 if (count($schedules) > 0) {
+                    $this->assertSchedulesAreUnique(
+                        (int) $request->input('service_id'),
+                        collect($schedules)->map(fn (array $schedule) => [
+                            'class_date' => $schedule['class_date'],
+                            'start_time' => $schedule['start_time'],
+                            'location' => $schedule['location'],
+                        ])->all()
+                    );
+
                     ClassSchedule::insert($schedules);
 
                     return redirect()->route('admin.class-schedules.index')
@@ -187,6 +197,15 @@ class ClassScheduleController extends Controller
 
         // Insert all schedules
         if (count($schedules) > 0) {
+            $this->assertSchedulesAreUnique(
+                (int) $validated['service_id'],
+                collect($schedules)->map(fn (array $schedule) => [
+                    'class_date' => $schedule['class_date'],
+                    'start_time' => $schedule['start_time'],
+                    'location' => $schedule['location'],
+                ])->all()
+            );
+
             ClassSchedule::insert($schedules);
 
             $message = count($schedules) > 1
@@ -260,6 +279,18 @@ class ClassScheduleController extends Controller
                 ->with('error', 'Cannot set max students below current enrolled students ('.$classSchedule->current_students.').');
         }
 
+        if (ClassSchedule::duplicateExists(
+            (int) $validated['service_id'],
+            $validated['class_date'],
+            $validated['start_time'],
+            $validated['location'] ?? null,
+            $classSchedule->id
+        )) {
+            throw ValidationException::withMessages([
+                'class_date' => ['A class with the same date, time, and location already exists for this training program.'],
+            ]);
+        }
+
         // Update status to 'full' if current_students >= max_students
         if ($classSchedule->current_students >= $validated['max_students']) {
             $validated['status'] = 'full';
@@ -286,5 +317,41 @@ class ClassScheduleController extends Controller
 
         return redirect()->route('admin.class-schedules.index')
             ->with('success', 'Class schedule deleted successfully.');
+    }
+
+    /**
+     * @param  array<int, array{class_date: string, start_time: string, location: ?string}>  $schedules
+     */
+    protected function assertSchedulesAreUnique(int $serviceId, array $schedules): void
+    {
+        $seen = [];
+
+        foreach ($schedules as $schedule) {
+            $fingerprint = ClassSchedule::slotFingerprint(
+                $serviceId,
+                $schedule['class_date'],
+                $schedule['start_time'],
+                $schedule['location'] ?? null
+            );
+
+            if (isset($seen[$fingerprint])) {
+                throw ValidationException::withMessages([
+                    'class_date' => ['You cannot create duplicate classes on the same date, time, and location.'],
+                ]);
+            }
+
+            $seen[$fingerprint] = true;
+
+            if (ClassSchedule::duplicateExists(
+                $serviceId,
+                $schedule['class_date'],
+                $schedule['start_time'],
+                $schedule['location'] ?? null
+            )) {
+                throw ValidationException::withMessages([
+                    'class_date' => ['A class with the same date, time, and location already exists for this training program.'],
+                ]);
+            }
+        }
     }
 }
