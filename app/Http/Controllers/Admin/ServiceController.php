@@ -307,6 +307,41 @@ class ServiceController extends Controller
             }
         }
 
+        $seenSlots = [];
+
+        foreach ($rows as $i => $row) {
+            $location = $row['location'] ?? null;
+            $location = $location === '' ? null : $location;
+            $fingerprint = ClassSchedule::slotFingerprint(
+                $service->id,
+                $row['class_date'],
+                $row['start_time'],
+                $location
+            );
+
+            if (isset($seenSlots[$fingerprint])) {
+                throw ValidationException::withMessages([
+                    'schedules' => ['You cannot add duplicate sessions on the same date, time, and location.'],
+                ]);
+            }
+
+            $seenSlots[$fingerprint] = true;
+
+            $ignoreId = ! empty($row['id']) ? (int) $row['id'] : null;
+
+            if (ClassSchedule::duplicateExists(
+                $service->id,
+                $row['class_date'],
+                $row['start_time'],
+                $location,
+                $ignoreId
+            )) {
+                throw ValidationException::withMessages([
+                    "schedules.{$i}.class_date" => ['A session with the same date, time, and location already exists for this class.'],
+                ]);
+            }
+        }
+
         $submittedIds = collect($rows)->pluck('id')->filter()->map(fn ($id) => (int) $id);
 
         foreach ($service->classSchedules()->get() as $existing) {
