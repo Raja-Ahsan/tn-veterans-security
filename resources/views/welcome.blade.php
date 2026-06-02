@@ -88,11 +88,36 @@
                </div>
 
                <!-- Instructor Bios -->
-               <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto mb-12">
+               <style>
+                   .instructor-bio-scroll {
+                       max-height: 15rem;
+                       overflow-y: auto;
+                       padding-right: 0.5rem;
+                       scrollbar-width: thin;
+                       scrollbar-color: var(--primary-color) #e5e7eb;
+                   }
+                   @media (min-width: 768px) {
+                       .instructor-bio-scroll {
+                           max-height: 17rem;
+                       }
+                   }
+                   .instructor-bio-scroll::-webkit-scrollbar {
+                       width: 6px;
+                   }
+                   .instructor-bio-scroll::-webkit-scrollbar-track {
+                       background: #f3f4f6;
+                       border-radius: 9999px;
+                   }
+                   .instructor-bio-scroll::-webkit-scrollbar-thumb {
+                       background: var(--primary-color);
+                       border-radius: 9999px;
+                   }
+               </style>
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto mb-12 items-start">
                    <!-- Jayson Bio -->
-                   <div class="bg-white rounded-lg shadow-lg p-8" data-aos="fade-right">
-                       <div class="flex items-center gap-4 mb-4">
-                           <div class="w-20 h-20 bg-[var(--primary-color)] rounded-full flex items-center justify-center" style="width: 80px; height: 80px;">
+                   <div class="bg-white rounded-lg shadow-lg p-8 flex flex-col" data-aos="fade-right">
+                       <div class="flex items-center gap-4 mb-4 shrink-0">
+                           <div class="w-20 h-20 bg-[var(--primary-color)] rounded-full flex items-center justify-center shrink-0" style="width: 80px; height: 80px;">
                                <span class="text-white text-2xl font-bold">J</span>
                            </div>
                            <div>
@@ -100,7 +125,7 @@
                                <p class="text-gray-600">Lead Instructor</p>
                            </div>
                        </div>
-                       <div class="text-gray-700 leading-relaxed">
+                       <div class="instructor-bio-scroll text-gray-700 leading-relaxed text-[15px]" tabindex="0" aria-label="Jayson bio — scroll for more">
                            @if($siteSettings && $siteSettings->jayson_bio)
                                {!! nl2br(e($siteSettings->jayson_bio)) !!}
                            @else
@@ -110,17 +135,17 @@
                    </div>
 
                    <!-- Kenny Bio -->
-                   <div class="bg-white rounded-lg shadow-lg p-8" data-aos="fade-left">
-                       <div class="flex items-center gap-4 mb-4">
-                           <div class="w-20 h-20 bg-[var(--primary-color)] rounded-full flex items-center justify-center" style="width: 80px; height: 80px;">
-                               <span class="text-white text-2xl font-bold" >K</span>
+                   <div class="bg-white rounded-lg shadow-lg p-8 flex flex-col" data-aos="fade-left">
+                       <div class="flex items-center gap-4 mb-4 shrink-0">
+                           <div class="w-20 h-20 bg-[var(--primary-color)] rounded-full flex items-center justify-center shrink-0" style="width: 80px; height: 80px;">
+                               <span class="text-white text-2xl font-bold">K</span>
                            </div>
                            <div>
                                <h3 class="text-[24px] font-bold text-[var(--text-color)] uppercase">Kenny</h3>
                                <p class="text-gray-600">Lead Instructor</p>
                            </div>
                        </div>
-                       <div class="text-gray-700 leading-relaxed">
+                       <div class="instructor-bio-scroll text-gray-700 leading-relaxed text-[15px]" tabindex="0" aria-label="Kenny bio — scroll for more">
                            @if($siteSettings && $siteSettings->kenny_bio)
                                {!! nl2br(e($siteSettings->kenny_bio)) !!}
                            @else
@@ -213,7 +238,7 @@
        </section>   
 
        <!-- Professional Security Training & Career Support -->
-    <section class="py-16 lg:py-24">
+    <section class="">
         <div class="container mx-auto px-4 lg:px-10">
 
             <!-- Heading -->
@@ -322,7 +347,7 @@
             <!-- View All Services Button -->
             <div class="mt-12 text-center">
                 <a href="{{ route('all-services') }}" id="view-all-services-btn" class="btn primary-button" style="display: {{ count($allServices) > 9 ? 'inline-block' : 'none' }};">
-                    View All Services
+                    View Training and Classes
                 </a>
             </div>
 

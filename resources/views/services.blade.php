@@ -17,7 +17,7 @@
                         @if($category)
                             {{ ucfirst(str_replace('_', ' ', $category)) }}
                         @else
-                            TRAINING
+                        <span class="text-(--primary-color)">TRAINING</span> AND <span class="text-(--primary-color)">CLASSES</span>
                         @endif
                         {{-- <span class="text-[var(--primary-color)]">SERVICES</span>
                         TRAINING <span class="text-[var(--primary-color)]">SERVICES</span> --}}
