@@ -8,10 +8,10 @@
             <div class="container mx-auto px-4 lg:px-10 relative z-10">
                 <div class="max-w-[1000px] py-8">
                     <h2 class="inner-hero-title" data-aos="fade-down" data-aos-duration="1000">
-                        ALL <span class="text-(--primary-color)">SERVICES</span>
+                        ALL <span class="text-(--primary-color)">TRAINING </span> AND <span class="text-(--primary-color)">CLASSES</span>
                     </h2>
                     <p class="inner-hero-subtext" data-aos="fade-up" data-aos-delay="200">
-                        Explore our complete range of professional security training programs.
+                        Explore our complete range of professional security training and classes.
                     </p>
                 </div>
             </div>
