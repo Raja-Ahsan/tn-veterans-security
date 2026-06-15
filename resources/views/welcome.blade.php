@@ -173,7 +173,7 @@
                    <p class="text-[16px] text-gray-700 mb-4">
                        Companies or individuals needing security services can contact us for more information.
                    </p>
-                   <a href="{{ route('services') }}" class="btn primary-button inline-block">
+                   <a href="{{ route('affiliated-services') }}" class="btn primary-button inline-block">
                        View Security Services
                    </a>
                </div>
