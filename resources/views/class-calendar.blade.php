@@ -188,7 +188,8 @@
                                 No classes scheduled
                             </h3>
                             <p class="text-gray-600 text-lg mb-8">
-                                There are no scheduled classes for {{ $calendarTitle }}. Try another month or contact us for availability.
+                                {{-- There are no scheduled classes for {{ $calendarTitle }}. Try another month or contact us for availability. --}}
+                                If you need a class that is not currently scheduled, please contact us so we can arrange training at your preferred location.
                             </p>
                             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                                 <a href="{{ route('class-calendar', ['month' => $nextMonth]) }}" class="btn primary-button inline-block">View next month</a>

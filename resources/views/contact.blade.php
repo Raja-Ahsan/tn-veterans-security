@@ -132,10 +132,15 @@
                                 <label class="text-[14px] font-bold uppercase tracking-widest text-[var(--text-color)] ml-1">Inquiry Subject</label>
                                 <select class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300 bg-white">
                                     <option>Select Option</option>
-                                    <option>Security Guard Training</option>
-                                    <option>Certification Renewal</option>
-                                    <option>Firearms Training</option>
-                                    <option>Other Inquiry</option>
+                                    <option>NRA</option>
+                                    <option>Handgun Permit</option>
+                                    <option>Enhanced Armed Guard</option>
+                                    <option>Red Cross</option>
+                                    <option>Active Shooter</option>
+                                    <option>Unarmed Guard</option>
+                                    <option>Handle With Care</option>
+                                    <option>Armed Guard</option>
+                                    <option>De escalation</option>
                                 </select>
                             </div>
 

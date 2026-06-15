@@ -576,8 +576,8 @@ select.asp-sd-form-input {
     color: var(--primary-color);
 }
 
-.asp-sd-rel-price {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--primary-color);
+.affiliate-section-box {
+    border: 2px solid darkseagreen;
+    border-radius: 10px;
+    padding: 20px;
 }
