@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClassCalendarController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\QuickBooksController;
 use App\Http\Controllers\ServicePageController;
 use App\Models\ClassSchedule;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 /*
 | Laravel's "auth" middleware and exception handler fall back to route("login").
-| This app uses admin.login and customer.login instead; register "login" here.
+| This app uses admin.login and student.login instead; register "login" here.
 */
 Route::get('/route-clear', function () {
     Artisan::call('route:clear');
@@ -26,8 +27,8 @@ Route::get('/route-clear', function () {
 Route::get('/login', function (\Illuminate\Http\Request $request) {
     $intended = (string) $request->session()->get('url.intended', '');
 
-    if ($intended !== '' && str_contains($intended, '/customer/')) {
-        return redirect()->route('customer.login');
+    if ($intended !== '' && str_contains($intended, '/student/')) {
+        return redirect()->route('student.login');
     }
 
     return redirect()->route('admin.login');
@@ -193,10 +194,10 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
     $validated['number_of_students'] = $numStudents;
     session()->put('booking_inquiry_'.$service->id, $validated);
 
-    // Create customer account if guest, so they don't need to sign up separately
-    $wasNewCustomer = false;
-    if (! \Illuminate\Support\Facades\Auth::guard('customer')->check()) {
-        $customer = \App\Models\Customer::firstOrCreate(
+    // Create student account if guest, so they don't need to sign up separately
+    $wasNewStudent = false;
+    if (! \Illuminate\Support\Facades\Auth::guard('student')->check()) {
+        $student = \App\Models\Student::firstOrCreate(
             ['email' => $validated['email']],
             [
                 'name' => $validated['name'],
@@ -204,26 +205,26 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
                 'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(24)),
             ]
         );
-        if ($customer->wasRecentlyCreated) {
-            $wasNewCustomer = true;
-            \Illuminate\Support\Facades\Auth::guard('customer')->login($customer);
+        if ($student->wasRecentlyCreated) {
+            $wasNewStudent = true;
+            \Illuminate\Support\Facades\Auth::guard('student')->login($student);
             $request->session()->regenerate();
         } else {
-            // Update name/phone for existing customer
-            $customer->update([
+            // Update name/phone for existing student
+            $student->update([
                 'name' => $validated['name'],
-                'phone' => $validated['phone'] ?? $customer->phone,
+                'phone' => $validated['phone'] ?? $student->phone,
             ]);
         }
     }
 
-    $message = $wasNewCustomer
+    $message = $wasNewStudent
         ? 'Account created. Review your booking and proceed to payment.'
         : 'Review your booking and complete payment.';
 
-    return redirect()->route('customer.services.checkout', $service->id)
+    return redirect()->route('student.services.checkout', $service->id)
         ->with('success', $message);
-})->name('service.booking.inquiry');
+})->name('service.booking.inquiry')->middleware('throttle:10,1');
 
 Route::get('/security-training', function () {
     return view('security-training');
@@ -261,8 +262,16 @@ Route::get('/testimonials', function () {
 })->name('testimonials');
 
 Route::get('/contact-us', function () {
-    return view('contact');
+    $captchaA = random_int(1, 9);
+    $captchaB = random_int(1, 9);
+    session(['contact_captcha_answer' => $captchaA + $captchaB]);
+
+    return view('contact', compact('captchaA', 'captchaB'));
 })->name('contact');
+
+Route::post('/contact-us', [ContactController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('contact.store');
 
 Route::get('/private-protective-services', function () {
     // Get services in the "services" category (Private Protective Services)
@@ -279,45 +288,55 @@ Route::get('/private-protective-services', function () {
     return view('private-protective-services', compact('services', 'companyLinks'));
 })->name('private-protective-services');
 
-// Customer Routes
-Route::prefix('customer')->name('customer.')->group(function () {
+// Legacy /customer/* URLs → /student/* (permanent redirects)
+Route::permanentRedirect('/customer/{path?}', '/student/{path?}')->where('path', '.*');
+
+// Student Routes
+Route::prefix('student')->name('student.')->group(function () {
     // Auth Routes (Public)
-    Route::get('/login', [App\Http\Controllers\Customer\AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [App\Http\Controllers\Customer\AuthController::class, 'login']);
-    Route::get('/register', [App\Http\Controllers\Customer\AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [App\Http\Controllers\Customer\AuthController::class, 'register']);
-    Route::post('/logout', [App\Http\Controllers\Customer\AuthController::class, 'logout'])->name('logout');
+    Route::get('/login', [App\Http\Controllers\Student\AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Student\AuthController::class, 'login']);
+    Route::get('/register', [App\Http\Controllers\Student\AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [App\Http\Controllers\Student\AuthController::class, 'register']);
+    Route::post('/logout', [App\Http\Controllers\Student\AuthController::class, 'logout'])->name('logout');
 
     // Public Routes - View available classes (no login required)
-    Route::get('/services/{serviceId}/available-classes', [App\Http\Controllers\Customer\BookingController::class, 'showAvailableClasses'])->name('available-classes');
+    Route::get('/services/{serviceId}/available-classes', [App\Http\Controllers\Student\BookingController::class, 'showAvailableClasses'])->name('available-classes');
 
     // Checkout (public – shows summary; login required to complete payment)
-    Route::get('/services/{serviceId}/checkout', [App\Http\Controllers\Customer\BookingController::class, 'showCheckout'])->name('services.checkout');
+    Route::get('/services/{serviceId}/checkout', [App\Http\Controllers\Student\BookingController::class, 'showCheckout'])->name('services.checkout');
 
-    // Protected Customer Routes
-    Route::middleware([\App\Http\Middleware\AuthenticateCustomer::class])->group(function () {
-        Route::get('/dashboard', [App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'show'])->name('profile');
-        Route::post('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'update'])->name('profile.update');
+    // Protected Student Routes
+    Route::middleware([\App\Http\Middleware\AuthenticateStudent::class])->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/profile', [App\Http\Controllers\Student\ProfileController::class, 'show'])->name('profile');
+        Route::post('/profile', [App\Http\Controllers\Student\ProfileController::class, 'update'])->name('profile.update');
+        Route::get('/payment-history', [App\Http\Controllers\Student\PaymentHistoryController::class, 'index'])->name('payment-history');
+        Route::get('/online-courses', [App\Http\Controllers\Student\OnlineCoursesController::class, 'index'])->name('online-courses.index');
+        Route::get('/certificates', [App\Http\Controllers\Student\CertificateController::class, 'index'])->name('certificates.index');
+        Route::get('/certificates/{certificate}', [App\Http\Controllers\Student\CertificateController::class, 'show'])->name('certificates.show');
+        Route::post('/waitlist/{classSchedule}', [App\Http\Controllers\Student\WaitlistController::class, 'store'])->name('waitlist.store');
+
+        Route::get('/courses/{service}/online', [App\Http\Controllers\Student\OnlineCourseController::class, 'index'])->name('online-course.index');
+        Route::get('/courses/{service}/online/modules/{courseModule}', [App\Http\Controllers\Student\OnlineCourseController::class, 'show'])->name('online-course.module');
+        Route::post('/courses/{service}/online/modules/{courseModule}/quiz', [App\Http\Controllers\Student\OnlineCourseController::class, 'submitQuiz'])->name('online-course.quiz');
 
         // Booking Routes
-        Route::get('/bookings', [App\Http\Controllers\Customer\BookingController::class, 'index'])->name('bookings');
-        Route::get('/bookings/{id}', [App\Http\Controllers\Customer\BookingController::class, 'show'])->name('bookings.show');
-
-        // Booking Creation (requires login)
-        Route::get('/services/{serviceId}/book', [App\Http\Controllers\Customer\BookingController::class, 'create'])->name('booking.create');
-        Route::get('/services/{serviceId}/book/{scheduleId}', [App\Http\Controllers\Customer\BookingController::class, 'create'])->name('booking.create.schedule');
-        Route::post('/bookings', [App\Http\Controllers\Customer\BookingController::class, 'store'])->name('booking.store');
+        Route::get('/bookings', [App\Http\Controllers\Student\BookingController::class, 'index'])->name('bookings');
+        Route::get('/bookings/{id}', [App\Http\Controllers\Student\BookingController::class, 'show'])->name('bookings.show');
+        Route::get('/services/{serviceId}/book', [App\Http\Controllers\Student\BookingController::class, 'create'])->name('booking.create');
+        Route::get('/services/{serviceId}/book/{scheduleId}', [App\Http\Controllers\Student\BookingController::class, 'create'])->name('booking.create.schedule');
+        Route::post('/bookings', [App\Http\Controllers\Student\BookingController::class, 'store'])->name('booking.store');
 
         // Checkout – create booking from inquiry and go to payment
 
-        Route::post('/services/{serviceId}/checkout', [App\Http\Controllers\Customer\BookingController::class, 'processCheckout'])->name('services.checkout.process');
+        Route::post('/services/{serviceId}/checkout', [App\Http\Controllers\Student\BookingController::class, 'processCheckout'])->name('services.checkout.process');
 
         // Payment Routes
-        Route::get('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'showPayment'])->name('booking.payment');
-        Route::post('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'processPayment'])->name('booking.payment.process');
-        Route::get('/bookings/{bookingId}/payment/quickbooks-session', [App\Http\Controllers\Customer\BookingController::class, 'getQuickBooksPaymentSession'])->name('booking.payment.quickbooks.session');
-        Route::post('/bookings/{bookingId}/payment/quickbooks', [App\Http\Controllers\Customer\BookingController::class, 'processQuickBooksPayment'])->name('booking.payment.quickbooks');
+        Route::get('/bookings/{bookingId}/payment', [App\Http\Controllers\Student\BookingController::class, 'showPayment'])->name('booking.payment');
+        Route::post('/bookings/{bookingId}/payment', [App\Http\Controllers\Student\BookingController::class, 'processPayment'])->name('booking.payment.process');
+        Route::get('/bookings/{bookingId}/payment/quickbooks-session', [App\Http\Controllers\Student\BookingController::class, 'getQuickBooksPaymentSession'])->name('booking.payment.quickbooks.session');
+        Route::post('/bookings/{bookingId}/payment/quickbooks', [App\Http\Controllers\Student\BookingController::class, 'processQuickBooksPayment'])->name('booking.payment.quickbooks');
     });
 });
 
@@ -331,12 +350,42 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Protected Admin Routes
     Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/students', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('students.index');
+        Route::get('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'show'])->name('students.show');
+
+        Route::get('/contact-submissions', [App\Http\Controllers\Admin\ContactSubmissionController::class, 'index'])->name('contact-submissions.index');
+        Route::get('/contact-submissions/{contactSubmission}', [App\Http\Controllers\Admin\ContactSubmissionController::class, 'show'])->name('contact-submissions.show');
+        Route::put('/contact-submissions/{contactSubmission}/status', [App\Http\Controllers\Admin\ContactSubmissionController::class, 'updateStatus'])->name('contact-submissions.update-status');
+
+        Route::resource('instructors', App\Http\Controllers\Admin\InstructorController::class)->except(['show']);
+        Route::resource('locations', App\Http\Controllers\Admin\LocationController::class)->except(['show']);
+
+        Route::get('/communication-logs', [App\Http\Controllers\Admin\CommunicationLogController::class, 'index'])->name('communication-logs.index');
+        Route::get('/communication-logs/{communicationLog}', [App\Http\Controllers\Admin\CommunicationLogController::class, 'show'])->name('communication-logs.show');
+        Route::post('/class-schedules/{classSchedule}/notify', [App\Http\Controllers\Admin\ClassNotificationController::class, 'store'])->name('class-schedules.notify');
+        Route::post('/class-schedules/{classSchedule}/notify-waitlist', [App\Http\Controllers\Admin\ClassNotificationController::class, 'notifyWaitlist'])->name('class-schedules.notify-waitlist');
+
         Route::resource('services', App\Http\Controllers\Admin\ServiceController::class);
+        Route::get('/services/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'index'])->name('services.course-modules.index');
+        Route::get('/services/{service}/course-modules/create', [App\Http\Controllers\Admin\CourseModuleController::class, 'create'])->name('services.course-modules.create');
+        Route::post('/services/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'store'])->name('services.course-modules.store');
+        Route::get('/services/{service}/course-modules/{courseModule}/edit', [App\Http\Controllers\Admin\CourseModuleController::class, 'edit'])->name('services.course-modules.edit');
+        Route::put('/services/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'update'])->name('services.course-modules.update');
+        Route::delete('/services/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'destroy'])->name('services.course-modules.destroy');
+        Route::post('/services/{service}/course-modules/reorder', [App\Http\Controllers\Admin\CourseModuleController::class, 'reorder'])->name('services.course-modules.reorder');
+        Route::get('/services/{service}/blended-progress', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'studentProgress'])->name('services.blended-progress');
+        Route::post('/services/{service}/blended-progress/{student}/modules/{courseModule}/override', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'overrideModule'])->name('services.blended-progress.override');
+        Route::post('/services/{service}/blended-progress/{student}/modules/{courseModule}/reset', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'resetModule'])->name('services.blended-progress.reset');
+        Route::post('/services/{service}/blended-progress/{student}/in-person-test', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'storeInPersonTest'])->name('services.blended-progress.in-person-test');
         Route::resource('class-schedules', App\Http\Controllers\Admin\ClassScheduleController::class)->names('class-schedules');
+        Route::post('/class-schedules/{classSchedule}/travel-notify', [App\Http\Controllers\Admin\TravelClassController::class, 'notify'])->name('class-schedules.travel-notify');
+        Route::post('/class-schedules/{classSchedule}/travel-cancel', [App\Http\Controllers\Admin\TravelClassController::class, 'cancel'])->name('class-schedules.travel-cancel');
 
         // Bookings Routes
         Route::get('/bookings', [App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
+        Route::get('/class-schedules/{classSchedule}/roster/export', [App\Http\Controllers\Admin\BookingController::class, 'exportRoster'])->name('class-schedules.roster.export');
         Route::put('/bookings/{booking}/status', [App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.update-status');
 
         // Payments Routes

@@ -12,6 +12,7 @@ class SettingController extends Controller
     public function index()
     {
         $settings = SiteSetting::first();
+
         return view('admin.settings.index', compact('settings'));
     }
 
@@ -52,6 +53,10 @@ class SettingController extends Controller
             // Instructor Bios
             'jayson_bio' => 'nullable|string',
             'kenny_bio' => 'nullable|string',
+            'sms_enabled' => 'nullable|boolean',
+            'twilio_sid' => 'nullable|string|max:255',
+            'twilio_token' => 'nullable|string|max:255',
+            'twilio_from_number' => 'nullable|string|max:50',
         ]);
 
         $settings = SiteSetting::first();
@@ -82,11 +87,12 @@ class SettingController extends Controller
         $validated['quickbooks_enabled'] = $request->has('quickbooks_enabled') ? true : false;
         $validated['bank_sync_enabled'] = $request->has('bank_sync_enabled') ? true : false;
         $validated['square_enabled'] = $request->has('square_enabled') ? true : false;
-        
+        $validated['sms_enabled'] = $request->has('sms_enabled') ? true : false;
+
         // Remove null values to avoid overwriting with null (except for boolean fields)
-        $validated = array_filter($validated, function($value, $key) {
+        $validated = array_filter($validated, function ($value, $key) {
             // Keep boolean false values
-            if (in_array($key, ['quickbooks_enabled', 'bank_sync_enabled', 'square_enabled'])) {
+            if (in_array($key, ['quickbooks_enabled', 'bank_sync_enabled', 'square_enabled', 'sms_enabled'])) {
                 return true;
             }
             if ($value === null) {
@@ -95,11 +101,12 @@ class SettingController extends Controller
             // Don't overwrite secrets/tokens with empty string (user left password field blank)
             $secretKeys = [
                 'quickbooks_client_secret', 'quickbooks_access_token', 'quickbooks_refresh_token',
-                'bank_api_secret', 'square_access_token',
+                'bank_api_secret', 'square_access_token', 'twilio_token',
             ];
             if (in_array($key, $secretKeys) && trim((string) $value) === '') {
                 return false;
             }
+
             return true;
         }, ARRAY_FILTER_USE_BOTH);
 

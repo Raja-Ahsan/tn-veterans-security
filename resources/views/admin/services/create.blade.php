@@ -290,13 +290,15 @@
                     <span class="text-sm text-gray-700">Testing is in-person (always true)</span>
                 </label>
             </div>
+
+            @include('admin.services._extended_fields')
         </div>
 
         <!-- Class sessions (saved to class_schedules) -->
         <div class="mb-6 border-t pt-4 mt-6">
             <input type="hidden" name="sync_schedules" value="1">
             <h3 class="text-lg font-bold mb-2">Class sessions (schedule)</h3>
-            <p class="text-sm text-gray-600 mb-3">Add dates and times customers can book. These appear on the public booking form instead of a free-form date.</p>
+            <p class="text-sm text-gray-600 mb-3">Add dates and times students can book. These appear on the public booking form instead of a free-form date.</p>
             <div id="schedules-container" class="space-y-4">
                 @php
                     $schedRows = old('schedules');

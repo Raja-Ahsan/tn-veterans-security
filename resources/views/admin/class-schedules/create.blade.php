@@ -158,70 +158,33 @@
             </div>
         </div>
 
-        <!-- Location Selection (Multiple) -->
+        <!-- Location Selection (from database) -->
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">Location(s) <span class="text-gray-500 text-xs font-normal">(Select one or more)</span></label>
-            <div class="flex flex-wrap gap-4 mt-2">
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="locations[]" 
-                           value="Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210"
-                           {{ in_array('Shooter\'s Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210', old('locations', [])) ? 'checked' : '' }}
-                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-gray-700 max-w-xs leading-tight">Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="locations[]" 
-                           value="Guns and Leather 2216 US-41, Greenbrier, Tn 37073"
-                           {{ in_array('Guns and Leather 2216 US-41, Greenbrier, Tn 37073', old('locations', [])) ? 'checked' : '' }}
-                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-gray-700 max-w-[300px] leading-tight">Guns and Leather 2216 US-41, Greenbrier, Tn 37073</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="locations[]" 
-                           value="Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217"
-                           {{ in_array('Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217', old('locations', [])) ? 'checked' : '' }}
-                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-gray-700 max-w-[300px] leading-tight">Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="locations[]" 
-                           value="TNPTI 1630 S. Church St Murfreesboro, Tn 37130"
-                           {{ in_array('TNPTI 1630 S. Church St Murfreesboro, Tn 37130', old('locations', [])) ? 'checked' : '' }}
-                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-gray-700 max-w-[300px] leading-tight">TNPTI 1630 S. Church St Murfreesboro, Tn 37130</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="locations[]" 
-                           value="No Specific Location"
-                           {{ in_array('No Specific Location', old('locations', [])) ? 'checked' : '' }}
-                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-gray-700">No Specific Location</span>
-                </label>
+            <div class="flex flex-col gap-2 mt-2">
+                @forelse($locations as $loc)
+                    <label class="flex items-start gap-2">
+                        <input type="checkbox" name="location_ids[]" value="{{ $loc->id }}"
+                               {{ in_array($loc->id, old('location_ids', [])) ? 'checked' : '' }}
+                               class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <span class="text-gray-700">{{ $loc->display_name }}</span>
+                    </label>
+                @empty
+                    <p class="text-sm text-gray-500">No locations in database. <a href="{{ route('admin.locations.create') }}" class="text-blue-600">Add locations</a> or enter a custom location below.</p>
+                @endforelse
             </div>
-            <p class="text-xs text-gray-500 mt-1">Select one or more locations. A schedule will be created for each selected location.</p>
-            @error('locations')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-            @error('locations.*')
+            <input type="text" name="location" value="{{ old('location') }}" placeholder="Custom location (if none selected above)" class="mt-3 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700">
+            <p class="text-xs text-gray-500 mt-1">A schedule is created for each selected location.</p>
+            @error('location_ids')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
             <!-- Room -->
             <div class="mb-4">
                 <label for="room" class="block text-gray-700 text-sm font-bold mb-2">Room</label>
-                <input type="text" 
-                       id="room" 
-                       name="room" 
-                       value="{{ old('room') }}"
-                       placeholder="Room name or number"
+                <input type="text" id="room" name="room" value="{{ old('room') }}" placeholder="Room name or number"
                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 @error('room')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -230,17 +193,30 @@
 
             <!-- Instructor -->
             <div class="mb-4">
-                <label for="instructor" class="block text-gray-700 text-sm font-bold mb-2">Instructor</label>
-                <input type="text" 
-                       id="instructor" 
-                       name="instructor" 
-                       value="{{ old('instructor') }}"
-                       placeholder="Instructor name"
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                @error('instructor')
+                <label for="instructor_id" class="block text-gray-700 text-sm font-bold mb-2">Instructor</label>
+                <select id="instructor_id" name="instructor_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">— Select instructor —</option>
+                    @foreach($instructors as $inst)
+                        <option value="{{ $inst->id }}" {{ old('instructor_id') == $inst->id ? 'selected' : '' }}>{{ $inst->name }}</option>
+                    @endforeach
+                </select>
+                <input type="text" id="instructor" name="instructor" value="{{ old('instructor') }}" placeholder="Or custom instructor name" class="mt-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                @error('instructor_id')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="flex items-center">
+                <input type="checkbox" name="admin_override_capacity" value="1" {{ old('admin_override_capacity') ? 'checked' : '' }} class="mr-2">
+                <span class="text-gray-700 text-sm font-bold">Admin override capacity (allow over-enrollment)</span>
+            </label>
+        </div>
+
+        <div class="mb-4">
+            <label for="travel_notes" class="block text-gray-700 text-sm font-bold mb-2">Travel Notes</label>
+            <textarea id="travel_notes" name="travel_notes" rows="2" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700">{{ old('travel_notes') }}</textarea>
         </div>
 
         <!-- Can Overlap -->

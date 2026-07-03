@@ -3,24 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassSchedule;
+use App\Models\Payment;
 use App\Models\Service;
 use App\Models\ServiceBooking;
-use App\Models\Payment;
-use App\Models\ClassSchedule;
-use App\Models\Customer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Student;
+use App\Services\TravelClassService;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    public function __construct(private TravelClassService $travelClassService) {}
+
     public function index()
     {
         // Services Statistics
         $servicesCount = Service::count();
         $activeServicesCount = Service::where('is_active', true)->count();
-        
+
         // Bookings Statistics
         $totalBookings = ServiceBooking::count();
         $pendingBookings = ServiceBooking::where('status', 'pending')->count();
@@ -31,7 +31,7 @@ class DashboardController extends Controller
         $thisMonthBookings = ServiceBooking::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
-        
+
         // Payments Statistics
         $totalRevenue = Payment::where('status', 'completed')->sum('amount');
         $pendingPayments = Payment::where('status', 'pending')->sum('amount');
@@ -47,7 +47,7 @@ class DashboardController extends Controller
             ->whereYear('payment_date', $lastMonth->year)
             ->where('status', 'completed')
             ->sum('amount');
-        
+
         // Class Schedules Statistics
         $totalSchedules = ClassSchedule::count();
         $upcomingSchedules = ClassSchedule::where('class_date', '>=', today())
@@ -58,13 +58,13 @@ class DashboardController extends Controller
             ->where('status', 'scheduled')
             ->whereRaw('current_students < max_students')
             ->count();
-        
-        // Customers Statistics
-        $totalCustomers = Customer::count();
-        $newCustomersThisMonth = Customer::whereMonth('created_at', now()->month)
+
+        // Students Statistics
+        $totalStudents = Student::count();
+        $newStudentsThisMonth = Student::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
-        
+
         // Revenue Trends (Last 30 days)
         $revenueTrends = [];
         for ($i = 29; $i >= 0; $i--) {
@@ -76,7 +76,7 @@ class DashboardController extends Controller
                     ->sum('amount'),
             ];
         }
-        
+
         // Booking Trends (Last 30 days)
         $bookingTrends = [];
         for ($i = 29; $i >= 0; $i--) {
@@ -86,7 +86,7 @@ class DashboardController extends Controller
                 'count' => ServiceBooking::whereDate('created_at', $date)->count(),
             ];
         }
-        
+
         // Revenue by Payment Method
         $paymentMethods = Payment::where('status', 'completed')
             ->select('payment_method', DB::raw('SUM(amount) as total'))
@@ -100,7 +100,7 @@ class DashboardController extends Controller
             })
             ->values()
             ->toArray();
-        
+
         // Revenue by Service (Top 5)
         $revenueByService = ServiceBooking::where('payment_status', '!=', 'pending')
             ->select('service_id', DB::raw('SUM(total_amount) as total'))
@@ -117,7 +117,7 @@ class DashboardController extends Controller
             })
             ->values()
             ->toArray();
-        
+
         // Bookings by Status
         $bookingsByStatus = ServiceBooking::select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
@@ -130,7 +130,7 @@ class DashboardController extends Controller
             })
             ->values()
             ->toArray();
-        
+
         // QuickBooks & Bank Sync Status
         $quickbooksSynced = Payment::where('synced_to_quickbooks', true)->count();
         $quickbooksPending = Payment::where('status', 'completed')
@@ -140,20 +140,22 @@ class DashboardController extends Controller
         $bankPending = Payment::where('status', 'completed')
             ->where('synced_to_bank', false)
             ->count();
-        
+
         // Recent Bookings (Last 5)
-        $recentBookings = ServiceBooking::with(['service', 'customer', 'classSchedule'])
+        $recentBookings = ServiceBooking::with(['service', 'student', 'classSchedule'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-        
+
         // Recent Payments (Last 5)
-        $recentPayments = Payment::with(['booking.service', 'customer'])
+        $recentPayments = Payment::with(['booking.service', 'student'])
             ->orderBy('payment_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-        
+
+        $travelBelowMinimum = $this->travelClassService->getSchedulesBelowTravelMinimum();
+
         return view('admin.dashboard', compact(
             'servicesCount',
             'activeServicesCount',
@@ -173,8 +175,8 @@ class DashboardController extends Controller
             'upcomingSchedules',
             'fullSchedules',
             'availableSchedules',
-            'totalCustomers',
-            'newCustomersThisMonth',
+            'totalStudents',
+            'newStudentsThisMonth',
             'revenueTrends',
             'bookingTrends',
             'paymentMethods',
@@ -185,7 +187,8 @@ class DashboardController extends Controller
             'bankSynced',
             'bankPending',
             'recentBookings',
-            'recentPayments'
+            'recentPayments',
+            'travelBelowMinimum'
         ));
     }
 }

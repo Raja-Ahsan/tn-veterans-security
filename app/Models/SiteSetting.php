@@ -41,11 +41,17 @@ class SiteSetting extends Model
         // Instructor Bios
         'jayson_bio',
         'kenny_bio',
+        // SMS / Twilio
+        'sms_enabled',
+        'twilio_sid',
+        'twilio_token',
+        'twilio_from_number',
     ];
 
     protected $casts = [
         'quickbooks_enabled' => 'boolean',
         'bank_sync_enabled' => 'boolean',
         'square_enabled' => 'boolean',
+        'sms_enabled' => 'boolean',
     ];
 }

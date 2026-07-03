@@ -7,7 +7,7 @@
 </head>
 <body style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
     <h2 style="margin-bottom: 8px;">Booking Status Updated</h2>
-    <p>Hi {{ $booking->customer->name }},</p>
+    <p>Hi {{ $booking->student->name }},</p>
     <p>Your booking status has been updated.</p>
 
     <p><strong>Booking Details</strong></p>

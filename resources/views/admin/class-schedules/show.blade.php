@@ -90,8 +90,12 @@
                     <p class="text-lg font-semibold text-gray-900">{{ $classSchedule->room ?? 'Not assigned' }}</p>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-500">Location</label>
+                    <p class="text-lg font-semibold text-gray-900">{{ $classSchedule->location_name ?? 'Not assigned' }}</p>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-500">Instructor</label>
-                    <p class="text-lg font-semibold text-gray-900">{{ $classSchedule->instructor ?? 'Not assigned' }}</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ $classSchedule->instructor_name ?? 'Not assigned' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Can Overlap</label>
@@ -104,6 +108,46 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-xl font-bold mb-4">Notes</h3>
             <p class="text-gray-700">{{ $classSchedule->notes }}</p>
+        </div>
+        @endif
+
+        @php
+            $travelMin = $classSchedule->service->is_travel_based ? ($classSchedule->service->travel_minimum_students ?? null) : null;
+            $belowTravelMin = $travelMin && $classSchedule->current_students < $travelMin;
+        @endphp
+        @if($belowTravelMin)
+        <div class="bg-amber-50 border border-amber-300 rounded-lg shadow p-6" role="alert">
+            <h3 class="text-lg font-bold text-amber-900 mb-2">Travel class below minimum</h3>
+            <p class="text-sm text-amber-800 mb-4">{{ $classSchedule->current_students }} enrolled · minimum required: {{ $travelMin }}. Notify students, cancel, or reschedule.</p>
+            <form method="POST" action="{{ route('admin.class-schedules.travel-notify', $classSchedule) }}" class="mb-3">
+                @csrf
+                <textarea name="message" rows="2" required class="w-full border rounded px-3 py-2 text-sm mb-2" placeholder="Message to enrolled students…"></textarea>
+                <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded text-sm">Notify enrolled students</button>
+            </form>
+            <form method="POST" action="{{ route('admin.class-schedules.travel-cancel', $classSchedule) }}" onsubmit="return confirm('Cancel this travel class?');">
+                @csrf
+                <input type="text" name="reason" required placeholder="Cancellation reason" class="w-full border rounded px-3 py-2 text-sm mb-2">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded text-sm">Cancel class</button>
+            </form>
+        </div>
+        @endif
+
+        @if(isset($enrolledBookings) && $enrolledBookings->count() > 0)
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold mb-4">Class Roster</h3>
+            <table class="min-w-full text-sm">
+                <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2">Student</th><th class="pb-2">Email</th><th class="pb-2">Phone</th><th class="pb-2">Seats</th></tr></thead>
+                <tbody>
+                    @foreach($enrolledBookings as $booking)
+                        <tr class="border-b border-gray-100">
+                            <td class="py-2">{{ $booking->student?->name }}</td>
+                            <td class="py-2">{{ $booking->student?->email }}</td>
+                            <td class="py-2">{{ $booking->student?->phone ?? '—' }}</td>
+                            <td class="py-2">{{ $booking->number_of_students }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
         @endif
     </div>
@@ -136,8 +180,66 @@
                 <a href="{{ route('admin.bookings.index', ['schedule' => $classSchedule->id]) }}" class="mt-4 inline-block text-blue-600 hover:underline text-sm">
                     View all bookings →
                 </a>
+                <a href="{{ route('admin.class-schedules.roster.export', $classSchedule) }}" class="mt-2 block text-green-600 hover:underline text-sm">
+                    <i class="fas fa-download mr-1"></i> Export roster (CSV)
+                </a>
             @endif
         </div>
+
+        <!-- Notify Enrolled Students -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold mb-4">Notify Enrolled Students</h3>
+            <form method="POST" action="{{ route('admin.class-schedules.notify', $classSchedule) }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notification Type</label>
+                    <select name="notification_type" required class="w-full border rounded px-3 py-2">
+                        <option value="class_canceled">Class Canceled</option>
+                        <option value="class_rescheduled">Class Rescheduled</option>
+                        <option value="class_moved">Class Moved</option>
+                        <option value="time_changed">Time Changed</option>
+                        <option value="instructor_changed">Instructor Changed</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Method</label>
+                    <select name="delivery_method" required class="w-full border rounded px-3 py-2">
+                        <option value="email">Email</option>
+                        <option value="sms">Text (SMS)</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea name="message" rows="4" required class="w-full border rounded px-3 py-2" placeholder="Enter the message students will receive..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded font-semibold">
+                    <i class="fas fa-paper-plane mr-2"></i> Send Notification
+                </button>
+            </form>
+        </div>
+
+        @if($classSchedule->waitlistEntries->where('status', 'waiting')->count() > 0)
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold mb-4">Notify Waitlist ({{ $classSchedule->waitlistEntries->where('status', 'waiting')->count() }})</h3>
+            <form method="POST" action="{{ route('admin.class-schedules.notify-waitlist', $classSchedule) }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Method</label>
+                    <select name="delivery_method" required class="w-full border rounded px-3 py-2">
+                        <option value="email">Email</option>
+                        <option value="sms">Text (SMS)</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea name="message" rows="3" required class="w-full border rounded px-3 py-2" placeholder="A spot may be available..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded font-semibold">Notify Waitlist</button>
+            </form>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

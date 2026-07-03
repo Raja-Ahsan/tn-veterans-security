@@ -22,9 +22,13 @@ class ClassSchedule extends Model
         'room',
         'location',
         'instructor',
+        'location_id',
+        'instructor_id',
         'can_overlap',
         'status',
         'notes',
+        'admin_override_capacity',
+        'travel_notes',
     ];
 
     protected $casts = [
@@ -36,6 +40,7 @@ class ClassSchedule extends Model
         'min_students' => 'integer',
         'current_students' => 'integer',
         'can_overlap' => 'boolean',
+        'admin_override_capacity' => 'boolean',
     ];
 
     public static function normalizeLocation(?string $location): ?string
@@ -115,6 +120,40 @@ class ClassSchedule extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function locationRecord(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'location_id');
+    }
+
+    public function instructorRecord(): BelongsTo
+    {
+        return $this->belongsTo(Instructor::class, 'instructor_id');
+    }
+
+    public function waitlistEntries(): HasMany
+    {
+        return $this->hasMany(WaitlistEntry::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(ClassNotification::class);
+    }
+
+    public function getInstructorNameAttribute(): ?string
+    {
+        return $this->instructorRecord?->name ?? $this->instructor;
+    }
+
+    public function getLocationNameAttribute(): ?string
+    {
+        if ($this->locationRecord) {
+            return $this->locationRecord->display_name;
+        }
+
+        return $this->location;
+    }
+
     /**
      * Get all bookings for this class schedule.
      */
@@ -138,6 +177,10 @@ class ClassSchedule extends Model
      */
     public function hasAvailableSpots(): bool
     {
+        if ($this->admin_override_capacity) {
+            return $this->status === 'scheduled';
+        }
+
         return $this->current_students < $this->max_students && $this->status === 'scheduled';
     }
 

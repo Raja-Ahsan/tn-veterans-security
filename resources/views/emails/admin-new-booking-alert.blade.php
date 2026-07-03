@@ -10,7 +10,7 @@
     <p>A new booking has been created and is awaiting payment confirmation.</p>
     <ul>
         <li><strong>Booking ID:</strong> #{{ $booking->id }}</li>
-        <li><strong>Customer:</strong> {{ $booking->customer->name }} ({{ $booking->customer->email }})</li>
+        <li><strong>Student:</strong> {{ $booking->student->name }} ({{ $booking->student->email }})</li>
         <li><strong>Service:</strong> {{ $booking->service->title }}</li>
         <li><strong>Date:</strong> {{ optional($booking->booking_date)->format('M d, Y') ?? 'TBD' }}</li>
         <li><strong>Students:</strong> {{ $booking->number_of_students }}</li>

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ServiceBooking extends Model
 {
     protected $fillable = [
-        'customer_id',
+        'student_id',
         'service_id',
         'class_schedule_id',
         'location',
@@ -38,11 +38,11 @@ class ServiceBooking extends Model
     ];
 
     /**
-     * Get the customer that owns the booking.
+     * Get the student that owns the booking.
      */
-    public function customer(): BelongsTo
+    public function student(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Student::class);
     }
 
     /**

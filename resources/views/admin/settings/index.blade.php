@@ -374,6 +374,32 @@
             </div>
         </div>
 
+        <!-- SMS / Twilio Section -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">SMS Notifications (Twilio)</h3>
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="sms_enabled" value="1" {{ old('sms_enabled', $settings->sms_enabled ?? false) ? 'checked' : '' }} class="mr-2">
+                    <span class="text-gray-700 text-sm font-bold">Enable SMS notifications</span>
+                </label>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Twilio Account SID</label>
+                    <input type="text" name="twilio_sid" value="{{ old('twilio_sid', $settings->twilio_sid ?? '') }}" class="shadow border rounded w-full py-2 px-3">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Twilio Auth Token</label>
+                    <input type="password" name="twilio_token" placeholder="Leave blank to keep current" class="shadow border rounded w-full py-2 px-3">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">From Phone Number</label>
+                    <input type="text" name="twilio_from_number" value="{{ old('twilio_from_number', $settings->twilio_from_number ?? '') }}" placeholder="+1234567890" class="shadow border rounded w-full py-2 px-3">
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Used for enrollment confirmations, class change alerts, and blended course completion texts.</p>
+        </div>
+
         <!-- Instructor Bios Section -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Instructor Bios</h3>

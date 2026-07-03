@@ -2,19 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\SiteSetting;
 use App\Models\Payment;
 use App\Models\ServiceBooking;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Log;
-use QuickBooksOnline\API\DataService\DataService;
-use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2LoginHelper;
 use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2AccessToken;
+use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2LoginHelper;
+use QuickBooksOnline\API\DataService\DataService;
 use QuickBooksOnline\API\Facades\Invoice;
 use QuickBooksOnline\API\Facades\Payment as QuickBooksPayment;
 
 class QuickBooksService
 {
     protected $dataService;
+
     protected $settings;
 
     public function __construct()
@@ -27,7 +28,7 @@ class QuickBooksService
      */
     protected function initializeDataService()
     {
-        if (!$this->settings || !$this->settings->quickbooks_enabled) {
+        if (! $this->settings || ! $this->settings->quickbooks_enabled) {
             throw new \Exception('QuickBooks integration is not enabled.');
         }
 
@@ -36,10 +37,10 @@ class QuickBooksService
         }
 
         $environment = $this->settings->quickbooks_environment ?? 'sandbox';
-        
+
         // Get redirect URI from settings or use default
-        $redirectUri = config('app.url') . '/admin/quickbooks/callback';
-        
+        $redirectUri = config('app.url').'/admin/quickbooks/callback';
+
         $dataService = DataService::Configure([
             'auth_mode' => 'oauth2',
             'ClientID' => $this->settings->quickbooks_client_id,
@@ -50,7 +51,7 @@ class QuickBooksService
         ]);
 
         // Set access token if available (SDK expects OAuth2AccessToken object, not a string)
-        if (!empty($this->settings->quickbooks_access_token) && !empty($this->settings->quickbooks_refresh_token) && !empty($this->settings->quickbooks_company_id)) {
+        if (! empty($this->settings->quickbooks_access_token) && ! empty($this->settings->quickbooks_refresh_token) && ! empty($this->settings->quickbooks_company_id)) {
             // Refresh token first (access tokens expire in 1 hour); use standalone helper
             $token = $this->refreshAndPersistToken();
             $token->setRealmID($this->settings->quickbooks_company_id);
@@ -58,6 +59,7 @@ class QuickBooksService
         }
 
         $this->dataService = $dataService;
+
         return $dataService;
     }
 
@@ -74,7 +76,7 @@ class QuickBooksService
             $newToken = $oauth2Helper->refreshAccessTokenWithRefreshToken($this->settings->quickbooks_refresh_token);
         } catch (\Exception $e) {
             Log::warning('QuickBooks token refresh failed', ['error' => $e->getMessage()]);
-            throw new \Exception('QuickBooks token expired or invalid. Please reconnect in Site Settings → QuickBooks: ' . $e->getMessage());
+            throw new \Exception('QuickBooks token expired or invalid. Please reconnect in Site Settings → QuickBooks: '.$e->getMessage());
         }
         // Persist new tokens (QuickBooks may return a new refresh token)
         $this->settings->update([
@@ -82,6 +84,7 @@ class QuickBooksService
             'quickbooks_refresh_token' => $newToken->getRefreshToken(),
         ]);
         $this->settings->refresh();
+
         return $newToken;
     }
 
@@ -91,7 +94,7 @@ class QuickBooksService
     public function syncPayment(Payment $payment): array
     {
         try {
-            if (!$this->settings || !$this->settings->quickbooks_enabled) {
+            if (! $this->settings || ! $this->settings->quickbooks_enabled) {
                 return [
                     'success' => false,
                     'message' => 'QuickBooks integration is not enabled.',
@@ -112,15 +115,15 @@ class QuickBooksService
 
             // Get booking details
             $booking = $payment->booking;
-            if (!$booking) {
+            if (! $booking) {
                 throw new \Exception('Booking not found for payment.');
             }
 
             $service = $booking->service;
-            $customer = $payment->customer;
+            $student = $payment->student;
 
             // Create or get customer in QuickBooks
-            $qbCustomer = $this->getOrCreateCustomer($customer);
+            $qbCustomer = $this->getOrCreateCustomer($student);
 
             // Create invoice
             $invoice = $this->createInvoice($payment, $booking, $service, $qbCustomer);
@@ -156,7 +159,7 @@ class QuickBooksService
 
             return [
                 'success' => false,
-                'message' => 'Failed to sync payment to QuickBooks: ' . $e->getMessage(),
+                'message' => 'Failed to sync payment to QuickBooks: '.$e->getMessage(),
             ];
         }
     }
@@ -164,27 +167,28 @@ class QuickBooksService
     /**
      * Get or create customer in QuickBooks
      */
-    protected function getOrCreateCustomer($customer)
+    protected function getOrCreateCustomer($student)
     {
-        // Search for existing customer by email
-        $queryString = "SELECT * FROM Customer WHERE PrimaryEmailAddr = '{$customer->email}'";
-        $customers = $this->dataService->Query($queryString);
+        // Search for existing student by email
+        $queryString = "SELECT * FROM Customer WHERE PrimaryEmailAddr = '{$student->email}'";
+        $students = $this->dataService->Query($queryString);
 
-        if (!empty($customers) && count($customers) > 0) {
-            return $customers[0];
+        if (! empty($students) && count($students) > 0) {
+            return $students[0];
         }
 
         // Create new customer
         $customerObj = \QuickBooksOnline\API\Facades\Customer::create([
-            'DisplayName' => $customer->name ?? $customer->email,
+            'DisplayName' => $student->name ?? $student->email,
             'PrimaryEmailAddr' => [
-                'Address' => $customer->email,
+                'Address' => $student->email,
             ],
-            'GivenName' => $customer->name ?? 'Customer',
+            'GivenName' => $student->name ?? 'Customer',
             'FamilyName' => '',
         ]);
 
         $resultingCustomerObj = $this->dataService->Add($customerObj);
+
         return $resultingCustomerObj;
     }
 
@@ -217,6 +221,7 @@ class QuickBooksService
         ]);
 
         $resultingInvoice = $this->dataService->Add($invoice);
+
         return $resultingInvoice;
     }
 
@@ -230,12 +235,13 @@ class QuickBooksService
             $queryString = "SELECT * FROM Account WHERE AccountType = 'Income' OR AccountType = 'Other Income'";
             $accounts = $this->dataService->Query($queryString, null, 1);
             $accountsArray = is_array($accounts) ? $accounts : ($accounts ? [$accounts] : []);
-            if (!empty($accountsArray) && isset($accountsArray[0]->Id)) {
+            if (! empty($accountsArray) && isset($accountsArray[0]->Id)) {
                 return (string) $accountsArray[0]->Id;
             }
         } catch (\Exception $e) {
             Log::warning('QuickBooks could not query income account', ['error' => $e->getMessage()]);
         }
+
         return '1';
     }
 
@@ -248,7 +254,7 @@ class QuickBooksService
         $queryString = "SELECT * FROM Item WHERE Name = '{$service->title}'";
         $items = $this->dataService->Query($queryString);
 
-        if (!empty($items) && count($items) > 0) {
+        if (! empty($items) && count($items) > 0) {
             return $items[0];
         }
 
@@ -264,6 +270,7 @@ class QuickBooksService
         ]);
 
         $resultingItem = $this->dataService->Add($item);
+
         return $resultingItem;
     }
 
@@ -296,6 +303,7 @@ class QuickBooksService
         ]);
 
         $resultingPayment = $this->dataService->Add($qbPayment);
+
         return $resultingPayment;
     }
 
@@ -306,6 +314,7 @@ class QuickBooksService
     {
         $this->initializeDataService();
         $this->settings->refresh();
+
         return $this->settings->quickbooks_access_token ?? '';
     }
 
@@ -326,7 +335,7 @@ class QuickBooksService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Connection failed: ' . $e->getMessage(),
+                'message' => 'Connection failed: '.$e->getMessage(),
             ];
         }
     }
@@ -335,7 +344,7 @@ class QuickBooksService
      * Fetch Payment entities from QuickBooks (sandbox or production).
      * Use this to verify test payments in sandbox or view synced payments in QB.
      *
-     * @param int $maxResults Maximum number of payments to return (default 50)
+     * @param  int  $maxResults  Maximum number of payments to return (default 50)
      * @return array ['success' => bool, 'message' => string, 'payments' => array, 'environment' => string]
      */
     public function fetchPaymentsFromQuickBooks(int $maxResults = 50): array
@@ -351,20 +360,20 @@ class QuickBooksService
             $list = [];
             $paymentsArray = is_array($payments) ? $payments : ($payments ? [$payments] : []);
             foreach ($paymentsArray as $qbPayment) {
-                    $list[] = [
-                        'id' => $qbPayment->Id ?? null,
-                        'total_amt' => $qbPayment->TotalAmt ?? 0,
-                        'txn_date' => $qbPayment->TxnDate ?? null,
-                        'customer_ref' => isset($qbPayment->CustomerRef->value) ? $qbPayment->CustomerRef->value : ($qbPayment->CustomerRef ?? null),
-                        'customer_name' => isset($qbPayment->CustomerRef->name) ? $qbPayment->CustomerRef->name : null,
-                        'payment_method' => isset($qbPayment->PaymentMethodRef->name) ? $qbPayment->PaymentMethodRef->name : null,
-                        'unapplied_amt' => $qbPayment->UnappliedAmt ?? 0,
-                    ];
+                $list[] = [
+                    'id' => $qbPayment->Id ?? null,
+                    'total_amt' => $qbPayment->TotalAmt ?? 0,
+                    'txn_date' => $qbPayment->TxnDate ?? null,
+                    'customer_ref' => isset($qbPayment->CustomerRef->value) ? $qbPayment->CustomerRef->value : ($qbPayment->CustomerRef ?? null),
+                    'customer_name' => isset($qbPayment->CustomerRef->name) ? $qbPayment->CustomerRef->name : null,
+                    'payment_method' => isset($qbPayment->PaymentMethodRef->name) ? $qbPayment->PaymentMethodRef->name : null,
+                    'unapplied_amt' => $qbPayment->UnappliedAmt ?? 0,
+                ];
             }
 
             return [
                 'success' => true,
-                'message' => count($list) . ' payment(s) found in QuickBooks.',
+                'message' => count($list).' payment(s) found in QuickBooks.',
                 'payments' => $list,
                 'environment' => $environment,
             ];
@@ -373,7 +382,7 @@ class QuickBooksService
 
             return [
                 'success' => false,
-                'message' => 'Failed to fetch payments from QuickBooks: ' . $e->getMessage(),
+                'message' => 'Failed to fetch payments from QuickBooks: '.$e->getMessage(),
                 'payments' => [],
                 'environment' => $this->settings->quickbooks_environment ?? 'sandbox',
             ];

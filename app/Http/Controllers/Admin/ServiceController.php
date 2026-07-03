@@ -83,6 +83,16 @@ class ServiceController extends Controller
             // Pricing fields
             'price' => 'nullable|numeric|min:0',
             'deposit_amount' => 'nullable|numeric|min:0',
+            'refund_policy' => 'nullable|string',
+            'what_to_bring' => 'nullable|string',
+            'prerequisites' => 'nullable|string',
+            'is_travel_based' => 'boolean',
+            'travel_distance_fee' => 'nullable|numeric|min:0',
+            'travel_lodging_fee' => 'nullable|numeric|min:0',
+            'travel_time_fee' => 'nullable|numeric|min:0',
+            'travel_minimum_students' => 'nullable|integer|min:1',
+            'travel_notes' => 'nullable|string',
+            'lodging_instructions' => 'nullable|string',
             // Class configuration
             'class_type' => 'nullable|in:group,one-on-one',
             'has_online_parts' => 'boolean',
@@ -112,6 +122,7 @@ class ServiceController extends Controller
         $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
         $validated['requires_dallas_law'] = $request->has('requires_dallas_law');
         $validated['requires_active_shooter'] = $request->has('requires_active_shooter');
+        $validated['is_travel_based'] = $request->has('is_travel_based');
 
         $linkedIds = $request->input('linked_services', []);
         unset($validated['linked_services']);
@@ -184,6 +195,16 @@ class ServiceController extends Controller
             // Pricing fields
             'price' => 'nullable|numeric|min:0',
             'deposit_amount' => 'nullable|numeric|min:0',
+            'refund_policy' => 'nullable|string',
+            'what_to_bring' => 'nullable|string',
+            'prerequisites' => 'nullable|string',
+            'is_travel_based' => 'boolean',
+            'travel_distance_fee' => 'nullable|numeric|min:0',
+            'travel_lodging_fee' => 'nullable|numeric|min:0',
+            'travel_time_fee' => 'nullable|numeric|min:0',
+            'travel_minimum_students' => 'nullable|integer|min:1',
+            'travel_notes' => 'nullable|string',
+            'lodging_instructions' => 'nullable|string',
             // Class configuration
             'class_type' => 'nullable|in:group,one-on-one',
             'has_online_parts' => 'boolean',
@@ -214,6 +235,7 @@ class ServiceController extends Controller
         $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
         $validated['requires_dallas_law'] = $request->has('requires_dallas_law');
         $validated['requires_active_shooter'] = $request->has('requires_active_shooter');
+        $validated['is_travel_based'] = $request->has('is_travel_based');
 
         $linkedIds = $request->input('linked_services', []);
         unset($validated['linked_services']);

@@ -10,7 +10,7 @@
     <p>A payment has been received for a booking.</p>
     <ul>
         <li><strong>Booking ID:</strong> #{{ $booking->id }}</li>
-        <li><strong>Customer:</strong> {{ $booking->customer->name }} ({{ $booking->customer->email }})</li>
+        <li><strong>Student:</strong> {{ $booking->student->name }} ({{ $booking->student->email }})</li>
         <li><strong>Service:</strong> {{ $booking->service->title }}</li>
         <li><strong>Paid Amount:</strong> ${{ number_format((float) $payment->amount, 2) }}</li>
         <li><strong>Payment Method:</strong> {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</li>

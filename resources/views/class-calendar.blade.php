@@ -97,7 +97,7 @@
                                                         $startTime = \Carbon\Carbon::parse($schedule->start_time)->format('g:i A');
                                                         $isFull = $schedule->status === 'full' || $schedule->getAvailableSpots() === 0;
                                                     @endphp
-                                                    <a href="{{ route('customer.available-classes', $schedule->service_id) }}"
+                                                    <a href="{{ route('student.available-classes', $schedule->service_id) }}"
                                                        class="calendar-schedule-item block text-left text-[11px] lg:text-xs rounded px-1.5 py-1 mb-1 truncate {{ $isFull ? 'bg-red-100 text-red-900' : 'bg-emerald-100 text-emerald-900' }}"
                                                        data-location="{{ $schedule->location ?? 'none' }}"
                                                        title="{{ $schedule->service->title ?? 'Class' }} · {{ $startTime }}">
@@ -168,7 +168,7 @@
                                             View class
                                         </a>
                                         @if(! $isFull && $schedule->class_date->gte(now()->startOfDay()))
-                                            <a href="{{ route('customer.available-classes', $schedule->service_id) }}"
+                                            <a href="{{ route('student.available-classes', $schedule->service_id) }}"
                                                class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-[var(--primary-color)] text-white font-bold hover:opacity-90 transition-opacity">
                                                 <i class="fas fa-calendar-plus"></i> Book now
                                             </a>

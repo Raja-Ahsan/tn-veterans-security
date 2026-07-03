@@ -30,6 +30,11 @@ class Service extends Model
         'requires_dallas_law' => 'boolean',
         'requires_active_shooter' => 'boolean',
         'requirements' => 'string',
+        'is_travel_based' => 'boolean',
+        'travel_distance_fee' => 'decimal:2',
+        'travel_lodging_fee' => 'decimal:2',
+        'travel_time_fee' => 'decimal:2',
+        'travel_minimum_students' => 'integer',
     ];
 
     /**
@@ -126,6 +131,19 @@ class Service extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(ServiceBooking::class);
+    }
+
+    public function courseModules(): HasMany
+    {
+        return $this->hasMany(CourseModule::class)->orderBy('order');
+    }
+
+    /**
+     * Resolve deposit amount for this class (defaults to $20 if not configured).
+     */
+    public function getResolvedDepositAmount(): float
+    {
+        return (float) ($this->deposit_amount ?? 20);
     }
 
     /**

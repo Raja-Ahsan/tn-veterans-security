@@ -97,7 +97,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
@@ -118,8 +118,8 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $payment->customer->name }}</div>
-                                <div class="text-xs text-gray-500">{{ $payment->customer->email }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $payment->student->name }}</div>
+                                <div class="text-xs text-gray-500">{{ $payment->student->email }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">{{ $payment->booking->service->title }}</div>

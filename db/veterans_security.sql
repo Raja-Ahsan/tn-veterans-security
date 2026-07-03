@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 28, 2026 at 06:23 PM
+-- Generation Time: Jun 22, 2026 at 05:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -300,7 +300,7 @@ CREATE TABLE `services` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `categories` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `current_students` int(11) NOT NULL DEFAULT 0
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `services`
@@ -463,7 +463,12 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('1GXQ2K7YsMl2YHO3ub317xCgA21JHA1uxH07BrOO', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWEVRTU1YZkNLZXdPUHgzZmI1dWZUUGN2RmZUa3hHRDVwTm9ZbHdXWiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6MTU6ImFkbWluLmRhc2hib2FyZCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1777393375);
+('1GXQ2K7YsMl2YHO3ub317xCgA21JHA1uxH07BrOO', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWEVRTU1YZkNLZXdPUHgzZmI1dWZUUGN2RmZUa3hHRDVwTm9ZbHdXWiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6MTU6ImFkbWluLmRhc2hib2FyZCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1777393375),
+('E5Ye7qpSdR5ymAcOnhlr3ZXLGuMh3dD7au2B3mDJ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.7.27 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZEUxT21BUUFtV2VOS2w2aG5oVnUxQ1EwRUFHeGxTck5VRXFKYjA2ZSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1781288628),
+('embMwpIGzIZLLgif8lMROFFWI32PiQ04OIUp9q34', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.7.36 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiak1zREljYk9DcW1oM3I0aHpKVjR4OTRmTDRLNkhZNnVMQjVXYVdtWSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90cmFpbmluZy1zZXJ2aWNlcyI7czo1OiJyb3V0ZSI7czo4OiJzZXJ2aWNlcyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1781538384),
+('HOv5AvWI5WnyihUsyXFQue7UaeLF14Br1DZLd8EH', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRE4zU3I5Rk1GbjBGWHMzejc2U0lqc2JtaEZON21odzlXd2gzblhheiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90cmFpbmluZy1zZXJ2aWNlcyI7czo1OiJyb3V0ZSI7czo4OiJzZXJ2aWNlcyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1780428278),
+('xJz2uY0MlVKZpOFoyqbaeHMyjptT4NKujTc540oM', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiOWFGUTl0NmRPNmxscHBIZUNhREwxMlp4Q2NoVEphQXoydlZ6ZGtsYyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1781288630),
+('ydcTy3BUFT8BwLka2ykQ44Ew2p5HEwczZnru5iEh', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYVNKT3hBbTlnRUVUcU9QWlUzUlF5cnFRdjZGeDhwSW5NV3gxMnEwUCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZmZpbGlhdGVkLXNlcnZpY2VzIjtzOjU6InJvdXRlIjtzOjE5OiJhZmZpbGlhdGVkLXNlcnZpY2VzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1781537759);
 
 -- --------------------------------------------------------
 
@@ -512,7 +517,7 @@ CREATE TABLE `site_settings` (
 --
 
 INSERT INTO `site_settings` (`id`, `header_logo`, `footer_logo`, `favicon`, `phone`, `email`, `address`, `facebook_url`, `twitter_url`, `instagram_url`, `linkedin_url`, `youtube_url`, `quickbooks_client_id`, `quickbooks_client_secret`, `quickbooks_company_id`, `quickbooks_environment`, `quickbooks_access_token`, `quickbooks_refresh_token`, `quickbooks_enabled`, `bank_api_provider`, `bank_api_key`, `bank_api_secret`, `bank_account_id`, `bank_sync_enabled`, `created_at`, `updated_at`, `jayson_bio`, `kenny_bio`, `square_application_id`, `square_access_token`, `square_location_id`, `square_environment`, `square_enabled`) VALUES
-(1, 'settings/Gdsv46RCzD3YqQiuTdf0Q0lzRSNsD224rO0C6PxL.png', 'settings/xu8sOfV6uFL63fsdP9HxOizUO0VEGUXDYnOukCyo.png', 'settings/hAcwmfQmRtDi3elHarODMcslw4ikTigtJFThuUPh.png', '615-554-1131', 'tnvetsecsvctrng@gmail.com', '123 Security Way,\r\nNashville, TN 37201', NULL, NULL, NULL, NULL, NULL, 'AB0rfAJ4fBfjUdm23xtDaBr8R95pzD0D0MNqeSGuvsVpURht4a', 'l6vtWPm9Q8RuJlLxy1T0gSX9vIt6mD0EY2S3tj9L', '9341456376232298', 'sandbox', 'eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwieC5vcmciOiJIMCJ9..dCITLbkmMWksSpidMJHSYw.BeaFBB6vgED8cCaJBLV61QVpt2Bu8o0ZMCW6LsFLy5vSImvMWaW6rmrkUSouuJIgdFFS4GvUnvcSyr6yZHXI0yhuHISGBHVerh1hmAg04-WYwWYkH_-JnEd6QykahRFoUOetI74BOKX8kaqXYXJSDawZpaHi1aojAqJ1Sr1Xe2cROKjtkgA75KjaJRGz6rvsFN7J8kU1AGh9E9Vx7eDB746Iwj66WZWUrG9hL_37Z3S6kmtuNu1U-AI3r1MxMnWMZ80ft2vG30NnS3MbC17myc5lz9YaNOemraa0XEI9caejW9hbC2imhy7CvfYq4f2wwYepzfzpmDv-HCAYMLrepCF_hUBqYnsZf1CZaeAlGXxVSrC3W-eIXeMEPE9TeH7qxLNfc0QUhZkk3Ch6RTfw1Y1M2xA4syNrNR-XKTa4DV_vzfE3xoPvbwNAToW5AfYiCnvs6IdQNy1w6OzZ2kluHfS0jGfdBzKjHek912Dgo0K9JF0LBdJHOguTS3ZCApGw.JNpmHU1-G_hvBa5zLL_sSg', 'RT1-189-H0-17844158501zbp4nylg1k2s8kek7hi', 1, NULL, NULL, NULL, NULL, 0, '2026-01-12 13:30:50', '2026-04-09 11:22:43', NULL, NULL, NULL, NULL, NULL, 'sandbox', 0);
+(1, 'settings/Gdsv46RCzD3YqQiuTdf0Q0lzRSNsD224rO0C6PxL.png', 'settings/xu8sOfV6uFL63fsdP9HxOizUO0VEGUXDYnOukCyo.png', 'settings/hAcwmfQmRtDi3elHarODMcslw4ikTigtJFThuUPh.png', '615-554-1131', 'Jayson@tnveteranssecurity.com', '123 Security Way,\r\nNashville, TN 37201', NULL, NULL, NULL, NULL, NULL, 'AB0rfAJ4fBfjUdm23xtDaBr8R95pzD0D0MNqeSGuvsVpURht4a', 'l6vtWPm9Q8RuJlLxy1T0gSX9vIt6mD0EY2S3tj9L', '9341456376232298', 'sandbox', 'eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwieC5vcmciOiJIMCJ9..dCITLbkmMWksSpidMJHSYw.BeaFBB6vgED8cCaJBLV61QVpt2Bu8o0ZMCW6LsFLy5vSImvMWaW6rmrkUSouuJIgdFFS4GvUnvcSyr6yZHXI0yhuHISGBHVerh1hmAg04-WYwWYkH_-JnEd6QykahRFoUOetI74BOKX8kaqXYXJSDawZpaHi1aojAqJ1Sr1Xe2cROKjtkgA75KjaJRGz6rvsFN7J8kU1AGh9E9Vx7eDB746Iwj66WZWUrG9hL_37Z3S6kmtuNu1U-AI3r1MxMnWMZ80ft2vG30NnS3MbC17myc5lz9YaNOemraa0XEI9caejW9hbC2imhy7CvfYq4f2wwYepzfzpmDv-HCAYMLrepCF_hUBqYnsZf1CZaeAlGXxVSrC3W-eIXeMEPE9TeH7qxLNfc0QUhZkk3Ch6RTfw1Y1M2xA4syNrNR-XKTa4DV_vzfE3xoPvbwNAToW5AfYiCnvs6IdQNy1w6OzZ2kluHfS0jGfdBzKjHek912Dgo0K9JF0LBdJHOguTS3ZCApGw.JNpmHU1-G_hvBa5zLL_sSg', 'RT1-189-H0-17844158501zbp4nylg1k2s8kek7hi', 1, NULL, NULL, NULL, NULL, 0, '2026-01-12 13:30:50', '2026-06-12 12:13:50', 'Jayson Wheat is a retired U.S. Army veteran and the founder of TN Veterans Security Services and Training LLC, operating as The Security Firm LLC. He brings real‑world experience, professionalism, and a student‑first approach to every class he teaches.\r\n\r\nDuring his military career, Jayson completed multiple overseas deployments—including Iraq, Afghanistan, Kuwait, and Bosnia—where he gained extensive experience in threat assessment, weapons handling, and decision‑making under pressure. These experiences shape the practical, safety‑driven training he provides to students today.\r\n\r\nJayson is an NRA Certified Pistol Instructor, Tennessee Enhanced Handgun Carry Permit (EHCP) Instructor, and PPS Certified Instructor, authorized to train and certify both armed and unarmed security officers. Students appreciate his calm teaching style, clear communication, and ability to break down complex skills into simple, achievable steps.\r\n\r\nWhether you’re a first‑time firearm owner, a security professional, or someone seeking to build confidence and competence, Jayson’s mission is to ensure you leave every class safer, more capable, and fully prepared.', NULL, NULL, NULL, NULL, 'sandbox', 0);
 
 -- --------------------------------------------------------
 
@@ -713,7 +718,7 @@ ALTER TABLE `security_company_links`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
 
 --
 -- AUTO_INCREMENT for table `service_bookings`

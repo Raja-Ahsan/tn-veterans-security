@@ -49,6 +49,9 @@
                     <a href="{{ route('admin.dashboard') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.dashboard') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
                     </a>
+                    <a href="{{ route('admin.students.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.students.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-users mr-3"></i> Students
+                    </a>
                     <a href="{{ route('admin.class-schedules.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.class-schedules.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-calendar-check mr-3"></i> Class Schedules
                     </a>
@@ -57,6 +60,18 @@
                     </a>
                     <a href="{{ route('admin.bookings.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.bookings.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-calendar-check mr-3"></i> Bookings
+                    </a>
+                    <a href="{{ route('admin.contact-submissions.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.contact-submissions.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-envelope mr-3"></i> Contact Forms
+                    </a>
+                    <a href="{{ route('admin.communication-logs.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.communication-logs.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-bullhorn mr-3"></i> Communication Logs
+                    </a>
+                    <a href="{{ route('admin.instructors.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.instructors.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-chalkboard-teacher mr-3"></i> Instructors
+                    </a>
+                    <a href="{{ route('admin.locations.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.locations.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-map-marker-alt mr-3"></i> Locations
                     </a>
                     <a href="{{ route('admin.payments.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.payments.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-money-bill-wave mr-3"></i> Payments

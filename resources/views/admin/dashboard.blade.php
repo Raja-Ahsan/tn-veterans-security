@@ -54,22 +54,36 @@
         </div>
     </div>
 
-    <!-- Total Customers -->
-    <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
+    <!-- Total Students -->
+    <a href="{{ route('admin.students.index') }}" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white block hover:from-orange-600 hover:to-orange-700 transition-colors">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-orange-100 text-sm font-medium">Total Customers</p>
-                <p class="text-3xl font-bold mt-2">{{ number_format($totalCustomers) }}</p>
+                <p class="text-orange-100 text-sm font-medium">Total Students</p>
+                <p class="text-3xl font-bold mt-2">{{ number_format($totalStudents) }}</p>
                 <p class="text-orange-100 text-xs mt-1">
-                    <i class="fas fa-user-plus"></i> New This Month: {{ $newCustomersThisMonth }}
+                    <i class="fas fa-user-plus"></i> New This Month: {{ $newStudentsThisMonth }}
                 </p>
             </div>
             <div class="bg-white/20 p-4 rounded-full">
                 <i class="fas fa-users text-3xl"></i>
             </div>
         </div>
-    </div>
+    </a>
 </div>
+
+@if(isset($travelBelowMinimum) && $travelBelowMinimum->isNotEmpty())
+<div class="mb-6 bg-amber-50 border border-amber-300 rounded-lg p-4" role="alert">
+    <h3 class="font-bold text-amber-900 mb-2"><i class="fas fa-plane-departure mr-2"></i> Travel classes below minimum enrollment</h3>
+    <ul class="text-sm text-amber-800 space-y-1">
+        @foreach($travelBelowMinimum as $schedule)
+            <li>
+                <a href="{{ route('admin.class-schedules.show', $schedule) }}" class="underline font-medium">{{ $schedule->service->title }}</a>
+                — {{ $schedule->class_date->format('M d, Y') }} · {{ $schedule->current_students }}/{{ $schedule->service->travel_minimum_students }} students
+            </li>
+        @endforeach
+    </ul>
+</div>
+@endif
 
 <!-- Secondary Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -251,7 +265,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
@@ -261,8 +275,8 @@
                     @forelse($recentBookings as $booking)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 text-sm">
-                                <div class="font-medium text-gray-900">{{ $booking->customer->name }}</div>
-                                <div class="text-gray-500 text-xs">{{ $booking->customer->email }}</div>
+                                <div class="font-medium text-gray-900">{{ $booking->student->name }}</div>
+                                <div class="text-gray-500 text-xs">{{ $booking->student->email }}</div>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-900">{{ \Illuminate\Support\Str::limit($booking->service->title, 20) }}</td>
                             <td class="px-4 py-3 text-sm">
@@ -300,7 +314,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
@@ -310,7 +324,7 @@
                     @forelse($recentPayments as $payment)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 text-sm">
-                                <div class="font-medium text-gray-900">{{ $payment->customer->name }}</div>
+                                <div class="font-medium text-gray-900">{{ $payment->student->name }}</div>
                                 <div class="text-gray-500 text-xs">{{ \Illuminate\Support\Str::limit($payment->booking->service->title ?? 'N/A', 20) }}</div>
                             </td>
                             <td class="px-4 py-3 text-sm font-bold text-gray-900">${{ number_format($payment->amount, 2) }}</td>

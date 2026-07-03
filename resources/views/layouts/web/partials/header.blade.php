@@ -38,10 +38,10 @@
         'security' => request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage || $isAsp4HrPage,
         'testimonials' => request()->routeIs('testimonials'),
         'contact' => request()->routeIs('contact'),
-        'login' => request()->routeIs('customer.login'),
-        'register' => request()->routeIs('customer.register'),
-        'dashboard' => (request()->routeIs('customer.*')
-            && ! request()->routeIs(['customer.login', 'customer.register']))
+        'login' => request()->routeIs('student.login'),
+        'register' => request()->routeIs('student.register'),
+        'dashboard' => (request()->routeIs('student.*')
+            && ! request()->routeIs(['student.login', 'student.register']))
             || (request()->routeIs('admin.*') && ! request()->routeIs('admin.login')),
         'services_all' => request()->routeIs('services') && ! request()->filled('category') && ! request()->filled('subcategory'),
     ];
@@ -275,15 +275,15 @@
                         @csrf
                         <button type="submit" class="destop-nav-link">Logout</button>
                     </form>
-                @elseif(Auth::guard('customer')->check())
-                    <a href="{{ route('customer.dashboard') }}" class="destop-nav-link {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
-                    <form method="POST" action="{{ route('customer.logout') }}" class="inline">
+                @elseif(Auth::guard('student')->check())
+                    <a href="{{ route('student.dashboard') }}" class="destop-nav-link {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
+                    <form method="POST" action="{{ route('student.logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="destop-nav-link">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('customer.login') }}" class="destop-nav-link {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
-                    <a href="{{ route('customer.register') }}" class="btn primary-button {{ $navActive['register'] ? 'ring-2 ring-offset-2 ring-[var(--primary-color)]' : '' }}">
+                    <a href="{{ route('student.login') }}" class="destop-nav-link {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
+                    <a href="{{ route('student.register') }}" class="btn primary-button {{ $navActive['register'] ? 'ring-2 ring-offset-2 ring-[var(--primary-color)]' : '' }}">
                         Sign Up
                     </a>
                 @endif
@@ -383,15 +383,15 @@
                     @csrf
                     <button type="submit" class="mobile-nav-links w-full text-left">Logout</button>
                 </form>
-            @elseif(Auth::guard('customer')->check())
-                <a href="{{ route('customer.dashboard') }}" class="mobile-nav-links {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
-                <form method="POST" action="{{ route('customer.logout') }}" class="inline w-full">
+            @elseif(Auth::guard('student')->check())
+                <a href="{{ route('student.dashboard') }}" class="mobile-nav-links {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
+                <form method="POST" action="{{ route('student.logout') }}" class="inline w-full">
                     @csrf
                     <button type="submit" class="mobile-nav-links w-full text-left">Logout</button>
                 </form>
             @else
-                <a href="{{ route('customer.login') }}" class="mobile-nav-links {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
-                <a href="{{ route('customer.register') }}" class="mobile-nav-links {{ $navActive['register'] ? 'nav-link-active' : '' }}">Sign Up</a>
+                <a href="{{ route('student.login') }}" class="mobile-nav-links {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
+                <a href="{{ route('student.register') }}" class="mobile-nav-links {{ $navActive['register'] ? 'nav-link-active' : '' }}">Sign Up</a>
             @endif
             <div class="pt-6">
                 <a href="{{ route('contact') }}" class="block w-full bg-(--primary-color) text-white text-center py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg">

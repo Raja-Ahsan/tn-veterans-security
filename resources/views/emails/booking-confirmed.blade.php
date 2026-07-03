@@ -7,7 +7,7 @@
 </head>
 <body style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
     <h2 style="margin-bottom: 8px;">Booking Confirmed</h2>
-    <p>Hi {{ $booking->customer->name }},</p>
+    <p>Hi {{ $booking->student->name }},</p>
     <p>We have received your payment and your booking is now confirmed.</p>
 
     <p><strong>Booking Details</strong></p>

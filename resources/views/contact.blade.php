@@ -111,42 +111,60 @@
                             <h3 class="text-[28px] font-bold uppercase mb-2" style="font-family: var(--font-display);">Send Us a Message</h3>
                             <p class="text-[var(--text-color)]">Fill out the form below and we'll reply within 24 hours.</p>
                         </div>
-                        <form action="#" class="space-y-8">
+                        <form action="{{ route('contact.store') }}" method="POST" class="space-y-8" aria-label="Contact form">
+                            @csrf
+                            <div class="hidden" aria-hidden="true">
+                                <label for="company_website">Website</label>
+                                <input type="text" name="company_website" id="company_website" tabindex="-1" autocomplete="off">
+                            </div>
+                            @if(session('success'))
+                                <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl">{{ session('success') }}</div>
+                            @endif
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div class="space-y-3">
                                     <label class="text-[14px] font-bold uppercase tracking-widest text-[var(--text-color)] ml-1">First Name</label>
-                                    <input type="text" placeholder="John" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300">
+                                    <input type="text" name="first_name" value="{{ old('first_name') }}" required placeholder="John" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300">
+                                    @error('first_name')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="space-y-3">
                                     <label class="text-[14px] font-bold uppercase tracking-widest text-[var(--text-color)] ml-1">Last Name</label>
-                                    <input type="text" placeholder="Doe" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300">
+                                    <input type="text" name="last_name" value="{{ old('last_name') }}" required placeholder="Doe" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300">
+                                    @error('last_name')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
                                 </div>
                             </div>
 
                             <div class="space-y-3">
                                 <label class="text-[14px] font-bold uppercase tracking-widest text-[var(--text-color)] ml-1">Email Address</label>
-                                <input type="email" placeholder="john@example.com" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300">
+                                <input type="email" name="email" value="{{ old('email') }}" required placeholder="john@example.com" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300">
+                                @error('email')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
                             </div>
 
                             <div class="space-y-3">
                                 <label class="text-[14px] font-bold uppercase tracking-widest text-[var(--text-color)] ml-1">Inquiry Subject</label>
-                                <select class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300 bg-white">
-                                    <option>Select Option</option>
-                                    <option>NRA</option>
-                                    <option>Handgun Permit</option>
-                                    <option>Enhanced Armed Guard</option>
-                                    <option>Red Cross</option>
-                                    <option>Active Shooter</option>
-                                    <option>Unarmed Guard</option>
-                                    <option>Handle With Care</option>
-                                    <option>Armed Guard</option>
-                                    <option>De escalation</option>
+                                <select name="subject" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300 bg-white">
+                                    <option value="">Select Option</option>
+                                    <option value="NRA" @selected(old('subject') === 'NRA')>NRA</option>
+                                    <option value="Handgun Permit" @selected(old('subject') === 'Handgun Permit')>Handgun Permit</option>
+                                    <option value="Enhanced Armed Guard" @selected(old('subject') === 'Enhanced Armed Guard')>Enhanced Armed Guard</option>
+                                    <option value="Red Cross" @selected(old('subject') === 'Red Cross')>Red Cross</option>
+                                    <option value="Active Shooter" @selected(old('subject') === 'Active Shooter')>Active Shooter</option>
+                                    <option value="Unarmed Guard" @selected(old('subject') === 'Unarmed Guard')>Unarmed Guard</option>
+                                    <option value="Handle With Care" @selected(old('subject') === 'Handle With Care')>Handle With Care</option>
+                                    <option value="Armed Guard" @selected(old('subject') === 'Armed Guard')>Armed Guard</option>
+                                    <option value="De escalation" @selected(old('subject') === 'De escalation')>De escalation</option>
                                 </select>
                             </div>
 
                             <div class="space-y-3">
                                 <label class="text-[14px] font-bold uppercase tracking-widest text-[var(--text-color)] ml-1">Your Message</label>
-                                <textarea rows="6" placeholder="How can we help you?" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300 resize-none"></textarea>
+                                <textarea name="message" rows="6" required placeholder="How can we help you?" class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300 resize-none">{{ old('message') }}</textarea>
+                                @error('message')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="text-[14px] font-bold uppercase tracking-widest text-[var(--text-color)] ml-1" for="captcha_answer">Security check: What is {{ $captchaA }} + {{ $captchaB }}?</label>
+                                <input type="number" name="captcha_answer" id="captcha_answer" required class="w-full px-8 py-5 rounded-2xl bg-gray-50 border border-transparent focus:border-[var(--primary-color)] focus:bg-white focus:ring-4 focus:ring-green-50 outline-none transition-all duration-300" aria-required="true">
+                                @error('captcha_answer')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
                             </div>
 
                             <button type="submit" class="w-full btn primary-button !py-6 uppercase font-bold tracking-widest rounded-2xl shadow-xl shadow-green-100 transform active:scale-95 transition-transform">Send Your Inquiry</button>

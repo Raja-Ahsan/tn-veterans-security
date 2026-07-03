@@ -41,7 +41,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
@@ -59,10 +59,10 @@
                                 <div class="text-xs text-gray-500">{{ $booking->created_at->format('M d, Y') }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $booking->customer->name }}</div>
-                                <div class="text-xs text-gray-500">{{ $booking->customer->email }}</div>
-                                @if($booking->customer->phone)
-                                    <div class="text-xs text-gray-500">{{ $booking->customer->phone }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $booking->student->name }}</div>
+                                <div class="text-xs text-gray-500">{{ $booking->student->email }}</div>
+                                @if($booking->student->phone)
+                                    <div class="text-xs text-gray-500">{{ $booking->student->phone }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4">

@@ -9,7 +9,7 @@ class Payment extends Model
 {
     protected $fillable = [
         'booking_id',
-        'customer_id',
+        'student_id',
         'amount',
         'payment_type',
         'payment_method',
@@ -46,11 +46,11 @@ class Payment extends Model
     }
 
     /**
-     * Get the customer that made this payment.
+     * Get the student that made this payment.
      */
-    public function customer(): BelongsTo
+    public function student(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Student::class);
     }
 
     /**

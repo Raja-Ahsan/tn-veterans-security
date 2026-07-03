@@ -44,28 +44,28 @@
             </div>
         </div>
 
-        <!-- Customer Information -->
+        <!-- Student Information -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-xl font-bold mb-4">Customer Information</h3>
+            <h3 class="text-xl font-bold mb-4">Student Information</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Name</label>
-                    <p class="text-lg font-semibold text-gray-900">{{ $booking->customer->name }}</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ $booking->student->name }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Email</label>
-                    <p class="text-base text-gray-900">{{ $booking->customer->email }}</p>
+                    <p class="text-base text-gray-900">{{ $booking->student->email }}</p>
                 </div>
-                @if($booking->customer->phone)
+                @if($booking->student->phone)
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Phone</label>
-                    <p class="text-base text-gray-900">{{ $booking->customer->phone }}</p>
+                    <p class="text-base text-gray-900">{{ $booking->student->phone }}</p>
                 </div>
                 @endif
-                @if($booking->customer->address)
+                @if($booking->student->address)
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Address</label>
-                    <p class="text-base text-gray-900">{{ $booking->customer->address }}</p>
+                    <p class="text-base text-gray-900">{{ $booking->student->address }}</p>
                 </div>
                 @endif
             </div>

@@ -291,8 +291,16 @@
                            value="1"
                            {{ old('has_online_parts', $service->has_online_parts) ? 'checked' : '' }}
                            class="mr-2">
-                    <span class="text-sm text-gray-700">Has online parts/components</span>
+                    <span class="text-sm text-gray-700">Has online parts/components (blended course)</span>
                 </label>
+                @if($service->has_online_parts)
+                    <a href="{{ route('admin.services.course-modules.index', $service) }}" class="inline-block mt-2 text-blue-600 hover:underline text-sm">
+                        <i class="fas fa-book-open mr-1"></i> Manage Online Modules & Quizzes
+                    </a>
+                    <a href="{{ route('admin.services.blended-progress', $service) }}" class="inline-block mt-2 ml-4 text-blue-600 hover:underline text-sm">
+                        <i class="fas fa-user-graduate mr-1"></i> Student Progress & In-Person Tests
+                    </a>
+                @endif
             </div>
 
             <div class="mb-4">
@@ -305,6 +313,19 @@
                     <span class="text-sm text-gray-700">Testing is in-person (always true)</span>
                 </label>
             </div>
+
+            @include('admin.services._extended_fields', [
+                    'refundPolicy' => $service->refund_policy,
+                    'whatToBring' => $service->what_to_bring,
+                    'prerequisites' => $service->prerequisites,
+                    'isTravelBased' => $service->is_travel_based,
+                    'travelDistanceFee' => $service->travel_distance_fee,
+                    'travelLodgingFee' => $service->travel_lodging_fee,
+                    'travelTimeFee' => $service->travel_time_fee,
+                    'travelMinimumStudents' => $service->travel_minimum_students,
+                    'travelNotes' => $service->travel_notes,
+                    'lodgingInstructions' => $service->lodging_instructions,
+                ])
         </div>
 
         <!-- Class sessions (saved to class_schedules) -->

@@ -120,17 +120,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Location -->
             <div class="mb-4">
-                <label for="location" class="block text-gray-700 text-sm font-bold mb-2">Location</label>
-                <select id="location" 
-                        name="location" 
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    <option value="">No Specific Location</option>
-                    <option value="Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210" {{ old('location', $classSchedule->location) === 'Shooter\'s Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210' ? 'selected' : '' }}>Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</option>
-                    <option value="Guns and Leather 2216 US-41, Greenbrier, Tn 37073" {{ old('location', $classSchedule->location) === 'Guns and Leather 2216 US-41, Greenbrier, Tn 37073' ? 'selected' : '' }}>Guns and Leather 2216 US-41, Greenbrier, Tn 37073</option>
-                    <option value="Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217" {{ old('location', $classSchedule->location) === 'Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217' ? 'selected' : '' }}>Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217</option>
-                    <option value="TNPTI 1630 S. Church St Murfreesboro, Tn 37130" {{ old('location', $classSchedule->location) === 'TNPTI 1630 S. Church St Murfreesboro, Tn 37130' ? 'selected' : '' }}>TNPTI 1630 S. Church St Murfreesboro, Tn 37130</option>
+                <label for="location_id" class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                <select id="location_id" name="location_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">— Select location —</option>
+                    @foreach($locations as $loc)
+                        <option value="{{ $loc->id }}" {{ old('location_id', $classSchedule->location_id) == $loc->id ? 'selected' : '' }}>{{ $loc->display_name }}</option>
+                    @endforeach
                 </select>
-                @error('location')
+                <input type="text" id="location" name="location" value="{{ old('location', $classSchedule->location) }}" placeholder="Or custom location" class="mt-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                @error('location_id')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
@@ -151,14 +149,15 @@
 
             <!-- Instructor -->
             <div class="mb-4">
-                <label for="instructor" class="block text-gray-700 text-sm font-bold mb-2">Instructor</label>
-                <input type="text" 
-                       id="instructor" 
-                       name="instructor" 
-                       value="{{ old('instructor', $classSchedule->instructor) }}"
-                       placeholder="Instructor name"
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                @error('instructor')
+                <label for="instructor_id" class="block text-gray-700 text-sm font-bold mb-2">Instructor</label>
+                <select id="instructor_id" name="instructor_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">— Select instructor —</option>
+                    @foreach($instructors as $inst)
+                        <option value="{{ $inst->id }}" {{ old('instructor_id', $classSchedule->instructor_id) == $inst->id ? 'selected' : '' }}>{{ $inst->name }}</option>
+                    @endforeach
+                </select>
+                <input type="text" id="instructor" name="instructor" value="{{ old('instructor', $classSchedule->instructor) }}" placeholder="Or custom instructor name" class="mt-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                @error('instructor_id')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
@@ -188,6 +187,18 @@
                        class="mr-2">
                 <span class="text-gray-700 text-sm font-bold">Allow overlapping classes in the same room</span>
             </label>
+        </div>
+
+        <div class="mb-4">
+            <label class="flex items-center">
+                <input type="checkbox" name="admin_override_capacity" value="1" {{ old('admin_override_capacity', $classSchedule->admin_override_capacity) ? 'checked' : '' }} class="mr-2">
+                <span class="text-gray-700 text-sm font-bold">Admin override capacity (allow over-enrollment)</span>
+            </label>
+        </div>
+
+        <div class="mb-4">
+            <label for="travel_notes" class="block text-gray-700 text-sm font-bold mb-2">Travel Notes</label>
+            <textarea id="travel_notes" name="travel_notes" rows="2" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700">{{ old('travel_notes', $classSchedule->travel_notes) }}</textarea>
         </div>
 
         <!-- Notes -->
