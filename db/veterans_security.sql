@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 03, 2026 at 09:38 PM
+-- Generation Time: Jul 08, 2026 at 11:10 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -114,7 +114,8 @@ INSERT INTO `class_schedules` (`id`, `service_id`, `class_date`, `start_time`, `
 (15, 26, '2026-01-30', '18:51:00', '20:51:00', 2, 10, 1, 0, 'Class A 7', 'Location B', NULL, 'Jack', NULL, 1, 'scheduled', 0, 'Lethal Less Traning', NULL, NULL, NULL),
 (16, 34, '2026-04-10', '09:00:00', '11:00:00', 2, 10, 1, 2, '1', 'Location A', NULL, 'John', NULL, 0, 'scheduled', 0, NULL, NULL, '2026-04-08 19:32:28', '2026-04-08 19:41:14'),
 (17, 68, '2026-04-10', '09:00:00', '17:00:00', 8, 10, 1, 10, '25', 'Location A', NULL, 'Jayson', NULL, 0, 'full', 0, NULL, NULL, '2026-04-09 10:51:01', '2026-04-09 11:22:45'),
-(18, 101, '2026-04-09', '16:10:00', '02:10:00', 10, 13, 1, 0, 'Quaerat quo nihil earum quis voluptate facere minus minima hic minima magnam animi fugiat qui', 'Location A', NULL, 'Sit ipsum cupidatat et vitae quo qui omnis sit in architecto ratione cupiditate omnis voluptate excepteur perferendis ducimus vitae praesentium', NULL, 0, 'scheduled', 0, 'Velit possimus est sapiente veniam nisi corrupti harum vel sed nihil', NULL, '2026-04-09 15:13:04', '2026-04-09 15:13:04');
+(18, 101, '2026-04-09', '16:10:00', '02:10:00', 10, 13, 1, 0, 'Quaerat quo nihil earum quis voluptate facere minus minima hic minima magnam animi fugiat qui', 'Location A', NULL, 'Sit ipsum cupidatat et vitae quo qui omnis sit in architecto ratione cupiditate omnis voluptate excepteur perferendis ducimus vitae praesentium', NULL, 0, 'scheduled', 0, 'Velit possimus est sapiente veniam nisi corrupti harum vel sed nihil', NULL, '2026-04-09 15:13:04', '2026-04-09 15:13:04'),
+(19, 102, '2026-07-22', '09:00:00', '17:00:00', 8, 12, 2, 1, 'Demo Room A', 'Main Training Center', NULL, 'Demo Instructor', NULL, 1, 'scheduled', 0, 'Seeded schedule for blended course demo testing.', NULL, '2026-07-08 15:02:28', '2026-07-08 15:02:28');
 
 -- --------------------------------------------------------
 
@@ -171,6 +172,14 @@ CREATE TABLE `course_modules` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `course_modules`
+--
+
+INSERT INTO `course_modules` (`id`, `service_id`, `title`, `content`, `video_url`, `image_path`, `order`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 102, 'Module 1: Security Basics', 'Welcome to blended security training.\n\nIn this module you will learn:\n- Role of a security officer\n- Observe and report mindset\n- Emergency response basics', NULL, NULL, 1, 1, '2026-07-08 15:02:27', '2026-07-08 15:02:27'),
+(2, 102, 'Module 2: Patrol Procedures', 'This module covers patrol best practices.\n\nTopics:\n- Patrol intervals\n- Incident documentation\n- Supervisor communication', NULL, NULL, 2, 1, '2026-07-08 15:02:27', '2026-07-08 15:02:27');
 
 -- --------------------------------------------------------
 
@@ -371,6 +380,14 @@ CREATE TABLE `module_quiz_attempts` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `module_quiz_attempts`
+--
+
+INSERT INTO `module_quiz_attempts` (`id`, `student_id`, `course_module_id`, `score`, `passed`, `answers`, `created_at`, `updated_at`) VALUES
+(1, 21, 1, 100, 1, '{\"1\":\"Observe and report\",\"2\":\"Call 911\"}', '2026-07-08 15:32:31', '2026-07-08 15:32:31'),
+(2, 21, 2, 100, 1, '{\"3\":\"Every 30 minutes\",\"4\":\"Document and notify supervisor\"}', '2026-07-08 15:33:02', '2026-07-08 15:33:02');
+
 -- --------------------------------------------------------
 
 --
@@ -387,6 +404,16 @@ CREATE TABLE `module_quiz_questions` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `module_quiz_questions`
+--
+
+INSERT INTO `module_quiz_questions` (`id`, `course_module_id`, `question`, `options`, `correct_answer`, `order`, `created_at`, `updated_at`) VALUES
+(1, 1, 'What is the primary duty of a security officer?', '[\"Use force first\",\"Observe and report\",\"Ignore suspicious activity\",\"Leave the post early\"]', 'Observe and report', 1, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(2, 1, 'Who should you contact first in a life-threatening emergency?', '[\"Social media\",\"Call 911\",\"Wait until shift ends\",\"Only tell a coworker\"]', 'Call 911', 2, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(3, 2, 'How often should patrol rounds typically be completed on most sites?', '[\"Once per week\",\"Every 30 minutes\",\"Only at clock-in\",\"Never\"]', 'Every 30 minutes', 1, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(4, 2, 'What should you do after finding a minor incident during patrol?', '[\"Ignore it\",\"Document and notify supervisor\",\"Delete camera footage\",\"Post online\"]', 'Document and notify supervisor', 2, '2026-07-08 15:02:28', '2026-07-08 15:02:28');
 
 -- --------------------------------------------------------
 
@@ -559,10 +586,10 @@ INSERT INTO `services` (`id`, `title`, `slug`, `short_description`, `requirement
 (94, 'Initial BLS(Basic Life Support Hospital)  2 Years', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', NULL, NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:03:15', '2026-03-27 17:03:15', '[\"security_training\"]', 0),
 (95, 'Less than Lethal (1 Time as long as you have the Certificate)', NULL, '“This course trains security guards in the safe, legal use of less‑than‑lethal tools such as batons, OC spray, and electronic control devices. Students learn proper deployment, use‑of‑force limits, decision‑making, and liability awareness. Tennessee requires device‑specific certification before a guard may carry or use any less‑lethal weapon on duty.”', NULL, NULL, NULL, '[\"Only Offered to Law Enforcement and Security Personnel\"]', '<p>In‑Depth Description: Tennessee Less‑Than‑Lethal Training for Security Guards Tennessee’s Less‑Than‑Lethal Training provides security guards with the knowledge and skills needed to safely carry and use non‑deadly defensive tools while on duty.&nbsp;The course focuses on legally compliant, responsible, and controlled use of devices such as batons, chemical agents (OC spray), and electronic control devices. Because these tools can still cause injury or create liability, Tennessee requires guards to complete device‑specific&nbsp;certification before carrying any less‑than‑lethal weapon in the performance of their duties.Training begins with an overview of Tennessee law, including the guard’s legal authority, use‑of‑force limitations, and civil and criminal liabilities associated with improper use.&nbsp;Students learn how less‑than‑lethal tools fit into the force continuum and how to make sound decisions under pressure.The course emphasizes threat assessment, situational awareness, and the importance of using verbal commands and de‑escalation before resorting to physical tools. Students practice safe striking zones for batons, correct spray patterns and distances for OC, and the operational and safety features of electronic control devices.&nbsp;The training also addresses aftercare responsibilities, reporting requirements, and how to document incidents to protect both the guard and their employer. By the end of the course, guards understand when and how to use less‑than‑lethal tools safely, effectively, and legally. Tennessee law requires guards to carry proof of certification for each device they are authorized to use, and employers must maintain training records. certification before carrying any less‑than‑lethal weapon in the performance of their duties.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>', 150.00, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:03:53', '2026-03-27 17:23:37', '[\"security_training\"]', 0),
 (96, 'BLS Renewal (Hospital 2 Year)', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', '<p class=\"ql-align-justify\"><br></p>', NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:07:04', '2026-03-27 17:07:04', '[\"renewals\"]', 0),
-(97, 'First AID CPR AED (2 Year )', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', NULL, NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:07:32', '2026-03-27 17:07:32', '[\"renewals\"]', 0);
-INSERT INTO `services` (`id`, `title`, `slug`, `short_description`, `requirements`, `what_to_bring`, `prerequisites`, `sub_titles`, `description`, `price`, `deposit_amount`, `refund_policy`, `duration_hours`, `max_students`, `min_students`, `class_type`, `has_online_parts`, `testing_in_person`, `is_travel_based`, `travel_distance_fee`, `travel_lodging_fee`, `travel_time_fee`, `travel_minimum_students`, `travel_notes`, `lodging_instructions`, `image`, `order`, `is_active`, `subcategory`, `location`, `requires_dallas_law`, `requires_active_shooter`, `requires_conditional_questions`, `created_at`, `updated_at`, `categories`, `current_students`) VALUES
-(99, 'Handgun Carry Permit', NULL, 'Tennessee’s Enhanced Handgun Carry Permit course now requires a minimum of 4 hours of classroom instruction plus a live‑fire range component.Most instructors deliver the class in about 6 hours total. Training covers firearm safety, legal responsibilities, carry laws, and a required shooting qualification.', '<p><strong>Basic Requirements</strong></p><p>• Be a Tennessee resident</p><p>• Be at least 21 years old (or 18 if active‑duty military or honorably discharged veteran)</p><p>• Provide proof of U.S. citizenship or lawful permanent residency</p><p><strong>&nbsp;Legal Eligibility</strong></p><p>Applicant must NOT:</p><p>• Have any felony convictions</p><p>• Be under indictment for a felony</p><p>• Have domestic violence convictions or pending charges</p><p>• Be a fugitive from justice</p><p>• Be an unlawful user of controlled substances</p><p>• Have recent court‑ordered or voluntary substance‑abuse hospitalization</p><p>(10 years if court‑ordered, 3 years if voluntary)</p><p>• Have two DUI convictions within 10 years, with one in the last 5 years</p><p>• Be under court jurisdiction for a DUI or Class A misdemeanor</p><p>• Have been adjudicated mentally defective, committed, or found to pose a substantial likelihood of harm within the last 7 years</p><p>• Have a stalking conviction or pending charge</p><p>• Be receiving Social Security disability due to alcohol, drug dependence, or mental disability</p><p>• Be subject to an Order of Protection</p><p>• Have been dishonorably discharged from the military</p><p>• Have renounced U.S. citizenship</p><p>• Be an illegal or unlawful alien</p><p><strong>&nbsp;Documentation &amp; Background Check</strong></p><p>• Submit fingerprints for TBI background check</p><p>• Provide photo ID</p><p>• Submit proof of completion of a state‑approved handgun safety course (your updated 4‑hour classroom + range format meets this requirement)</p><p><strong>Why Armed Guards Should Get the EHCP</strong></p><p>• Allows you to carry off‑duty</p><p>• Gives you reciprocity in many other states</p><p>• Protects you when traveling to and from work</p><p>• Many employers prefer or require it</p><p>• You avoid taking duplicate training</p><p>“Your armed guard firearms training already qualifies you for the EHCP.</p><p>You don’t need the EHCP class — just apply, get fingerprinted, and submit your armed guard training certificate.</p><p><strong>&nbsp;How an Armed Security Officer Gets Their EHCP in Tennessee</strong></p><p>“Your armed security registration only allows you to carry a firearm while you’re on duty for a licensed security company. If you want to carry off‑duty as a private citizen, you need an Enhanced Handgun Carry Permit. The process is separate, but it’s easy to complete while you’re becoming an armed guard.”</p><p><strong>Now here’s the full, step‑by‑step process:</strong></p><p>🔹 Step‑by‑Step: How an Armed Guard Gets Their EHCP</p><p><strong>1. Take the EHCP Training Course</strong></p><p>Even though you’re completing armed guard firearms training, Tennessee still requires the EHCP‑specific class, which includes:</p><p>• Minimum 4 hours classroom instruction</p><p>• Live‑fire qualification</p><p><strong>2. Submit Your EHCP Application Online</strong></p><p>Go to the Tennessee Department of Safety &amp; Homeland Security website and complete the handgun permit application.</p><p>You’ll choose:</p><p>• Enhanced Handgun Carry Permit (EHCP)</p><p><strong>3. Get Fingerprinted</strong></p><p>Even if you were fingerprinted for your armed security registration, you must be fingerprinted again for the EHCP because:</p><p>• PPS and DOS do not share fingerprint/background systems</p><p>• They are two different departments with separate requirements</p><p>Fingerprinting is done through the state’s approved vendor.</p><p><strong>4. Upload or Present Your Training Certificate</strong></p><p>After completing your EHCP class, you’ll receive a training certificate.</p><p>You must submit it to the Department of Safety as part of your application.</p><p><strong>5. Pay the State Fee</strong></p><p>The EHCP has its own state fee, separate from PPS registration fees.</p><p><strong>6. Wait for Approval</strong></p><p>Once the background check clears, the state will mail your permit.</p>', NULL, NULL, '[]', '<p>The Tennessee Enhanced Handgun Carry Permit course is designed to provide citizens with a comprehensive understanding of handgun safety, legal responsibilities, and practical firearm handling.&nbsp;The state now requires a minimum of 4 hours of classroom instruction combined with a mandatory live‑fire range component, resulting in an average total course time of approximately 6 hours, depending on class size and instructor pacing.</p><h2><strong>Classroom Instruction (Minimum 4 Hours)</strong></h2><p>The classroom portion focuses on the knowledge and judgment required to responsibly carry a handgun in Tennessee. Core topics include:</p><p>• Firearm safety fundamentals Safe handling, storage, transportation, and accident prevention.</p><p>• Handgun operation and maintenance Understanding firearm parts, function, loading/unloading, and basic care</p><p>• Tennessee laws governing carry and use of force Legal definitions, prohibited locations, duty to retreat, and lawful self‑defense</p><p>• Interactions with law enforcement Best practices during traffic stops and public encounters while carrying.</p><p>• Situational awareness and conflict avoidance Recognizing threats, de‑escalation principles, and responsible decision‑making.</p><h2><strong>This section ensures students understand not only how to carry a handgun, but when and why it is legally and ethically appropriate to use one.</strong></h2><p><strong>&nbsp;Live‑Fire Range Component</strong></p><p>Following classroom instruction, students complete a required practical shooting portion. This includes:</p><p>• Safe range conduct and firearm handling</p><p>• Live‑fire exercises or qualification demonstrating basic proficiency</p><p>• Instructor evaluation of accuracy, control, and safe operation</p><p><strong>Purpose of the EHCP Trainin</strong></p><p>The Enhanced Permit provides the broadest carry privileges in Tennessee and is recognized by more states through reciprocity agreements.&nbsp;</p><p>The course is structured to:</p><p>• Build safe, confident handgun carriers</p><p>• Ensure students understand Tennessee’s legal framework</p><p>• Prepare individuals for responsible concealed or open carry in daily life</p><p><strong>Tennessee Enhanced Handgun Carry Permit – Eligibility Requirements</strong></p><p>To qualify for an EHCP, an applicant must meet all of the following:</p><p><br></p><p><br></p>', 100.00, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:52:51', '2026-03-27 18:24:37', '[\"homeland_security\"]', 0),
-(101, 'Qui nulla sed archit', 'ffdghnulla', 'Ad nobis voluptate sed Nam quidem molestias at est aut sed sunt quasi voluptatem', '<p>Neque velit, sapient.</p>', NULL, NULL, '[]', '<p>Sed id ut at ex quas.</p>', 431.00, 72.00, NULL, NULL, 34, 1, 'one-on-one', 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 'Nisi qui natus qui d', 'Location B', 1, 1, 0, '2026-04-09 15:13:04', '2026-04-09 15:13:04', '[\"nra\",\"homeland_security\",\"active_shooter\",\"force_science\",\"dallas_law\"]', 0);
+(97, 'First AID CPR AED (2 Year )', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', NULL, NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:07:32', '2026-03-27 17:07:32', '[\"renewals\"]', 0),
+(99, 'Handgun Carry Permit', NULL, 'Tennessee’s Enhanced Handgun Carry Permit course now requires a minimum of 4 hours of classroom instruction plus a live‑fire range component.Most instructors deliver the class in about 6 hours total. Training covers firearm safety, legal responsibilities, carry laws, and a required shooting qualification.', NULL, NULL, NULL, '[]', '<p>The Tennessee Enhanced Handgun Carry Permit course is designed to provide citizens with a comprehensive understanding of handgun safety, legal responsibilities, and practical firearm handling.&nbsp;The state now requires a minimum of 4 hours of classroom instruction combined with a mandatory live‑fire range component, resulting in an average total course time of approximately 6 hours, depending on class size and instructor pacing.</p><h2><strong>Classroom Instruction (Minimum 4 Hours)</strong></h2><p>The classroom portion focuses on the knowledge and judgment required to responsibly carry a handgun in Tennessee. Core topics include:</p><p>• Firearm safety fundamentals Safe handling, storage, transportation, and accident prevention.</p><p>• Handgun operation and maintenance Understanding firearm parts, function, loading/unloading, and basic care</p><p>• Tennessee laws governing carry and use of force Legal definitions, prohibited locations, duty to retreat, and lawful self‑defense</p><p>• Interactions with law enforcement Best practices during traffic stops and public encounters while carrying.</p><p>• Situational awareness and conflict avoidance Recognizing threats, de‑escalation principles, and responsible decision‑making.</p><h2><strong>This section ensures students understand not only how to carry a handgun, but when and why it is legally and ethically appropriate to use one.</strong></h2><p><strong>&nbsp;Live‑Fire Range Component</strong></p><p>Following classroom instruction, students complete a required practical shooting portion. This includes:</p><p>• Safe range conduct and firearm handling</p><p>• Live‑fire exercises or qualification demonstrating basic proficiency</p><p>• Instructor evaluation of accuracy, control, and safe operation</p><p><strong>Purpose of the EHCP Trainin</strong></p><p>The Enhanced Permit provides the broadest carry privileges in Tennessee and is recognized by more states through reciprocity agreements.&nbsp;</p><p>The course is structured to:</p><p>• Build safe, confident handgun carriers</p><p>• Ensure students understand Tennessee’s legal framework</p><p>• Prepare individuals for responsible concealed or open carry in daily life</p><p><strong>Tennessee Enhanced Handgun Carry Permit – Eligibility Requirements</strong></p><p>To qualify for an EHCP, an applicant must meet all of the following:</p><p><br></p><p><br></p>', 100.00, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:52:51', '2026-07-08 16:05:06', '[\"homeland_security\"]', 0),
+(101, 'Qui nulla sed archit', 'ffdghnulla', 'Ad nobis voluptate sed Nam quidem molestias at est aut sed sunt quasi voluptatem', '<p>Neque velit, sapient.</p>', NULL, NULL, '[]', '<p>Sed id ut at ex quas.</p>', 431.00, 72.00, NULL, NULL, 34, 1, 'one-on-one', 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 'Nisi qui natus qui d', 'Location B', 1, 1, 0, '2026-04-09 15:13:04', '2026-04-09 15:13:04', '[\"nra\",\"homeland_security\",\"active_shooter\",\"force_science\",\"dallas_law\"]', 0),
+(102, 'Blended Security Training (Demo)', NULL, 'Demo blended course for testing online modules and quizzes.', NULL, NULL, NULL, NULL, 'Use this class to test the full blended learning flow: online modules, 90% quiz pass, and in-person test marking.', 150.00, 20.00, NULL, 8, 12, 2, 'group', 1, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 99, 1, 'Blended Demo', NULL, 0, 0, 0, '2026-07-08 15:02:27', '2026-07-08 15:02:27', '[\"security_training\"]', 0);
 
 -- --------------------------------------------------------
 
@@ -590,6 +617,13 @@ CREATE TABLE `service_bookings` (
   `number_of_students` int(11) NOT NULL DEFAULT 1,
   `group_name` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `service_bookings`
+--
+
+INSERT INTO `service_bookings` (`id`, `student_id`, `service_id`, `booking_date`, `booking_time`, `status`, `notes`, `created_at`, `updated_at`, `class_schedule_id`, `location`, `total_amount`, `deposit_amount`, `remaining_amount`, `payment_status`, `booking_type`, `number_of_students`, `group_name`) VALUES
+(17, 21, 102, '2026-07-08', '09:00:00', 'confirmed', NULL, '2026-07-08 15:02:29', '2026-07-08 15:02:29', 19, 'Main Training Center', 150.00, 20.00, 130.00, 'deposit_paid', 'group', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -655,9 +689,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('JxP5tlHJ1GqKbNBIJJk0W6eFUEMiMTCr7C9Wjqwr', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.8.11 Chrome/144.0.7559.236 Electron/40.10.3 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidGdMd2JOdjhyRlo0MEdQRkxhUFAyT3VtVFhSNkEwanVBV1dGanBFeSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1782163407),
-('RcQ3b7sjFAjhNPrpmiKdsT9hV1upVLVsvmZxg52J', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRE10Nm5vdmNBblpWOGNOT0ZBaUVhaVRTQXJOM0VOS3FNdzZpRTBpdiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9zZXJ2aWNlcy85OS9lZGl0IjtzOjU6InJvdXRlIjtzOjE5OiJhZG1pbi5zZXJ2aWNlcy5lZGl0Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1782161024),
-('TEAwembrsR1ktfRoiwSerehRNTPgiWkARo5K5zWn', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQlhyQjlGWkRIWkM4dDRnVGM0UnZyN2FsWk5MZWxVbkJiYUxrb2J0WSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9zZXJ2aWNlcy85OS9lZGl0IjtzOjU6InJvdXRlIjtzOjE5OiJhZG1pbi5zZXJ2aWNlcy5lZGl0Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1782405481);
+('X9zFF5n5Wf1NQoI3JjiILITX2bpS4XyaQFvbcxQB', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYm52bzd4YUJRQndvSDZsQUFnSUhmTGhsSXk1bXdsdmVNSlhXRko3UiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9hZG1pbi9zZXJ2aWNlcyI7czo1OiJyb3V0ZSI7czoyMDoiYWRtaW4uc2VydmljZXMuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1783544779);
 
 -- --------------------------------------------------------
 
@@ -740,7 +772,8 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `name`, `email`, `password`, `phone`, `address`, `has_security_registration`, `security_registration_number`, `security_registration_expiration`, `profile_picture`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(20, 'AD Developer', 'asjadmmc67@gmail.com', '$2y$12$TdBglUKteKLvCFJ2wtvxsexIUV1b11/jlDMi/7./hTnpEApu7K6cy', NULL, NULL, 1, '123456', '2027-11-22', NULL, NULL, NULL, '2026-06-22 12:35:51', '2026-06-22 12:43:15');
+(20, 'AD Developer', 'asjadmmc67@gmail.com', '$2y$12$TdBglUKteKLvCFJ2wtvxsexIUV1b11/jlDMi/7./hTnpEApu7K6cy', NULL, NULL, 1, '123456', '2027-11-22', NULL, NULL, NULL, '2026-06-22 12:35:51', '2026-06-22 12:43:15'),
+(21, 'Demo Student', 'student.demo@test.com', '$2y$12$qaw.HWgn9vI3Z0JQOlUbqO44hcUXVgNREbliIPPHz76pfgbqY5OBm', '615-555-0100', NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-07-08 15:02:28', '2026-07-08 15:02:28');
 
 -- --------------------------------------------------------
 
@@ -761,6 +794,14 @@ CREATE TABLE `student_module_progress` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `student_module_progress`
+--
+
+INSERT INTO `student_module_progress` (`id`, `student_id`, `service_id`, `course_module_id`, `is_completed`, `best_score`, `attempts`, `completed_at`, `admin_override`, `created_at`, `updated_at`) VALUES
+(1, 21, 102, 1, 1, 100, 1, '2026-07-08 15:32:31', 0, '2026-07-08 15:32:31', '2026-07-08 15:32:31'),
+(2, 21, 102, 2, 1, 100, 1, '2026-07-08 15:33:02', 0, '2026-07-08 15:33:02', '2026-07-08 15:33:02');
 
 -- --------------------------------------------------------
 
@@ -785,7 +826,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `profile_picture`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Super Admin', 'admin@admin.com', 'profiles/Sb70mG22z3uNt3cNlqo9vjUcbn43yxKDTe72vGtj.png', NULL, '$2y$12$T9.zhU.ZeaSdCwIQi2RaWO78E.qibh7giBZyXVvcQ8jSwuWmXWAZa', '0R2yO3shYRq8WPQQBmeWRKIfNj1Wezt5FjAgLlnjn58GXzezIp5eVYd4Heys', '2026-01-12 12:47:43', '2026-04-08 18:27:15');
+(1, 'Super Admin', 'admin@admin.com', 'profiles/Sb70mG22z3uNt3cNlqo9vjUcbn43yxKDTe72vGtj.png', NULL, '$2y$12$T9.zhU.ZeaSdCwIQi2RaWO78E.qibh7giBZyXVvcQ8jSwuWmXWAZa', 'pOXyAk3Z7yDA4X4pCKOVqI5sxdnQnnd5MhouUWwACaH6JQIAJhsHyOwQDv33', '2026-01-12 12:47:43', '2026-04-08 18:27:15');
 
 -- --------------------------------------------------------
 
@@ -1030,7 +1071,7 @@ ALTER TABLE `class_notifications`
 -- AUTO_INCREMENT for table `class_schedules`
 --
 ALTER TABLE `class_schedules`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `contact_submissions`
@@ -1048,7 +1089,7 @@ ALTER TABLE `course_certificates`
 -- AUTO_INCREMENT for table `course_modules`
 --
 ALTER TABLE `course_modules`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1090,13 +1131,13 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `module_quiz_attempts`
 --
 ALTER TABLE `module_quiz_attempts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `module_quiz_questions`
 --
 ALTER TABLE `module_quiz_questions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1114,13 +1155,13 @@ ALTER TABLE `security_company_links`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
 -- AUTO_INCREMENT for table `service_bookings`
 --
 ALTER TABLE `service_bookings`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `service_relationships`
@@ -1138,13 +1179,13 @@ ALTER TABLE `site_settings`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `student_module_progress`
 --
 ALTER TABLE `student_module_progress`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
