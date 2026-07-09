@@ -122,31 +122,31 @@
             <div class="container mx-auto px-4 lg:px-10">
                 <div class="flex justify-center gap-6">
                     @if ($siteSettings->facebook_url)
-                        <a href="{{ $siteSettings->facebook_url }}" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ $siteSettings->facebook_url }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
                             class="w-12 h-12 bg-gray-700 hover:bg-blue-600 rounded-full flex items-center justify-center transition-colors">
                             <i class="fab fa-facebook-f text-white"></i>
                         </a>
                     @endif
                     @if ($siteSettings->twitter_url)
-                        <a href="{{ $siteSettings->twitter_url }}" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ $siteSettings->twitter_url }}" target="_blank" rel="noopener noreferrer" aria-label="Twitter"
                             class="w-12 h-12 bg-gray-700 hover:bg-blue-400 rounded-full flex items-center justify-center transition-colors">
                             <i class="fab fa-twitter text-white"></i>
                         </a>
                     @endif
                     @if ($siteSettings->instagram_url)
-                        <a href="{{ $siteSettings->instagram_url }}" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ $siteSettings->instagram_url }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
                             class="w-12 h-12 bg-gray-700 hover:bg-pink-600 rounded-full flex items-center justify-center transition-colors">
                             <i class="fab fa-instagram text-white"></i>
                         </a>
                     @endif
                     @if ($siteSettings->linkedin_url)
-                        <a href="{{ $siteSettings->linkedin_url }}" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ $siteSettings->linkedin_url }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
                             class="w-12 h-12 bg-gray-700 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors">
                             <i class="fab fa-linkedin-in text-white"></i>
                         </a>
                     @endif
                     @if ($siteSettings->youtube_url)
-                        <a href="{{ $siteSettings->youtube_url }}" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ $siteSettings->youtube_url }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube"
                             class="w-12 h-12 bg-gray-700 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors">
                             <i class="fab fa-youtube text-white"></i>
                         </a>

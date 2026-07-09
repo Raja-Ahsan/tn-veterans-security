@@ -20,7 +20,7 @@
                 placeholder="Search by title…"
                 class="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
         </div>
-        <a href="{{ route('admin.services.create') }}" class="inline-flex shrink-0 items-center justify-center bg-green-600 px-4 py-2 text-white hover:bg-green-700 rounded">
+        <a href="{{ route('admin.classes.create') }}" class="inline-flex shrink-0 items-center justify-center bg-green-600 px-4 py-2 text-white hover:bg-green-700 rounded">
             <i class="fas fa-plus mr-2"></i> Add New Class
         </a>
     </div>
@@ -42,7 +42,7 @@
                 </tr>
             </thead>
             <tbody id="services-table-body" class="bg-white divide-y divide-gray-200 transition-opacity duration-150">
-                @include('admin.services.partials.table-rows', ['services' => $services, 'search' => $search ?? ''])
+                @include('admin.classes.partials.table-rows', ['services' => $services, 'search' => $search ?? ''])
             </tbody>
         </table>
     </div>
@@ -54,7 +54,7 @@
     var tbody = document.getElementById('services-table-body');
     if (!input || !tbody) return;
 
-    var indexUrl = @json(route('admin.services.index'));
+    var indexUrl = @json(route('admin.classes.index'));
     var debounceMs = 300;
     var timer = null;
 

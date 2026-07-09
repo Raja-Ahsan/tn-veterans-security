@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = Student::query()->withCount('bookings');
 
@@ -26,7 +29,7 @@ class StudentController extends Controller
         return view('admin.students.index', compact('students'));
     }
 
-    public function show(Student $student)
+    public function show(Student $student): View
     {
         $student->load(['bookings.service', 'bookings.classSchedule', 'bookings.payments']);
 
@@ -37,5 +40,50 @@ class StudentController extends Controller
             ->get();
 
         return view('admin.students.show', compact('student', 'payments'));
+    }
+
+    public function edit(Student $student): View
+    {
+        return view('admin.students.edit', compact('student'));
+    }
+
+    public function update(Request $request, Student $student): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('students', 'email')->ignore($student->id)],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'has_security_registration' => ['nullable', 'boolean'],
+            'security_registration_number' => [
+                Rule::requiredIf($request->boolean('has_security_registration')),
+                'nullable',
+                'string',
+                'max:100',
+            ],
+            'security_registration_expiration' => [
+                Rule::requiredIf($request->boolean('has_security_registration')),
+                'nullable',
+                'date',
+            ],
+        ]);
+
+        $student->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'has_security_registration' => $request->boolean('has_security_registration'),
+            'security_registration_number' => $request->boolean('has_security_registration')
+                ? $validated['security_registration_number']
+                : null,
+            'security_registration_expiration' => $request->boolean('has_security_registration')
+                ? $validated['security_registration_expiration']
+                : null,
+        ]);
+
+        return redirect()
+            ->route('admin.students.show', $student)
+            ->with('success', 'Student updated successfully.');
     }
 }

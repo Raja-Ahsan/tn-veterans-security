@@ -46,7 +46,7 @@ class CourseModuleController extends Controller
 
         $this->syncQuestions($module, $request->input('questions', []));
 
-        return redirect()->route('admin.services.course-modules.index', $service)
+        return redirect()->route('admin.classes.course-modules.index', $service)
             ->with('success', 'Module created.');
     }
 
@@ -82,7 +82,7 @@ class CourseModuleController extends Controller
         $courseModule->quizQuestions()->delete();
         $this->syncQuestions($courseModule, $request->input('questions', []));
 
-        return redirect()->route('admin.services.course-modules.index', $service)
+        return redirect()->route('admin.classes.course-modules.index', $service)
             ->with('success', 'Module updated.');
     }
 
@@ -90,7 +90,7 @@ class CourseModuleController extends Controller
     {
         $courseModule->delete();
 
-        return redirect()->route('admin.services.course-modules.index', $service)
+        return redirect()->route('admin.classes.course-modules.index', $service)
             ->with('success', 'Module deleted.');
     }
 

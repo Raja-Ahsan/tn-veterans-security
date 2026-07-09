@@ -108,9 +108,9 @@ class BlendedCourseDemoSeeder extends Seeder
         $this->command?->line('Password: password');
         $this->command?->newLine();
         $this->command?->info('Admin URLs');
-        $this->command?->line("{$baseUrl}/admin/services/{$service->id}/edit");
-        $this->command?->line("{$baseUrl}/admin/services/{$service->id}/course-modules");
-        $this->command?->line("{$baseUrl}/admin/services/{$service->id}/blended-progress");
+        $this->command?->line("{$baseUrl}/admin/classes/{$service->id}/edit");
+        $this->command?->line("{$baseUrl}/admin/classes/{$service->id}/course-modules");
+        $this->command?->line("{$baseUrl}/admin/classes/{$service->id}/blended-progress");
         $this->command?->newLine();
         $this->command?->info('Student URLs');
         $this->command?->line("{$baseUrl}/student/login");

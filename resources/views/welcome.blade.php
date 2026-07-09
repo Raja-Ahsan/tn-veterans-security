@@ -222,7 +222,7 @@
                        
                        <div class="" data-aos="fade-up" data-aos-delay="400">
                            <p class="about-text">
-                              We offer Blended classes online with in-person testing for Dallas Law Active Shooter Classification Certification programs, providing unmatched convenience and flexibility. At Tn Veterans Security Services and Training, we understand the importance of training security guards in Tennessee and take pride in preparing our students for real-world situations. Our graduates are well-regarded for providing reliable security, maintaining strong customer relations, and enhancing overall productivity for businesses across the Volunteer State.
+                              We offer Blended classes online with in-person testing for Dallas Law Active Shooter Classification Certification programs, providing unmatched convenience and flexibility. At TN Veterans Security Services and Training, we understand the importance of training security guards in Tennessee and take pride in preparing our students for real-world situations. Our graduates are well-regarded for providing reliable security, maintaining strong customer relations, and enhancing overall productivity for businesses across the Volunteer State.
                            </p>
                        </div>
 
@@ -584,9 +584,9 @@
                                      alt="Mail"
                                      class="w-10 h-10">
                             </div>
-                            <a href="mailto:{{ $siteSettings && $siteSettings->email ? $siteSettings->email : 'tnvetsecsvctrng@gmail.com' }}"
+                            <a href="mailto:{{ $siteSettings && $siteSettings->email ? $siteSettings->email : 'Jayson@tnveteranssecurity.com' }}"
                                class="text-[15px] md:text-[17px] font-bold">
-                                {{ $siteSettings && $siteSettings->email ? $siteSettings->email : 'tnvetsecsvctrng@gmail.com' }}
+                                {{ $siteSettings && $siteSettings->email ? $siteSettings->email : 'Jayson@tnveteranssecurity.com' }}
                             </a>
                         </div>
 

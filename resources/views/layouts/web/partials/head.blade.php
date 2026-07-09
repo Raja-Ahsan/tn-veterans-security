@@ -24,3 +24,7 @@
         <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+<body>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:rounded">
+        Skip to main content
+    </a>

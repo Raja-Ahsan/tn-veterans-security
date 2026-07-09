@@ -198,6 +198,13 @@
                         </div>
                     </div>
                 @endif
+
+                <div class="mt-10 text-center bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8" data-aos="fade-up">
+                    <p class="text-gray-700 text-base md:text-lg leading-relaxed">
+                        If you need a class that is not currently scheduled, please contact us so we can arrange training at your preferred location.
+                    </p>
+                    <a href="{{ route('contact') }}" class="btn primary-button inline-block mt-6">Contact us</a>
+                </div>
             </div>
         </section>
 

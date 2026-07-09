@@ -6,6 +6,12 @@
 @section('content')
 <a href="{{ route('admin.students.index') }}" class="text-blue-600 hover:underline mb-4 inline-block"><i class="fas fa-arrow-left mr-1"></i> Back to Students</a>
 
+<div class="flex justify-end mb-4">
+    <a href="{{ route('admin.students.edit', $student) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+        <i class="fas fa-edit mr-1"></i> Edit Student
+    </a>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 space-y-6">
         <div class="bg-white rounded-lg shadow p-6">

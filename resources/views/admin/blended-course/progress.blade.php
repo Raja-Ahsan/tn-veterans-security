@@ -5,8 +5,8 @@
 
 @section('content')
 <div class="mb-6 flex justify-between items-center flex-wrap gap-3">
-    <a href="{{ route('admin.services.edit', $service) }}" class="text-blue-600 hover:underline">← Back to class</a>
-    <a href="{{ route('admin.services.course-modules.index', $service) }}" class="text-blue-600 hover:underline">Manage modules</a>
+    <a href="{{ route('admin.classes.edit', $service) }}" class="text-blue-600 hover:underline">← Back to class</a>
+    <a href="{{ route('admin.classes.course-modules.index', $service) }}" class="text-blue-600 hover:underline">Manage modules</a>
 </div>
 
 <div class="bg-white rounded-lg shadow overflow-x-auto">
@@ -48,11 +48,11 @@
                     <td class="px-4 py-3 space-y-2 min-w-[220px]">
                         @foreach($modules as $module)
                             <div class="flex gap-2 text-xs">
-                                <form method="POST" action="{{ route('admin.services.blended-progress.override', [$service, $student, $module]) }}">@csrf<button class="text-green-600">Override {{ $module->order }}</button></form>
-                                <form method="POST" action="{{ route('admin.services.blended-progress.reset', [$service, $student, $module]) }}">@csrf<button class="text-red-600" onclick="return confirm('Reset module?')">Reset</button></form>
+                                <form method="POST" action="{{ route('admin.classes.blended-progress.override', [$service, $student, $module]) }}">@csrf<button class="text-green-600">Override {{ $module->order }}</button></form>
+                                <form method="POST" action="{{ route('admin.classes.blended-progress.reset', [$service, $student, $module]) }}">@csrf<button class="text-red-600" onclick="return confirm('Reset module?')">Reset</button></form>
                             </div>
                         @endforeach
-                        <form method="POST" action="{{ route('admin.services.blended-progress.in-person-test', [$service, $student]) }}" class="mt-2 border-t pt-2">
+                        <form method="POST" action="{{ route('admin.classes.blended-progress.in-person-test', [$service, $student]) }}" class="mt-2 border-t pt-2">
                             @csrf
                             <input type="hidden" name="class_schedule_id" value="{{ $booking->class_schedule_id }}">
                             <select name="result" class="border rounded text-xs w-full mb-1" required>

@@ -44,6 +44,7 @@ class EnrollmentConfirmationService
             return;
         }
 
+        $schedule = $booking->classSchedule;
         $className = $booking->service->title;
         $date = $booking->booking_date
             ? Carbon::parse($booking->booking_date)->format('M d, Y')
@@ -51,8 +52,9 @@ class EnrollmentConfirmationService
         $time = $booking->booking_time
             ? Carbon::parse($booking->booking_time)->format('g:i A')
             : 'TBD';
+        $location = $schedule?->location_name ?? $booking->location ?? 'TBD';
 
-        $message = "You are enrolled in {$className} on {$date} at {$time}. Check your email for details.";
+        $message = "You are enrolled in {$className} on {$date} at {$time} at {$location}. Check your email for details.";
 
         $this->smsService->send($student->phone, $message);
     }

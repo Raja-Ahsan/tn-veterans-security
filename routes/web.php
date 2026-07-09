@@ -5,6 +5,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\QuickBooksController;
 use App\Http\Controllers\ServicePageController;
 use App\Models\ClassSchedule;
+use App\Support\PublicTrainingServiceQuery;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -72,7 +73,9 @@ Route::get('/terms-and-conditions', function () {
 })->name('legal.terms-and-conditions');
 
 Route::get('/all-services', function () {
-    $allServices = \App\Models\Service::where('is_active', true)
+    $allServices = PublicTrainingServiceQuery::apply(
+        \App\Models\Service::where('is_active', true)
+    )
         ->orderBy('order')
         ->get();
 
@@ -85,7 +88,9 @@ Route::get('/training-services', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
 
-    $query = \App\Models\Service::where('is_active', true);
+    $query = PublicTrainingServiceQuery::apply(
+        \App\Models\Service::where('is_active', true)
+    );
 
     if ($category) {
         $query->whereJsonContains('categories', $category);
@@ -97,8 +102,10 @@ Route::get('/training-services', function () {
 
     $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
 
-    // Get all unique categories from services
-    $categories = \App\Models\Service::where('is_active', true)
+    // Get all unique categories from services (excluding security training & renewals)
+    $categories = PublicTrainingServiceQuery::apply(
+        \App\Models\Service::where('is_active', true)
+    )
         ->get()
         ->pluck('categories')
         ->flatten()
@@ -295,9 +302,9 @@ Route::permanentRedirect('/customer/{path?}', '/student/{path?}')->where('path',
 Route::prefix('student')->name('student.')->group(function () {
     // Auth Routes (Public)
     Route::get('/login', [App\Http\Controllers\Student\AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [App\Http\Controllers\Student\AuthController::class, 'login']);
+    Route::post('/login', [App\Http\Controllers\Student\AuthController::class, 'login'])->middleware('throttle:10,1');
     Route::get('/register', [App\Http\Controllers\Student\AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [App\Http\Controllers\Student\AuthController::class, 'register']);
+    Route::post('/register', [App\Http\Controllers\Student\AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::post('/logout', [App\Http\Controllers\Student\AuthController::class, 'logout'])->name('logout');
 
     // Public Routes - View available classes (no login required)
@@ -342,9 +349,21 @@ Route::prefix('student')->name('student.')->group(function () {
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
+    Route::redirect('/services', '/admin/classes', 301);
+    Route::redirect('/services/create', '/admin/classes/create', 301);
+    Route::get('/services/{service}/{path?}', function (string $service, ?string $path = null) {
+        $target = '/admin/classes/'.$service;
+
+        if ($path) {
+            $target .= '/'.$path;
+        }
+
+        return redirect($target, 301);
+    })->where('path', '.*');
+
     // Auth Routes
     Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
+    Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->middleware('throttle:10,1');
     Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
 
     // Protected Admin Routes
@@ -353,6 +372,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/students', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('students.index');
         Route::get('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'show'])->name('students.show');
+        Route::get('/students/{student}/edit', [App\Http\Controllers\Admin\StudentController::class, 'edit'])->name('students.edit');
+        Route::put('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'update'])->name('students.update');
 
         Route::get('/contact-submissions', [App\Http\Controllers\Admin\ContactSubmissionController::class, 'index'])->name('contact-submissions.index');
         Route::get('/contact-submissions/{contactSubmission}', [App\Http\Controllers\Admin\ContactSubmissionController::class, 'show'])->name('contact-submissions.show');
@@ -366,18 +387,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/class-schedules/{classSchedule}/notify', [App\Http\Controllers\Admin\ClassNotificationController::class, 'store'])->name('class-schedules.notify');
         Route::post('/class-schedules/{classSchedule}/notify-waitlist', [App\Http\Controllers\Admin\ClassNotificationController::class, 'notifyWaitlist'])->name('class-schedules.notify-waitlist');
 
-        Route::resource('services', App\Http\Controllers\Admin\ServiceController::class);
-        Route::get('/services/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'index'])->name('services.course-modules.index');
-        Route::get('/services/{service}/course-modules/create', [App\Http\Controllers\Admin\CourseModuleController::class, 'create'])->name('services.course-modules.create');
-        Route::post('/services/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'store'])->name('services.course-modules.store');
-        Route::get('/services/{service}/course-modules/{courseModule}/edit', [App\Http\Controllers\Admin\CourseModuleController::class, 'edit'])->name('services.course-modules.edit');
-        Route::put('/services/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'update'])->name('services.course-modules.update');
-        Route::delete('/services/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'destroy'])->name('services.course-modules.destroy');
-        Route::post('/services/{service}/course-modules/reorder', [App\Http\Controllers\Admin\CourseModuleController::class, 'reorder'])->name('services.course-modules.reorder');
-        Route::get('/services/{service}/blended-progress', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'studentProgress'])->name('services.blended-progress');
-        Route::post('/services/{service}/blended-progress/{student}/modules/{courseModule}/override', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'overrideModule'])->name('services.blended-progress.override');
-        Route::post('/services/{service}/blended-progress/{student}/modules/{courseModule}/reset', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'resetModule'])->name('services.blended-progress.reset');
-        Route::post('/services/{service}/blended-progress/{student}/in-person-test', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'storeInPersonTest'])->name('services.blended-progress.in-person-test');
+        Route::resource('classes', App\Http\Controllers\Admin\ServiceController::class)
+            ->names('classes')
+            ->parameters(['class' => 'service']);
+        Route::get('/classes/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'index'])->name('classes.course-modules.index');
+        Route::get('/classes/{service}/course-modules/create', [App\Http\Controllers\Admin\CourseModuleController::class, 'create'])->name('classes.course-modules.create');
+        Route::post('/classes/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'store'])->name('classes.course-modules.store');
+        Route::get('/classes/{service}/course-modules/{courseModule}/edit', [App\Http\Controllers\Admin\CourseModuleController::class, 'edit'])->name('classes.course-modules.edit');
+        Route::put('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'update'])->name('classes.course-modules.update');
+        Route::delete('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'destroy'])->name('classes.course-modules.destroy');
+        Route::post('/classes/{service}/course-modules/reorder', [App\Http\Controllers\Admin\CourseModuleController::class, 'reorder'])->name('classes.course-modules.reorder');
+        Route::get('/classes/{service}/blended-progress', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'studentProgress'])->name('classes.blended-progress');
+        Route::post('/classes/{service}/blended-progress/{student}/modules/{courseModule}/override', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'overrideModule'])->name('classes.blended-progress.override');
+        Route::post('/classes/{service}/blended-progress/{student}/modules/{courseModule}/reset', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'resetModule'])->name('classes.blended-progress.reset');
+        Route::post('/classes/{service}/blended-progress/{student}/in-person-test', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'storeInPersonTest'])->name('classes.blended-progress.in-person-test');
         Route::resource('class-schedules', App\Http\Controllers\Admin\ClassScheduleController::class)->names('class-schedules');
         Route::post('/class-schedules/{classSchedule}/travel-notify', [App\Http\Controllers\Admin\TravelClassController::class, 'notify'])->name('class-schedules.travel-notify');
         Route::post('/class-schedules/{classSchedule}/travel-cancel', [App\Http\Controllers\Admin\TravelClassController::class, 'cancel'])->name('class-schedules.travel-cancel');

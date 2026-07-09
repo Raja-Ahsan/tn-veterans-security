@@ -55,7 +55,7 @@
                     <a href="{{ route('admin.class-schedules.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.class-schedules.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-calendar-check mr-3"></i> Class Schedules
                     </a>
-                    <a href="{{ route('admin.services.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.services.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                    <a href="{{ route('admin.classes.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.classes.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-briefcase mr-3"></i> Classes
                     </a>
                     <a href="{{ route('admin.bookings.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.bookings.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">

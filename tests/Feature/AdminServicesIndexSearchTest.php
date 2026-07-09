@@ -26,7 +26,7 @@ class AdminServicesIndexSearchTest extends TestCase
             'order' => 1,
         ]);
 
-        $response = $this->actingAs($user)->getJson(route('admin.services.index', ['q' => 'NRA']));
+        $response = $this->actingAs($user)->getJson(route('admin.classes.index', ['q' => 'NRA']));
 
         $response->assertOk();
         $response->assertJsonStructure(['html']);

@@ -44,7 +44,7 @@
                         </p>
 
                         <div class="mt-8 mb-8 pb-8 border-b border-gray-100">
-                             <h4 class="text-[20px] md:text-[24px] font-bold text-(--primary-color) uppercase mb-3">At Tn Veterans Security and Training</h4>
+                             <h4 class="text-[20px] md:text-[24px] font-bold text-(--primary-color) uppercase mb-3">At TN Veterans Security Services and Training</h4>
                              <p class="about-overview-text mb-0!">
                                 Veteran and privately owned and operated, is dedicated to making a difference in the Tennessee security industry, one student at a time.
                              </p>

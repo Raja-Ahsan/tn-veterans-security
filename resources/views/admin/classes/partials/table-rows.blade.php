@@ -73,10 +73,10 @@
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
             <div class="flex gap-2">
-                <a href="{{ route('admin.services.edit', $service) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
+                <a href="{{ route('admin.classes.edit', $service) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
                     <i class="fas fa-edit"></i>
                 </a>
-                <form method="POST" action="{{ route('admin.services.destroy', $service) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this service?');">
+                <form method="POST" action="{{ route('admin.classes.destroy', $service) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this service?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
@@ -94,7 +94,7 @@
             @else
                 No services found.
             @endif
-            <a href="{{ route('admin.services.create') }}" class="text-green-600 hover:underline">Create one now</a>
+            <a href="{{ route('admin.classes.create') }}" class="text-green-600 hover:underline">Create one now</a>
         </td>
     </tr>
 @endforelse

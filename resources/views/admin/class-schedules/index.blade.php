@@ -67,7 +67,7 @@
                                        onclick="event.stopPropagation();">
                                         <i class="fas fa-plus"></i>
                                     </a>
-                                    <a href="{{ route('admin.services.edit', $firstSchedule->service) }}" 
+                                    <a href="{{ route('admin.classes.edit', $firstSchedule->service) }}" 
                                        class="text-blue-600 hover:text-blue-900" 
                                        title="Edit Service"
                                        onclick="event.stopPropagation();">

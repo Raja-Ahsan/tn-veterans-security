@@ -6,6 +6,7 @@
         ['name' => 'Enhanced Handgun Carry Permit', 'url' => route('service.by.slug', 'enhanced-handgun-carry-permit'), 'match' => ['type' => 'slug', 'slug' => 'enhanced-handgun-carry-permit']],
         ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter'), 'match' => ['type' => 'slug', 'slug' => 'active-shooter']],
         ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation'), 'match' => ['type' => 'slug', 'slug' => 'forced-science-de-escalation']],
+        ['name' => 'Handle With Care', 'url' => route('service.by.slug', 'handle-with-care'), 'match' => ['type' => 'slug', 'slug' => 'handle-with-care']],
     ];
     $path = request()->path();
     $isDallasLawPage = request()->routeIs('dallas-law')
@@ -256,10 +257,8 @@
                     </a>
                     <div class="dropdown-simple">
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
-                            <a href="{{ route('intial-security') }}" class="category-item {{ request()->routeIs('intial-security') ? 'category-item-active' : '' }}">Initial Security</a>
-                            <a href="{{ route('renewals') }}" class="category-item {{ request()->routeIs('renewals') ? 'category-item-active' : '' }}">Renewals</a>
-                            <a href="{{ route('service.by.slug', 'asp-4-hr') }}" class="category-item asp-4-modal-trigger {{ $isAsp4HrPage ? 'category-item-active' : '' }}">ASP 4 Hours (Less than Lethal)</a>
-                            <a href="{{ route('dallas-law') }}" class="category-item dallas-law-trigger {{ $isDallasLawPage ? 'category-item-active' : '' }}">Dallas Law</a>
+                            <a href="{{ route('intial-security') }}" class="category-item {{ request()->routeIs('intial-security') ? 'category-item-active' : '' }}">Initial Registration</a>
+                            <a href="{{ route('renewals') }}" class="category-item {{ request()->routeIs('renewals') ? 'category-item-active' : '' }}">Renewal Registration</a>
                         </div>
                     </div>
                 </div>
@@ -368,10 +367,8 @@
                 </button>
                 <div id="mobileSecurityTrainingMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
-                        <a href="{{ route('intial-security') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('intial-security') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Initial Security</a>
-                        <a href="{{ route('renewals') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('renewals') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Renewals</a>
-                        <a href="{{ route('service.by.slug', 'asp-4-hr') }}" class="mobile-nav-links asp-4-modal-trigger text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $isAsp4HrPage ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">ASP 4 Hours (Less than Lethal)</a>
-                        <a href="{{ route('dallas-law') }}" class="mobile-nav-links dallas-law-trigger text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $isDallasLawPage ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Dallas Law</a>
+                        <a href="{{ route('intial-security') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('intial-security') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Initial Registration</a>
+                        <a href="{{ route('renewals') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('renewals') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Renewal Registration</a>
                     </div>
                 </div>
             </div>

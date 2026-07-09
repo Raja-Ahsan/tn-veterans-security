@@ -355,9 +355,9 @@
 <div class="bg-white rounded-lg shadow-lg p-6">
     <h3 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="{{ route('admin.services.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg text-center transition-colors">
+        <a href="{{ route('admin.classes.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg text-center transition-colors">
             <i class="fas fa-plus text-xl mb-2"></i>
-            <div class="text-sm font-semibold">Add Service</div>
+            <div class="text-sm font-semibold">Add Class</div>
         </a>
         <a href="{{ route('admin.class-schedules.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-center transition-colors">
             <i class="fas fa-calendar-plus text-xl mb-2"></i>

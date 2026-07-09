@@ -5,14 +5,14 @@
 
 @section('content')
 <div class="mb-6 flex justify-between items-center flex-wrap gap-3">
-    <a href="{{ route('admin.services.edit', $service) }}" class="text-blue-600 hover:underline">← Back to class</a>
+    <a href="{{ route('admin.classes.edit', $service) }}" class="text-blue-600 hover:underline">← Back to class</a>
     <div class="flex gap-3">
-        <a href="{{ route('admin.services.blended-progress', $service) }}" class="text-blue-600 hover:underline">Student progress</a>
-        <a href="{{ route('admin.services.course-modules.create', $service) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg">Add Module</a>
+        <a href="{{ route('admin.classes.blended-progress', $service) }}" class="text-blue-600 hover:underline">Student progress</a>
+        <a href="{{ route('admin.classes.course-modules.create', $service) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg">Add Module</a>
     </div>
 </div>
 @if($modules->count() > 1)
-<form method="POST" action="{{ route('admin.services.course-modules.reorder', $service) }}" class="bg-white rounded-lg shadow p-4 mb-4">
+<form method="POST" action="{{ route('admin.classes.course-modules.reorder', $service) }}" class="bg-white rounded-lg shadow p-4 mb-4">
     @csrf
     <p class="text-sm font-semibold mb-2">Module order (drag numbers or edit)</p>
     <div class="flex flex-wrap gap-3">
@@ -42,8 +42,8 @@
                     <td class="px-6 py-4">{{ $module->quiz_questions_count }}</td>
                     <td class="px-6 py-4">{{ $module->is_active ? 'Yes' : 'No' }}</td>
                     <td class="px-6 py-4 text-right space-x-3">
-                        <a href="{{ route('admin.services.course-modules.edit', [$service, $module]) }}" class="text-blue-600 hover:underline">Edit</a>
-                        <form action="{{ route('admin.services.course-modules.destroy', [$service, $module]) }}" method="POST" class="inline" onsubmit="return confirm('Delete module?')">@csrf @method('DELETE')<button class="text-red-600">Delete</button></form>
+                        <a href="{{ route('admin.classes.course-modules.edit', [$service, $module]) }}" class="text-blue-600 hover:underline">Edit</a>
+                        <form action="{{ route('admin.classes.course-modules.destroy', [$service, $module]) }}" method="POST" class="inline" onsubmit="return confirm('Delete module?')">@csrf @method('DELETE')<button class="text-red-600">Delete</button></form>
                     </td>
                 </tr>
             @empty

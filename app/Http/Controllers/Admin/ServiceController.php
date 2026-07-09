@@ -35,14 +35,14 @@ class ServiceController extends Controller
 
         if ($request->ajax() || $request->expectsJson()) {
             return response()->json([
-                'html' => view('admin.services.partials.table-rows', [
+                'html' => view('admin.classes.partials.table-rows', [
                     'services' => $services,
                     'search' => $search,
                 ])->render(),
             ]);
         }
 
-        return view('admin.services.index', compact('services', 'search'));
+        return view('admin.classes.index', compact('services', 'search'));
     }
 
     /**
@@ -52,7 +52,7 @@ class ServiceController extends Controller
     {
         $allServices = Service::where('is_active', true)->orderBy('order')->orderBy('title')->get();
 
-        return view('admin.services.create', compact('allServices'));
+        return view('admin.classes.create', compact('allServices'));
     }
 
     /**
@@ -142,7 +142,7 @@ class ServiceController extends Controller
             $service->linkedServices()->sync($sync);
         }
 
-        return redirect()->route('admin.services.index')
+        return redirect()->route('admin.classes.index')
             ->with('success', 'Class created successfully.');
     }
 
@@ -151,7 +151,7 @@ class ServiceController extends Controller
      */
     public function show(Service $service)
     {
-        return view('admin.services.show', compact('service'));
+        return view('admin.classes.show', compact('service'));
     }
 
     /**
@@ -164,7 +164,7 @@ class ServiceController extends Controller
         }]);
         $allServices = Service::where('is_active', true)->where('id', '!=', $service->id)->orderBy('order')->orderBy('title')->get();
 
-        return view('admin.services.edit', compact('service', 'allServices'));
+        return view('admin.classes.edit', compact('service', 'allServices'));
     }
 
     /**
@@ -256,7 +256,7 @@ class ServiceController extends Controller
         }
         $service->linkedServices()->sync($sync);
 
-        return redirect()->route('admin.services.index')
+        return redirect()->route('admin.classes.index')
             ->with('success', 'Class updated successfully.');
     }
 
@@ -269,7 +269,7 @@ class ServiceController extends Controller
 
         $service->delete();
 
-        return redirect()->route('admin.services.index')
+        return redirect()->route('admin.classes.index')
             ->with('success', 'Class deleted successfully.');
     }
 

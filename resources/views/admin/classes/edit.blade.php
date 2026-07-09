@@ -1,19 +1,20 @@
 @extends('admin.layouts.master')
 
-@section('title', 'Create Class')
-@section('page-title', 'Create New Class')
+@section('title', 'Edit Class')
+@section('page-title', 'Edit Class')
 
 @section('content')
 <div class="bg-white rounded-lg shadow p-6">
-    <form method="POST" action="{{ route('admin.services.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.classes.update', $service) }}" enctype="multipart/form-data">
         @csrf
+        @method('PUT')
 
         <div class="mb-4">
             <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Title *</label>
             <input type="text" 
                    id="title" 
                    name="title" 
-                   value="{{ old('title') }}"
+                   value="{{ old('title', $service->title) }}"
                    required 
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             @error('title')
@@ -26,10 +27,10 @@
             <input type="text" 
                    id="slug" 
                    name="slug" 
-                   value="{{ old('slug') }}"
+                   value="{{ old('slug', $service->slug) }}"
                    placeholder="e.g. asp, active-shooter, dallas-law"
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            <p class="text-xs text-gray-500 mt-1">Leave empty if using categories. If set, this service will have a direct page at <strong>/service/{slug}</strong> (e.g. /service/asp). Use lowercase letters, numbers and hyphens only. No category needed for direct-page services.</p>
+            <p class="text-xs text-gray-500 mt-1">If set, this service has a direct page at <strong>/service/{slug}</strong>. Use lowercase letters, numbers and hyphens only.</p>
             @error('slug')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
@@ -42,7 +43,7 @@
                       rows="3"
                       maxlength="500"
                       placeholder="Brief description (max 500 characters)"
-                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('short_description') }}</textarea>
+                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('short_description', $service->short_description) }}</textarea>
             <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
             @error('short_description')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -52,7 +53,7 @@
         <div class="mb-4">
             <label for="requirements" class="block text-gray-700 text-sm font-bold mb-2">Requirements</label>
             <div id="requirements-editor" class="bg-white border rounded">
-                {!! old('requirements') !!}
+                {!! old('requirements', $service->requirements) !!}
             </div>
             <textarea id="requirements" name="requirements" style="display:none;">{{ old('requirements') }}</textarea>
             @error('requirements')
@@ -60,11 +61,16 @@
             @enderror
         </div>
 
+
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">Sub titles (show below banner on class page)</label>
             <p class="text-xs text-gray-500 mb-2">Add items like "Flashlight", "OC Spray", "Baton", "Restraints". These appear in a list below the hero banner on the left.</p>
             <div id="sub-titles-container" class="space-y-2">
-                @foreach(old('sub_titles', []) as $idx => $st)
+                @php
+                    $subTitlesValues = old('sub_titles', $service->sub_titles ?? []);
+                    $subTitlesValues = is_array($subTitlesValues) ? $subTitlesValues : [];
+                @endphp
+                @foreach($subTitlesValues as $st)
                     <div class="sub-title-row flex gap-2 items-center">
                         <input type="text" name="sub_titles[]" value="{{ $st }}" maxlength="255" placeholder="e.g. Flashlight"
                             class="shadow appearance-none border rounded flex-1 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -83,9 +89,9 @@
         <div class="mb-4">
             <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Description</label>
             <div id="description-editor" class="bg-white border rounded">
-                {!! old('description') !!}
+                {!! old('description', $service->description) !!}
             </div>
-            <textarea id="description" name="description" style="display:none;">{{ old('description') }}</textarea>
+            <textarea id="description" name="description" style="display:none;">{{ old('description', $service->description) }}</textarea>
             @error('description')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
@@ -93,6 +99,11 @@
 
         <div class="mb-4">
             <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image</label>
+            @if($service->image)
+                <div class="mb-2">
+                    <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="h-32 w-32 object-cover rounded">
+                </div>
+            @endif
             <input type="file" 
                    id="image" 
                    name="image" 
@@ -108,7 +119,7 @@
             <input type="number" 
                    id="order" 
                    name="order" 
-                   value="{{ old('order', 0) }}"
+                   value="{{ old('order', $service->order) }}"
                    min="0"
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             @error('order')
@@ -121,7 +132,7 @@
             <input type="number" 
                    id="min_students" 
                    name="min_students" 
-                   value="{{ old('min_students', 1) }}"
+                   value="{{ old('min_students', $service->min_students) }}"
                    min="1"
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
@@ -131,14 +142,14 @@
             <input type="number" 
                    id="max_students" 
                    name="max_students" 
-                   value="{{ old('max_students', 10) }}"
-                   min="1"
+                   value="{{ old('max_students', $service->max_students) }}"
+                   max="100"
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <!-- Category Section -->
         <div class="mb-6 border-t pt-4 mt-6">
             <h3 class="text-lg font-bold mb-4">Category & Organization</h3>
-            <p class="text-sm text-gray-600 mb-3">Categories are optional. If you leave all unchecked and set a <strong>Direct page slug</strong> above, this service will appear only on its direct page (e.g. /service/asp).</p>
+            <p class="text-sm text-gray-600 mb-3">Categories are optional. Use a direct page slug above for standalone services.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Categories (optional)</label>
@@ -149,12 +160,16 @@
                     <!-- Checkbox list -->
                     <p class="text-xs text-gray-600 font-medium mb-2">Select categories</p>
                     <div class="max-h-36 overflow-y-auto border rounded-lg p-3 bg-white space-y-1.5">
+                        @php
+                            $selectedCategories = old('categories', $service->categories ?? []);
+                            $selectedCategories = is_array($selectedCategories) ? $selectedCategories : [];
+                        @endphp
                         @foreach(config('service_categories', []) as $slug => $label)
                             <label class="flex items-center gap-2 cursor-pointer hover:bg-green-50 p-2 rounded transition-colors category-checkbox-label" data-slug="{{ $slug }}" data-label="{{ $label }}">
                                 <input type="checkbox"
                                        name="categories[]"
                                        value="{{ $slug }}"
-                                       {{ in_array($slug, old('categories', [])) ? 'checked' : '' }}
+                                       {{ in_array($slug, $selectedCategories) ? 'checked' : '' }}
                                        class="rounded border-gray-400 text-green-600 focus:ring-green-500 category-checkbox">
                                 <span class="text-sm text-gray-800">{{ $label }}</span>
                             </label>
@@ -170,7 +185,7 @@
                     <input type="text" 
                            id="subcategory" 
                            name="subcategory" 
-                           value="{{ old('subcategory') }}"
+                           value="{{ old('subcategory', $service->subcategory) }}"
                            placeholder="e.g., Armed Security, ASP, Force Science"
                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     @error('subcategory')
@@ -184,8 +199,8 @@
                             name="location" 
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         <option value="">No Specific Location</option>
-                        <option value="Location A" {{ old('location') === 'Location A' ? 'selected' : '' }}>Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</option>
-                        <option value="Location B" {{ old('location') === 'Location B' ? 'selected' : '' }}>Guns and Leather 2216 US-41, Greenbrier, Tn 37073</option>
+                        <option value="Location A" {{ old('location', $service->location) === 'Location A' ? 'selected' : '' }}>Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</option>
+                        <option value="Location B" {{ old('location', $service->location) === 'Location B' ? 'selected' : '' }}>Guns and Leather 2216 US-41, Greenbrier, Tn 37073</option>
                     </select>
                     @error('location')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -199,7 +214,7 @@
                         <input type="checkbox" 
                                name="requires_dallas_law" 
                                value="1"
-                               {{ old('requires_dallas_law') ? 'checked' : '' }}
+                               {{ old('requires_dallas_law', $service->requires_dallas_law) ? 'checked' : '' }}
                                class="mr-2">
                         <span class="text-sm text-gray-700">Requires Dallas Law Training</span>
                     </label>
@@ -210,7 +225,7 @@
                         <input type="checkbox" 
                                name="requires_active_shooter" 
                                value="1"
-                               {{ old('requires_active_shooter') ? 'checked' : '' }}
+                               {{ old('requires_active_shooter', $service->requires_active_shooter) ? 'checked' : '' }}
                                class="mr-2">
                         <span class="text-sm text-gray-700">Requires Active Shooter Training</span>
                     </label>
@@ -228,7 +243,7 @@
                     <input type="number" 
                            id="price" 
                            name="price" 
-                           value="{{ old('price') }}"
+                           value="{{ old('price', $service->price) }}"
                            step="0.01"
                            min="0"
                            placeholder="0.00"
@@ -243,7 +258,7 @@
                     <input type="number" 
                            id="deposit_amount" 
                            name="deposit_amount" 
-                           value="{{ old('deposit_amount') }}"
+                           value="{{ old('deposit_amount', $service->deposit_amount) }}"
                            step="0.01"
                            min="0"
                            placeholder="0.00"
@@ -260,8 +275,8 @@
                     <select id="class_type" 
                             name="class_type" 
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="group" {{ old('class_type', 'group') === 'group' ? 'selected' : '' }}>Group</option>
-                        <option value="one-on-one" {{ old('class_type') === 'one-on-one' ? 'selected' : '' }}>One-on-One</option>
+                        <option value="group" {{ old('class_type', $service->class_type ?? 'group') === 'group' ? 'selected' : '' }}>Group</option>
+                        <option value="one-on-one" {{ old('class_type', $service->class_type) === 'one-on-one' ? 'selected' : '' }}>One-on-One</option>
                     </select>
                     @error('class_type')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -274,10 +289,18 @@
                     <input type="checkbox" 
                            name="has_online_parts" 
                            value="1"
-                           {{ old('has_online_parts') ? 'checked' : '' }}
+                           {{ old('has_online_parts', $service->has_online_parts) ? 'checked' : '' }}
                            class="mr-2">
-                    <span class="text-sm text-gray-700">Has online parts/components</span>
+                    <span class="text-sm text-gray-700">Has online parts/components (blended course)</span>
                 </label>
+                @if($service->has_online_parts)
+                    <a href="{{ route('admin.classes.course-modules.index', $service) }}" class="inline-block mt-2 text-blue-600 hover:underline text-sm">
+                        <i class="fas fa-book-open mr-1"></i> Manage Online Modules & Quizzes
+                    </a>
+                    <a href="{{ route('admin.classes.blended-progress', $service) }}" class="inline-block mt-2 ml-4 text-blue-600 hover:underline text-sm">
+                        <i class="fas fa-user-graduate mr-1"></i> Student Progress & In-Person Tests
+                    </a>
+                @endif
             </div>
 
             <div class="mb-4">
@@ -285,29 +308,57 @@
                     <input type="checkbox" 
                            name="testing_in_person" 
                            value="1"
-                           {{ old('testing_in_person', true) ? 'checked' : '' }}
+                           {{ old('testing_in_person', $service->testing_in_person ?? true) ? 'checked' : '' }}
                            class="mr-2">
                     <span class="text-sm text-gray-700">Testing is in-person (always true)</span>
                 </label>
             </div>
 
-            @include('admin.services._extended_fields')
+            @include('admin.classes._extended_fields', [
+                    'refundPolicy' => $service->refund_policy,
+                    'whatToBring' => $service->what_to_bring,
+                    'prerequisites' => $service->prerequisites,
+                    'isTravelBased' => $service->is_travel_based,
+                    'travelDistanceFee' => $service->travel_distance_fee,
+                    'travelLodgingFee' => $service->travel_lodging_fee,
+                    'travelTimeFee' => $service->travel_time_fee,
+                    'travelMinimumStudents' => $service->travel_minimum_students,
+                    'travelNotes' => $service->travel_notes,
+                    'lodgingInstructions' => $service->lodging_instructions,
+                ])
         </div>
 
         <!-- Class sessions (saved to class_schedules) -->
         <div class="mb-6 border-t pt-4 mt-6">
             <input type="hidden" name="sync_schedules" value="1">
             <h3 class="text-lg font-bold mb-2">Class sessions (schedule)</h3>
-            <p class="text-sm text-gray-600 mb-3">Add dates and times students can book. These appear on the public booking form instead of a free-form date.</p>
+            <p class="text-sm text-gray-600 mb-3">Edit upcoming sessions or add new ones. Sessions with bookings cannot be removed from this list until those bookings are cancelled.</p>
             <div id="schedules-container" class="space-y-4">
                 @php
                     $schedRows = old('schedules');
                     if (!is_array($schedRows)) {
-                        $schedRows = [[]];
+                        $schedRows = $service->classSchedules->map(function ($s) {
+                            return [
+                                'id' => $s->id,
+                                'class_date' => $s->class_date->format('Y-m-d'),
+                                'start_time' => \Carbon\Carbon::parse($s->start_time)->format('H:i'),
+                                'duration_hours' => $s->duration_hours,
+                                'max_students' => $s->max_students,
+                                'min_students' => $s->min_students,
+                                'location' => $s->location ?? '',
+                                'room' => $s->room,
+                                'instructor' => $s->instructor,
+                                'notes' => $s->notes,
+                                'can_overlap' => $s->can_overlap,
+                            ];
+                        })->toArray();
                     }
                 @endphp
                 @foreach($schedRows as $idx => $sch)
                     <div class="schedule-row border rounded-lg p-4 bg-gray-50 space-y-3">
+                        @if(!empty($sch['id']))
+                            <input type="hidden" name="schedules[{{ $idx }}][id]" value="{{ $sch['id'] }}">
+                        @endif
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-semibold text-gray-700">Session <span class="schedule-num">{{ $loop->iteration }}</span></span>
                             <button type="button" class="schedule-remove text-red-600 hover:text-red-800 text-sm font-medium">Remove</button>
@@ -315,7 +366,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-gray-700 text-xs font-bold mb-1">Date *</label>
-                                <input type="date" name="schedules[{{ $idx }}][class_date]" value="{{ $sch['class_date'] ?? '' }}" min="{{ date('Y-m-d') }}"
+                                <input type="date" name="schedules[{{ $idx }}][class_date]" value="{{ $sch['class_date'] ?? '' }}"
                                     class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
                             </div>
                             <div>
@@ -350,7 +401,7 @@
                             </div>
                             <div>
                                 <label class="block text-gray-700 text-xs font-bold mb-1">Room</label>
-                                <input type="text" name="schedules[{{ $idx }}][room]" value="{{ $sch['room'] ?? '' }}" maxlength="255" placeholder="Room / range"
+                                <input type="text" name="schedules[{{ $idx }}][room]" value="{{ $sch['room'] ?? '' }}" maxlength="255"
                                     class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
                             </div>
                             <div>
@@ -361,7 +412,7 @@
                         </div>
                         <div>
                             <label class="block text-gray-700 text-xs font-bold mb-1">Notes</label>
-                            <input type="text" name="schedules[{{ $idx }}][notes]" value="{{ $sch['notes'] ?? '' }}" maxlength="2000" placeholder="Optional"
+                            <input type="text" name="schedules[{{ $idx }}][notes]" value="{{ $sch['notes'] ?? '' }}" maxlength="2000"
                                 class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
                         </div>
                         <label class="inline-flex items-center gap-2 text-sm text-gray-700">
@@ -379,26 +430,54 @@
             @enderror
         </div>
 
-        <!-- Linked Services (Related Trainings) -->
+        <!-- Related Services (Linked / Related Trainings) -->
+        @php
+            $linkedIds = old('linked_services', $service->linkedServices->pluck('id')->toArray());
+            $linkedIds = is_array($linkedIds) ? array_map('intval', $linkedIds) : [];
+            $linkedOrdered = $service->linkedServices->keyBy('id');
+            $others = ($allServices ?? collect())->whereNotIn('id', $linkedOrdered->keys());
+            $hasAnyToShow = $service->linkedServices->isNotEmpty() || $others->isNotEmpty();
+        @endphp
         <div class="mb-6 border-t pt-4 mt-6">
-            <h3 class="text-lg font-bold mb-2">Linked Services (Related Trainings)</h3>
-            <p class="text-sm text-gray-600 mb-3">Select trainings to show as related on this service’s page (e.g. Unarmed → Less Lethal, Dallas Law). Order is determined by the list below.</p>
-            <div class="max-h-48 overflow-y-auto border rounded p-3 bg-gray-50 space-y-2">
-                @forelse(($allServices ?? collect()) as $s)
-                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                        <input type="checkbox"
-                               name="linked_services[]"
-                               value="{{ $s->id }}"
-                               {{ in_array($s->id, old('linked_services', [])) ? 'checked' : '' }}
-                               class="rounded">
-                        <span class="text-sm text-gray-800">{{ $s->title }}</span>
-                        @if($s->subcategory)
-                            <span class="text-xs text-gray-500">({{ $s->subcategory }})</span>
-                        @endif
-                    </label>
-                @empty
-                    <p class="text-sm text-gray-500">No other active services. Create more services to link.</p>
-                @endforelse
+            <h3 class="text-lg font-bold mb-2">Related Services</h3>
+            <p class="text-sm text-gray-600 mb-3">Choose which trainings to show as related on this service’s page (e.g. Unarmed → Less Lethal, Dallas Law). Order is kept: linked first, then the rest.</p>
+            <div class="max-h-56 overflow-y-auto border rounded p-3 bg-gray-50 space-y-2">
+                @if($hasAnyToShow)
+                    @if($service->linkedServices->isNotEmpty())
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Currently linked (in order)</p>
+                        @foreach($service->linkedServices as $s)
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                                <input type="checkbox"
+                                       name="linked_services[]"
+                                       value="{{ $s->id }}"
+                                       {{ in_array((int)$s->id, $linkedIds) ? 'checked' : '' }}
+                                       class="rounded border-gray-400">
+                                <span class="text-sm text-gray-800">{{ $s->title }}</span>
+                                @if($s->subcategory)
+                                    <span class="text-xs text-gray-500">({{ $s->subcategory }})</span>
+                                @endif
+                            </label>
+                        @endforeach
+                    @endif
+                    @if($others->isNotEmpty())
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-2">Other services — check to add as related</p>
+                        @foreach($others as $s)
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                                <input type="checkbox"
+                                       name="linked_services[]"
+                                       value="{{ $s->id }}"
+                                       {{ in_array((int)$s->id, $linkedIds) ? 'checked' : '' }}
+                                       class="rounded border-gray-400">
+                                <span class="text-sm text-gray-800">{{ $s->title }}</span>
+                                @if($s->subcategory)
+                                    <span class="text-xs text-gray-500">({{ $s->subcategory }})</span>
+                                @endif
+                            </label>
+                        @endforeach
+                    @endif
+                @else
+                    <p class="text-sm text-gray-500 py-2">No other services to link. Create more services first.</p>
+                @endif
             </div>
             @error('linked_services.*')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -410,7 +489,7 @@
                 <input type="checkbox" 
                        name="is_active" 
                        value="1"
-                       {{ old('is_active', true) ? 'checked' : '' }}
+                       {{ old('is_active', $service->is_active) ? 'checked' : '' }}
                        class="mr-2">
                 <span class="text-sm text-gray-700">Active</span>
             </label>
@@ -418,9 +497,9 @@
 
         <div class="flex gap-4">
             <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                <i class="fas fa-save mr-2"></i> Create Service
+                <i class="fas fa-save mr-2"></i> Update Service
             </button>
-            <a href="{{ route('admin.services.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+            <a href="{{ route('admin.classes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                 Cancel
             </a>
         </div>
@@ -432,6 +511,9 @@
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Get existing content from textarea
+        var existingContent = document.getElementById('description').value;
+        
         function createEditor(editorSelector, inputId, placeholderText) {
             var editor = new Quill(editorSelector, {
                 theme: 'snow',
@@ -460,6 +542,9 @@
         var descriptionQuill = createEditor('#description-editor', 'description', 'Enter service description...');
         var requirementsQuill = createEditor('#requirements-editor', 'requirements', 'Enter service requirements...');
 
+
+
+
         // Also update textarea before form submit (as backup)
         var form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
@@ -481,10 +566,10 @@
             } else {
                 hint.style.display = 'none';
                 checkboxes.forEach(function(cb) {
-                    var label = document.querySelector('.category-checkbox-label[data-slug="' + cb.value + '"]');
+                    var labelEl = document.querySelector('.category-checkbox-label[data-slug="' + cb.value + '"]');
                     var chip = document.createElement('span');
                     chip.className = 'selected-tag inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white';
-                    chip.textContent = label ? label.getAttribute('data-label') : cb.value;
+                    chip.textContent = labelEl ? labelEl.getAttribute('data-label') : cb.value;
                     container.appendChild(chip);
                 });
             }
@@ -497,22 +582,22 @@
         // Sub titles: add / remove rows
         var subTitlesContainer = document.getElementById('sub-titles-container');
         var addSubTitleBtn = document.getElementById('add-sub-title');
-        if (!subTitlesContainer.querySelector('.sub-title-row') && addSubTitleBtn) {
-            addSubTitleBtn.click();
+        if (addSubTitleBtn) {
+            addSubTitleBtn.addEventListener('click', function() {
+                var row = document.createElement('div');
+                row.className = 'sub-title-row flex gap-2 items-center';
+                row.innerHTML = '<input type="text" name="sub_titles[]" maxlength="255" placeholder="e.g. Flashlight" class="shadow appearance-none border rounded flex-1 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">' +
+                    '<button type="button" class="sub-title-remove px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm font-medium">Remove</button>';
+                subTitlesContainer.appendChild(row);
+                row.querySelector('.sub-title-remove').addEventListener('click', function() { row.remove(); });
+            });
         }
-        addSubTitleBtn.addEventListener('click', function() {
-            var row = document.createElement('div');
-            row.className = 'sub-title-row flex gap-2 items-center';
-            row.innerHTML = '<input type="text" name="sub_titles[]" maxlength="255" placeholder="e.g. Flashlight" class="shadow appearance-none border rounded flex-1 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">' +
-                '<button type="button" class="sub-title-remove px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm font-medium">Remove</button>';
-            subTitlesContainer.appendChild(row);
-            row.querySelector('.sub-title-remove').addEventListener('click', function() { row.remove(); });
-        });
-        subTitlesContainer.querySelectorAll('.sub-title-remove').forEach(function(btn) {
-            btn.addEventListener('click', function() { btn.closest('.sub-title-row').remove(); });
-        });
+        if (subTitlesContainer) {
+            subTitlesContainer.querySelectorAll('.sub-title-remove').forEach(function(btn) {
+                btn.addEventListener('click', function() { btn.closest('.sub-title-row').remove(); });
+            });
+        }
 
-        // Class schedule rows
         var scheduleContainer = document.getElementById('schedules-container');
         var scheduleIndex = scheduleContainer ? scheduleContainer.querySelectorAll('.schedule-row').length : 0;
         var minDateStr = @json(now()->toDateString());

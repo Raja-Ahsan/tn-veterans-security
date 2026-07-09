@@ -123,6 +123,29 @@
         </div>
         @endif
 
+        @php
+            $travelNotes = $booking->classSchedule?->travel_notes
+                ?? $booking->service?->travel_notes;
+            $lodgingInstructions = $booking->service?->lodging_instructions;
+        @endphp
+        @if($travelNotes || $lodgingInstructions)
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Travel Information</h2>
+            @if($travelNotes)
+                <div class="mb-4">
+                    <p class="text-sm text-gray-500 mb-1">Travel Notes</p>
+                    <p class="text-gray-700 whitespace-pre-wrap">{{ $travelNotes }}</p>
+                </div>
+            @endif
+            @if($lodgingInstructions)
+                <div>
+                    <p class="text-sm text-gray-500 mb-1">Lodging Instructions</p>
+                    <p class="text-gray-700 whitespace-pre-wrap">{{ $lodgingInstructions }}</p>
+                </div>
+            @endif
+        </div>
+        @endif
+
         <!-- Booking Details -->
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Booking Details</h2>
