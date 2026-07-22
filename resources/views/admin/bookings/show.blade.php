@@ -170,6 +170,35 @@
                     @endif
                 </div>
             </div>
+
+            @if($booking->payment_status === 'pending')
+                <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <p class="text-sm font-semibold text-amber-950">Unlock online quizzes</p>
+                    <p class="mt-1 text-sm text-amber-800">
+                        Quizzes unlock only after deposit is paid.
+                        @if($booking->service?->has_online_parts)
+                            This is a blended class — mark deposit paid to enroll the student in modules/quizzes.
+                        @endif
+                    </p>
+                    <form method="POST" action="{{ route('admin.bookings.mark-deposit-paid', $booking) }}" class="mt-3">
+                        @csrf
+                        <button type="submit"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+                                onclick="return confirm('Mark deposit as paid for this booking? This unlocks online modules/quizzes for the student.');">
+                            <i class="fas fa-unlock"></i> Mark Deposit Paid
+                        </button>
+                    </form>
+                </div>
+            @elseif(in_array($booking->payment_status, ['deposit_paid', 'fully_paid'], true) && $booking->service?->has_online_parts)
+                <div class="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                    <p class="text-sm font-semibold text-emerald-900">Online course unlocked</p>
+                    <p class="mt-1 text-sm text-emerald-800">Student can take modules/quizzes in their portal.</p>
+                    <a href="{{ route('admin.classes.blended-progress', $booking->service) }}"
+                       class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">
+                        <i class="fas fa-chart-bar"></i> View Student Progress
+                    </a>
+                </div>
+            @endif
         </div>
 
         <!-- Update Status -->

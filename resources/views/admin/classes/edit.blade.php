@@ -4,13 +4,68 @@
 @section('page-title', 'Edit Class')
 
 @section('content')
-<div class="bg-white rounded-lg shadow p-6">
-    <form method="POST" action="{{ route('admin.classes.update', $service) }}" enctype="multipart/form-data">
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+        <div class="flex flex-wrap items-center gap-2">
+            <h3 class="text-xl font-semibold text-gray-900">Edit Class</h3>
+            @if($service->is_active)
+                <span class="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800">Active</span>
+            @else
+                <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800">Inactive</span>
+            @endif
+            @if($service->has_online_parts)
+                <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">Blended</span>
+            @endif
+            @if($service->is_travel_based)
+                <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">Travel</span>
+            @endif
+        </div>
+        <p class="mt-1 text-sm font-medium text-gray-800">{{ $service->title }}</p>
+        <p class="mt-0.5 text-sm text-gray-500">Update details, pricing, and sessions. Sessions with bookings cannot be removed until those bookings are cancelled.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.class-schedules.index', ['expand_service' => $service->id]) }}"
+           class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-calendar-alt text-gray-400"></i> Schedules
+        </a>
+        @if($service->has_online_parts)
+            <a href="{{ route('admin.classes.course-modules.index', $service) }}"
+               class="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+                <i class="fas fa-book-open"></i> Modules &amp; Quizzes
+            </a>
+        @endif
+        <a href="{{ route('admin.classes.index') }}"
+           class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            ← All classes
+        </a>
+    </div>
+</div>
+
+<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+    <div class="flex gap-3">
+        <i class="fas fa-info-circle mt-0.5 text-blue-500"></i>
+        <div class="space-y-1">
+            <p class="font-semibold">Quick guide</p>
+            <ul class="list-disc space-y-0.5 pl-4 text-blue-800">
+                <li><span class="font-medium">Basics</span> — name, image, and website content.</li>
+                <li><span class="font-medium">Pricing</span> — price, online quizzes, and travel options.</li>
+                <li><span class="font-medium">Sessions</span> — bookable date/time slots for this class.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{{ route('admin.classes.update', ['service' => $service]) }}" enctype="multipart/form-data" class="space-y-6 pb-24">
         @csrf
         @method('PUT')
 
-        <div class="mb-4">
-            <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Title *</label>
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        @include('admin.classes.partials.section-header', ['step' => '1', 'title' => 'Basics', 'hint' => 'Title and short info shown on the website and in the admin list.'])
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="lg:col-span-2 space-y-4">
+        <div>
+            <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Class title *</label>
             <input type="text" 
                    id="title" 
                    name="title" 
@@ -22,7 +77,7 @@
             @enderror
         </div>
 
-        <div class="mb-4">
+        <div>
             <label for="slug" class="block text-gray-700 text-sm font-bold mb-2">Direct page slug (optional)</label>
             <input type="text" 
                    id="slug" 
@@ -30,13 +85,13 @@
                    value="{{ old('slug', $service->slug) }}"
                    placeholder="e.g. asp, active-shooter, dallas-law"
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            <p class="text-xs text-gray-500 mt-1">If set, this service has a direct page at <strong>/service/{slug}</strong>. Use lowercase letters, numbers and hyphens only.</p>
+            <p class="text-xs text-gray-500 mt-1">If set, this class has a page at <strong>/service/{slug}</strong>. Lowercase letters, numbers and hyphens only.</p>
             @error('slug')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
         </div>
 
-        <div class="mb-4">
+        <div>
             <label for="short_description" class="block text-gray-700 text-sm font-bold mb-2">Short Description</label>
             <textarea id="short_description" 
                       name="short_description" 
@@ -49,8 +104,47 @@
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
         </div>
+            </div>
 
-        <div class="mb-4">
+            <div class="space-y-4">
+                <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4">
+                    <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Class image</label>
+                    @if($service->image)
+                        <div class="mb-3">
+                            <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="h-28 w-full object-cover rounded-md ring-1 ring-gray-200">
+                        </div>
+                    @else
+                        <div class="mb-3 flex h-28 items-center justify-center rounded-md bg-gray-100 text-gray-400">
+                            <i class="fas fa-image text-2xl"></i>
+                        </div>
+                    @endif
+                    <input type="file" 
+                           id="image" 
+                           name="image" 
+                           accept="image/*"
+                           class="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border-0 file:bg-green-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-green-700 hover:file:bg-green-100">
+                    <p class="mt-1 text-xs text-gray-500">Upload to replace the current image.</p>
+                    @error('image')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="order" class="block text-gray-700 text-sm font-bold mb-2">List order</label>
+                    <input type="number" 
+                           id="order" 
+                           name="order" 
+                           value="{{ old('order', $service->order) }}"
+                           min="0"
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <p class="text-xs text-gray-500 mt-1">Lower numbers appear first in lists.</p>
+                    @error('order')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 mb-4">
             <label for="requirements" class="block text-gray-700 text-sm font-bold mb-2">Requirements</label>
             <div id="requirements-editor" class="bg-white border rounded">
                 {!! old('requirements', $service->requirements) !!}
@@ -60,7 +154,6 @@
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
         </div>
-
 
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">Sub titles (show below banner on class page)</label>
@@ -78,7 +171,7 @@
                     </div>
                 @endforeach
             </div>
-            <button type="button" id="add-sub-title" class="mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium">
+            <button type="button" id="add-sub-title" class="mt-2 inline-flex items-center px-4 py-2 bg-green-50 text-green-800 ring-1 ring-inset ring-green-200 rounded hover:bg-green-100 text-sm font-medium">
                 <i class="fas fa-plus mr-1"></i> Add sub title
             </button>
             @error('sub_titles.*')
@@ -97,59 +190,34 @@
             @enderror
         </div>
 
-        <div class="mb-4">
-            <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image</label>
-            @if($service->image)
-                <div class="mb-2">
-                    <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="h-32 w-32 object-cover rounded">
-                </div>
-            @endif
-            <input type="file" 
-                   id="image" 
-                   name="image" 
-                   accept="image/*"
-                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            @error('image')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <div>
+                <label for="min_students" class="block text-gray-700 text-sm font-bold mb-2">Default min students</label>
+                <input type="number"
+                       id="min_students"
+                       name="min_students"
+                       value="{{ old('min_students', $service->min_students) }}"
+                       min="1"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p class="text-xs text-gray-500 mt-1">Minimum needed for a session to run (default for new sessions).</p>
+            </div>
+            <div>
+                <label for="max_students" class="block text-gray-700 text-sm font-bold mb-2">Default max students</label>
+                <input type="number"
+                       id="max_students"
+                       name="max_students"
+                       value="{{ old('max_students', $service->max_students) }}"
+                       max="100"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p class="text-xs text-gray-500 mt-1">Seat capacity per session (default for new sessions).</p>
+            </div>
         </div>
+        </div>{{-- end section 1 --}}
 
-        <div class="mb-4">
-            <label for="order" class="block text-gray-700 text-sm font-bold mb-2">Order</label>
-            <input type="number" 
-                   id="order" 
-                   name="order" 
-                   value="{{ old('order', $service->order) }}"
-                   min="0"
-                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            @error('order')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="mb-4">
-            <label for="min_students" class="block text-gray-700 text-sm font-bold mb-2">Min Students</label>
-            <input type="number" 
-                   id="min_students" 
-                   name="min_students" 
-                   value="{{ old('min_students', $service->min_students) }}"
-                   min="1"
-                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-        </div>
-
-        <div class="mb-4">
-            <label for="max_students" class="block text-gray-700 text-sm font-bold mb-2">Max Students</label>
-            <input type="number" 
-                   id="max_students" 
-                   name="max_students" 
-                   value="{{ old('max_students', $service->max_students) }}"
-                   max="100"
-                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-        </div>
         <!-- Category Section -->
-        <div class="mb-6 border-t pt-4 mt-6">
-            <h3 class="text-lg font-bold mb-4">Category & Organization</h3>
-            <p class="text-sm text-gray-600 mb-3">Categories are optional. Use a direct page slug above for standalone services.</p>
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            @include('admin.classes.partials.section-header', ['step' => '2', 'title' => 'Category & Organization', 'hint' => 'Optional. Use categories for listing pages, or a direct slug for a standalone page.'])
+            <p class="text-sm text-gray-600 mb-3">Categories are optional. Use a direct page slug above for standalone classes.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Categories (optional)</label>
@@ -208,38 +276,42 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="flex items-center">
-                        <input type="checkbox" 
-                               name="requires_dallas_law" 
-                               value="1"
-                               {{ old('requires_dallas_law', $service->requires_dallas_law) ? 'checked' : '' }}
-                               class="mr-2">
-                        <span class="text-sm text-gray-700">Requires Dallas Law Training</span>
-                    </label>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                <label for="requires_dallas_law" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-purple-300 has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
+                    <input type="checkbox"
+                           id="requires_dallas_law"
+                           name="requires_dallas_law"
+                           value="1"
+                           {{ old('requires_dallas_law', $service->requires_dallas_law) ? 'checked' : '' }}
+                           class="mt-0.5 rounded border-gray-400 text-purple-600 focus:ring-purple-500">
+                    <div>
+                        <span class="text-sm font-semibold text-gray-900">Requires Dallas Law Training</span>
+                        <p class="mt-0.5 text-xs text-gray-500">Students should complete Dallas Law before this class.</p>
+                    </div>
+                </label>
 
-                <div>
-                    <label class="flex items-center">
-                        <input type="checkbox" 
-                               name="requires_active_shooter" 
-                               value="1"
-                               {{ old('requires_active_shooter', $service->requires_active_shooter) ? 'checked' : '' }}
-                               class="mr-2">
-                        <span class="text-sm text-gray-700">Requires Active Shooter Training</span>
-                    </label>
-                </div>
+                <label for="requires_active_shooter" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-rose-300 has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50">
+                    <input type="checkbox"
+                           id="requires_active_shooter"
+                           name="requires_active_shooter"
+                           value="1"
+                           {{ old('requires_active_shooter', $service->requires_active_shooter) ? 'checked' : '' }}
+                           class="mt-0.5 rounded border-gray-400 text-rose-600 focus:ring-rose-500">
+                    <div>
+                        <span class="text-sm font-semibold text-gray-900">Requires Active Shooter Training</span>
+                        <p class="mt-0.5 text-xs text-gray-500">Students should complete Active Shooter before this class.</p>
+                    </div>
+                </label>
             </div>
-        </div>
+        </div>{{-- end section 2 --}}
 
         <!-- Pricing Section -->
-        <div class="mb-6 border-t pt-4 mt-6">
-            <h3 class="text-lg font-bold mb-4">Pricing & Class Configuration</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            @include('admin.classes.partials.section-header', ['step' => '3', 'title' => 'Pricing & Class Setup', 'hint' => 'What students pay and how the class is delivered.'])
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-start">
                 <div>
-                    <label for="price" class="block text-gray-700 text-sm font-bold mb-2">Price ($)</label>
+                    <label for="price" class="block text-gray-700 text-sm font-bold mb-2">Full price ($)</label>
                     <input type="number" 
                            id="price" 
                            name="price" 
@@ -254,7 +326,7 @@
                 </div>
 
                 <div>
-                    <label for="deposit_amount" class="block text-gray-700 text-sm font-bold mb-2">Deposit Amount ($)</label>
+                    <label for="deposit_amount" class="block text-gray-700 text-sm font-bold mb-2">Deposit amount ($)</label>
                     <input type="number" 
                            id="deposit_amount" 
                            name="deposit_amount" 
@@ -263,13 +335,12 @@
                            min="0"
                            placeholder="0.00"
                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <p class="text-xs text-gray-500 mt-1">Optional at booking; remainder later.</p>
                     @error('deposit_amount')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="class_type" class="block text-gray-700 text-sm font-bold mb-2">Class Type</label>
                     <select id="class_type" 
@@ -284,35 +355,7 @@
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="has_online_parts" 
-                           value="1"
-                           {{ old('has_online_parts', $service->has_online_parts) ? 'checked' : '' }}
-                           class="mr-2">
-                    <span class="text-sm text-gray-700">Has online parts/components (blended course)</span>
-                </label>
-                @if($service->has_online_parts)
-                    <a href="{{ route('admin.classes.course-modules.index', $service) }}" class="inline-block mt-2 text-blue-600 hover:underline text-sm">
-                        <i class="fas fa-book-open mr-1"></i> Manage Online Modules & Quizzes
-                    </a>
-                    <a href="{{ route('admin.classes.blended-progress', $service) }}" class="inline-block mt-2 ml-4 text-blue-600 hover:underline text-sm">
-                        <i class="fas fa-user-graduate mr-1"></i> Student Progress & In-Person Tests
-                    </a>
-                @endif
-            </div>
-
-            <div class="mb-4">
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="testing_in_person" 
-                           value="1"
-                           {{ old('testing_in_person', $service->testing_in_person ?? true) ? 'checked' : '' }}
-                           class="mr-2">
-                    <span class="text-sm text-gray-700">Testing is in-person (always true)</span>
-                </label>
-            </div>
+            @include('admin.classes.partials.blended-delivery-options', ['service' => $service])
 
             @include('admin.classes._extended_fields', [
                     'refundPolicy' => $service->refund_policy,
@@ -326,13 +369,16 @@
                     'travelNotes' => $service->travel_notes,
                     'lodgingInstructions' => $service->lodging_instructions,
                 ])
-        </div>
+        </div>{{-- end section 3 --}}
 
         <!-- Class sessions (saved to class_schedules) -->
-        <div class="mb-6 border-t pt-4 mt-6">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <input type="hidden" name="sync_schedules" value="1">
-            <h3 class="text-lg font-bold mb-2">Class sessions (schedule)</h3>
-            <p class="text-sm text-gray-600 mb-3">Edit upcoming sessions or add new ones. Sessions with bookings cannot be removed from this list until those bookings are cancelled.</p>
+            @include('admin.classes.partials.section-header', ['step' => '4', 'title' => 'Class Sessions', 'hint' => 'Each session = one bookable date/time for this class.'])
+            <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <i class="fas fa-lightbulb mr-1 text-amber-600"></i>
+                Edit upcoming sessions or add new ones. Sessions with bookings cannot be removed until those bookings are cancelled.
+            </div>
             <div id="schedules-container" class="space-y-4">
                 @php
                     $schedRows = old('schedules');
@@ -355,12 +401,15 @@
                     }
                 @endphp
                 @foreach($schedRows as $idx => $sch)
-                    <div class="schedule-row border rounded-lg p-4 bg-gray-50 space-y-3">
+                    <div class="schedule-row rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
                         @if(!empty($sch['id']))
                             <input type="hidden" name="schedules[{{ $idx }}][id]" value="{{ $sch['id'] }}">
                         @endif
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-semibold text-gray-700">Session <span class="schedule-num">{{ $loop->iteration }}</span></span>
+                            <span class="inline-flex items-center gap-2 text-sm font-semibold text-gray-800">
+                                <span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-700 text-xs text-white"><span class="schedule-num">{{ $loop->iteration }}</span></span>
+                                Session
+                            </span>
                             <button type="button" class="schedule-remove text-red-600 hover:text-red-800 text-sm font-medium">Remove</button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -422,13 +471,13 @@
                     </div>
                 @endforeach
             </div>
-            <button type="button" id="add-schedule-row" class="mt-3 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium">
-                <i class="fas fa-plus mr-1"></i> Add session
+            <button type="button" id="add-schedule-row" class="mt-3 inline-flex items-center px-4 py-2 bg-green-50 text-green-800 ring-1 ring-inset ring-green-200 rounded hover:bg-green-100 text-sm font-medium">
+                <i class="fas fa-plus mr-1"></i> Add another session
             </button>
             @error('schedules')
                 <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
             @enderror
-        </div>
+        </div>{{-- end section 4 --}}
 
         <!-- Related Services (Linked / Related Trainings) -->
         @php
@@ -438,9 +487,9 @@
             $others = ($allServices ?? collect())->whereNotIn('id', $linkedOrdered->keys());
             $hasAnyToShow = $service->linkedServices->isNotEmpty() || $others->isNotEmpty();
         @endphp
-        <div class="mb-6 border-t pt-4 mt-6">
-            <h3 class="text-lg font-bold mb-2">Related Services</h3>
-            <p class="text-sm text-gray-600 mb-3">Choose which trainings to show as related on this service’s page (e.g. Unarmed → Less Lethal, Dallas Law). Order is kept: linked first, then the rest.</p>
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            @include('admin.classes.partials.section-header', ['step' => '5', 'title' => 'Related Trainings', 'hint' => 'Optional. Other classes to suggest on this class’s public page.'])
+            <p class="text-sm text-gray-600 mb-3">Choose related trainings (e.g. Unarmed → Less Lethal). Linked items stay in order first.</p>
             <div class="max-h-56 overflow-y-auto border rounded p-3 bg-gray-50 space-y-2">
                 @if($hasAnyToShow)
                     @if($service->linkedServices->isNotEmpty())
@@ -482,29 +531,35 @@
             @error('linked_services.*')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
-        </div>
 
-        <div class="mb-6">
-            <label class="flex items-center">
-                <input type="checkbox" 
-                       name="is_active" 
-                       value="1"
-                       {{ old('is_active', $service->is_active) ? 'checked' : '' }}
-                       class="mr-2">
-                <span class="text-sm text-gray-700">Active</span>
-            </label>
-        </div>
+            <div class="mt-6 border-t border-gray-100 pt-4">
+                <label for="is_active" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-green-300 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                    <input type="checkbox"
+                           id="is_active"
+                           name="is_active"
+                           value="1"
+                           {{ old('is_active', $service->is_active) ? 'checked' : '' }}
+                           class="mt-0.5 rounded border-gray-400 text-green-600 focus:ring-green-500">
+                    <div class="min-w-0 flex-1">
+                        <span class="text-sm font-semibold text-gray-900">Active — show this class on the website</span>
+                        <p class="mt-0.5 text-xs text-gray-500">Uncheck to hide from public pages without deleting the class.</p>
+                    </div>
+                    <i class="fas fa-eye text-green-500 mt-0.5"></i>
+                </label>
+            </div>
+        </div>{{-- end section 5 --}}
 
-        <div class="flex gap-4">
-            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                <i class="fas fa-save mr-2"></i> Update Service
-            </button>
-            <a href="{{ route('admin.classes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Cancel
-            </a>
+        <div class="fixed bottom-0 inset-x-0 z-20 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 shadow-lg lg:pl-64 sm:static sm:inset-auto sm:z-auto sm:mt-2 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none sm:pl-0">
+            <div class="mx-auto flex max-w-full flex-wrap items-center justify-end gap-3 sm:justify-start">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-5 rounded shadow-sm">
+                    <i class="fas fa-save mr-2"></i> Update Class
+                </button>
+                <a href="{{ route('admin.classes.index') }}" class="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-5 rounded border border-gray-300">
+                    Cancel
+                </a>
+            </div>
         </div>
-    </form>
-</div>
+</form>
 
 <!-- Quill Rich Text Editor -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -629,9 +684,10 @@
             addScheduleBtn.addEventListener('click', function() {
                 var i = scheduleIndex++;
                 var div = document.createElement('div');
-                div.className = 'schedule-row border rounded-lg p-4 bg-gray-50 space-y-3';
+                div.className = 'schedule-row rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3';
                 div.innerHTML = '<div class="flex justify-between items-center">' +
-                    '<span class="text-sm font-semibold text-gray-700">Session <span class="schedule-num">0</span></span>' +
+                    '<span class="inline-flex items-center gap-2 text-sm font-semibold text-gray-800">' +
+                    '<span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-700 text-xs text-white"><span class="schedule-num">0</span></span> Session</span>' +
                     '<button type="button" class="schedule-remove text-red-600 hover:text-red-800 text-sm font-medium">Remove</button></div>' +
                     '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">' +
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Date *</label>' +

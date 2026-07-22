@@ -11,6 +11,7 @@ class ModuleQuizQuestion extends Model
         'course_module_id',
         'question',
         'options',
+        'allow_multiple',
         'correct_answer',
         'order',
     ];
@@ -19,6 +20,8 @@ class ModuleQuizQuestion extends Model
     {
         return [
             'options' => 'array',
+            'correct_answer' => 'array',
+            'allow_multiple' => 'boolean',
             'order' => 'integer',
         ];
     }
@@ -26,5 +29,35 @@ class ModuleQuizQuestion extends Model
     public function courseModule(): BelongsTo
     {
         return $this->belongsTo(CourseModule::class);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function correctAnswers(): array
+    {
+        $answers = $this->correct_answer;
+
+        if (! is_array($answers)) {
+            return filled($answers) ? [(string) $answers] : [];
+        }
+
+        return array_values(array_map('strval', array_filter($answers, fn ($a) => filled($a))));
+    }
+
+    /**
+     * @param  string|array<int, string>|null  $given
+     */
+    public function isAnswerCorrect(string|array|null $given): bool
+    {
+        $correct = $this->correctAnswers();
+        $selected = is_array($given)
+            ? array_values(array_map('strval', array_filter($given, fn ($a) => filled($a))))
+            : (filled($given) ? [(string) $given] : []);
+
+        sort($correct);
+        sort($selected);
+
+        return $correct !== [] && $correct === $selected;
     }
 }

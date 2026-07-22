@@ -17,12 +17,14 @@ class OnlineCoursesController extends Controller
     {
         $student = Auth::guard('student')->user();
 
-        $serviceIds = ServiceBooking::query()
+        $paidBookings = ServiceBooking::query()
             ->where('student_id', $student->id)
             ->whereIn('status', ['pending', 'confirmed', 'completed'])
             ->whereIn('payment_status', ['deposit_paid', 'fully_paid'])
-            ->pluck('service_id')
-            ->unique();
+            ->with('service')
+            ->get();
+
+        $serviceIds = $paidBookings->pluck('service_id')->unique();
 
         $courses = Service::query()
             ->whereIn('id', $serviceIds)
@@ -44,6 +46,15 @@ class OnlineCoursesController extends Controller
                 return $service;
             });
 
-        return view('student.online-courses.index', compact('courses'));
+        $pendingUnlockBookings = ServiceBooking::query()
+            ->where('student_id', $student->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('payment_status', 'pending')
+            ->whereHas('service', fn ($q) => $q->where('has_online_parts', true)->where('is_active', true))
+            ->with('service')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('student.online-courses.index', compact('courses', 'pendingUnlockBookings'));
     }
 }

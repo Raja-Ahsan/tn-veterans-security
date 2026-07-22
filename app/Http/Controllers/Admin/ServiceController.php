@@ -142,6 +142,12 @@ class ServiceController extends Controller
             $service->linkedServices()->sync($sync);
         }
 
+        if ($validated['has_online_parts']) {
+            return redirect()
+                ->route('admin.classes.course-modules.index', $service)
+                ->with('success', 'Class created. Add online modules & quizzes below.');
+        }
+
         return redirect()->route('admin.classes.index')
             ->with('success', 'Class created successfully.');
     }

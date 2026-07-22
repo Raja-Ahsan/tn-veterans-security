@@ -66,6 +66,13 @@ class StudentController extends Controller
                 'nullable',
                 'date',
             ],
+        ], [
+            'name.required' => 'Student name is required.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email is already used by another student.',
+            'security_registration_number.required' => 'Registration number is required when security registration is enabled.',
+            'security_registration_expiration.required' => 'Expiration date is required when security registration is enabled.',
         ]);
 
         $student->update([

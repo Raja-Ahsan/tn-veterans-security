@@ -31,7 +31,7 @@ class InstructorController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_active'] = $request->boolean('is_active');
 
         Instructor::create($validated);
 
@@ -55,7 +55,7 @@ class InstructorController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_active'] = $request->boolean('is_active');
 
         $instructor->update($validated);
 

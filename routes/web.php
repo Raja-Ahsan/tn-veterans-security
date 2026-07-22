@@ -327,6 +327,10 @@ Route::prefix('student')->name('student.')->group(function () {
         Route::get('/courses/{service}/online', [App\Http\Controllers\Student\OnlineCourseController::class, 'index'])->name('online-course.index');
         Route::get('/courses/{service}/online/modules/{courseModule}', [App\Http\Controllers\Student\OnlineCourseController::class, 'show'])->name('online-course.module');
         Route::post('/courses/{service}/online/modules/{courseModule}/quiz', [App\Http\Controllers\Student\OnlineCourseController::class, 'submitQuiz'])->name('online-course.quiz');
+        Route::post('/courses/{service}/online/modules/{courseModule}/quiz/start', [App\Http\Controllers\Student\OnlineCourseController::class, 'startQuiz'])->name('online-course.quiz.start');
+        Route::get('/courses/{service}/online/modules/{courseModule}/quiz/take', [App\Http\Controllers\Student\OnlineCourseController::class, 'takeQuiz'])->name('online-course.quiz.take');
+        Route::post('/courses/{service}/online/modules/{courseModule}/quiz/answer', [App\Http\Controllers\Student\OnlineCourseController::class, 'answerQuiz'])->name('online-course.quiz.answer');
+        Route::get('/courses/{service}/online/modules/{courseModule}/quiz/result/{moduleQuizSession}', [App\Http\Controllers\Student\OnlineCourseController::class, 'quizResult'])->name('online-course.quiz.result');
 
         // Booking Routes
         Route::get('/bookings', [App\Http\Controllers\Student\BookingController::class, 'index'])->name('bookings');
@@ -389,7 +393,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('classes', App\Http\Controllers\Admin\ServiceController::class)
             ->names('classes')
-            ->parameters(['class' => 'service']);
+            ->parameters(['classes' => 'service']);
         Route::get('/classes/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'index'])->name('classes.course-modules.index');
         Route::get('/classes/{service}/course-modules/create', [App\Http\Controllers\Admin\CourseModuleController::class, 'create'])->name('classes.course-modules.create');
         Route::post('/classes/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'store'])->name('classes.course-modules.store');
@@ -410,6 +414,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/bookings/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
         Route::get('/class-schedules/{classSchedule}/roster/export', [App\Http\Controllers\Admin\BookingController::class, 'exportRoster'])->name('class-schedules.roster.export');
         Route::put('/bookings/{booking}/status', [App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.update-status');
+        Route::post('/bookings/{booking}/mark-deposit-paid', [App\Http\Controllers\Admin\BookingController::class, 'markDepositPaid'])->name('bookings.mark-deposit-paid');
 
         // Payments Routes
         Route::get('/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');

@@ -2,190 +2,226 @@
 
 @php
     use Illuminate\Support\Str;
+    $totalBookings = $bookings->count();
+    $pendingCount = $bookings->where('status', 'pending')->count();
+    $confirmedCount = $bookings->where('status', 'confirmed')->count();
+    $hasBookings = $totalBookings > 0;
 @endphp
 
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-    <p class="text-gray-600 mt-2">Welcome back, {{ $student->name }}!</p>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <!-- Total Bookings Card -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-600 text-sm">Total Bookings</p>
-                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $bookings->count() }}</p>
-            </div>
-            <div class="bg-blue-100 p-4 rounded-full">
-                <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
-            </div>
+{{-- Welcome --}}
+<div class="mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a2332] via-[#1f2d3d] to-[#175B0E] p-6 text-white shadow-sm sm:p-8">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-sm font-medium text-white/70">Student Dashboard</p>
+            <h1 class="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+                Welcome back, {{ $student->name }}
+            </h1>
+            <p class="mt-2 max-w-xl text-sm text-white/75 sm:text-base">
+                Track your classes, payments, and training progress in one place.
+            </p>
         </div>
-    </div>
-
-    <!-- Pending Bookings Card -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-600 text-sm">Pending Bookings</p>
-                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $bookings->where('status', 'pending')->count() }}</p>
-            </div>
-            <div class="bg-yellow-100 p-4 rounded-full">
-                <i class="fas fa-clock text-yellow-600 text-2xl"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirmed Bookings Card -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-600 text-sm">Confirmed Bookings</p>
-                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $bookings->where('status', 'confirmed')->count() }}</p>
-            </div>
-            <div class="bg-green-100 p-4 rounded-full">
-                <i class="fas fa-check-circle text-green-600 text-2xl"></i>
-            </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('services') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]">
+                <i class="fas fa-search text-xs"></i>
+                Browse Classes
+            </a>
+            <a href="{{ route('student.bookings') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15">
+                <i class="fas fa-calendar-check text-xs"></i>
+                My Bookings
+            </a>
         </div>
     </div>
 </div>
 
-<!-- Month calendar: class dates -->
-@if(!empty($calendarWeeks))
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">My class calendar — {{ $calendarTitle }}</h2>
-    <p class="text-sm text-gray-600 mb-4">Days with a scheduled class show your booking. Open <a href="{{ route('student.bookings') }}" class="underline" style="color: #3AA62C;">My Bookings</a> for full details.</p>
-    <div class="overflow-x-auto">
-        <table class="min-w-full border-collapse text-center text-sm">
-            <thead>
-                <tr class="text-gray-500 text-xs uppercase tracking-wide">
-                    <th class="p-2 border border-gray-200 bg-gray-50">Sun</th>
-                    <th class="p-2 border border-gray-200 bg-gray-50">Mon</th>
-                    <th class="p-2 border border-gray-200 bg-gray-50">Tue</th>
-                    <th class="p-2 border border-gray-200 bg-gray-50">Wed</th>
-                    <th class="p-2 border border-gray-200 bg-gray-50">Thu</th>
-                    <th class="p-2 border border-gray-200 bg-gray-50">Fri</th>
-                    <th class="p-2 border border-gray-200 bg-gray-50">Sat</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($calendarWeeks as $week)
-                <tr>
-                    @foreach($week as $cell)
-                    <td class="p-1 border border-gray-200 align-top min-w-[7rem] h-24 {{ $cell['inMonth'] ? 'bg-white' : 'bg-gray-50 text-gray-400' }}">
-                        <div class="font-semibold text-gray-800 mb-1">{{ $cell['day'] }}</div>
-                        @foreach($cell['bookings'] as $cb)
-                            <a href="{{ route('student.bookings.show', $cb->id) }}" class="block text-left text-xs rounded px-1 py-0.5 mb-1 truncate {{ $cb->status === 'confirmed' ? 'bg-green-100 text-green-900' : 'bg-amber-100 text-amber-900' }}" title="{{ $cb->service->title ?? 'Class' }}">
-                                {{ Str::limit($cb->service->title ?? 'Class', 18) }}
-                            </a>
+{{-- Stats --}}
+<div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Total Bookings</p>
+                <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900">{{ $totalBookings }}</p>
+            </div>
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                <i class="fas fa-calendar-check"></i>
+            </span>
+        </div>
+    </div>
+
+    <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Pending</p>
+                <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900">{{ $pendingCount }}</p>
+            </div>
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <i class="fas fa-clock"></i>
+            </span>
+        </div>
+    </div>
+
+    <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Confirmed</p>
+                <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900">{{ $confirmedCount }}</p>
+            </div>
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-[var(--brand)]">
+                <i class="fas fa-check-circle"></i>
+            </span>
+        </div>
+    </div>
+</div>
+
+@if($hasBookings)
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+    {{-- Calendar --}}
+    @if(!empty($calendarWeeks))
+    <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm xl:col-span-3 sm:p-6">
+        <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-lg font-bold text-gray-900">Class Calendar</h2>
+                <p class="mt-0.5 text-sm text-gray-500">{{ $calendarTitle }}</p>
+            </div>
+            <a href="{{ route('student.bookings') }}" class="text-sm font-semibold text-[var(--brand)] hover:text-[var(--brand-dark)]">
+                View bookings <i class="fas fa-arrow-right ml-1 text-xs"></i>
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse text-center text-sm">
+                <thead>
+                    <tr>
+                        @foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $dayName)
+                            <th class="border-b border-gray-100 pb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ $dayName }}</th>
                         @endforeach
-                    </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($calendarWeeks as $week)
+                    <tr>
+                        @foreach($week as $cell)
+                        @php
+                            $isToday = $cell['dateStr'] === now()->format('Y-m-d');
+                            $hasClass = $cell['bookings']->isNotEmpty();
+                        @endphp
+                        <td class="align-top p-1.5 {{ $cell['inMonth'] ? '' : 'opacity-40' }}">
+                            <div class="min-h-[4.5rem] rounded-lg p-1.5 {{ $hasClass ? 'bg-emerald-50/80 ring-1 ring-emerald-100' : '' }} {{ $isToday ? 'ring-2 ring-[var(--brand)] ring-offset-1' : '' }}">
+                                <div class="mb-1 text-right text-xs font-semibold {{ $isToday ? 'text-[var(--brand)]' : 'text-gray-700' }}">
+                                    {{ $cell['day'] }}
+                                </div>
+                                @foreach($cell['bookings'] as $cb)
+                                    <a
+                                        href="{{ route('student.bookings.show', $cb->id) }}"
+                                        class="mb-1 block truncate rounded-md px-1.5 py-1 text-left text-[10px] font-semibold leading-tight {{ $cb->status === 'confirmed' ? 'bg-[var(--brand)] text-white' : 'bg-amber-400 text-amber-950' }}"
+                                        title="{{ $cb->service->title ?? 'Class' }}"
+                                    >
+                                        {{ Str::limit($cb->service->title ?? 'Class', 14) }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </td>
+                        @endforeach
+                    </tr>
                     @endforeach
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-@endif
+    @endif
 
-<!-- Upcoming Bookings -->
-@if($upcomingBookings->count() > 0)
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Upcoming Bookings</h2>
-    <div class="space-y-4">
-        @foreach($upcomingBookings as $booking)
-        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <h3 class="text-lg font-semibold text-gray-800">{{ $booking->service->title }}</h3>
-                    <p class="text-gray-600 mt-1">
-                        <i class="fas fa-calendar mr-2"></i>{{ $booking->booking_date->format('M d, Y') }}
-                        @if($booking->classSchedule)
-                            <i class="fas fa-clock ml-4 mr-2"></i>{{ \Carbon\Carbon::parse($booking->classSchedule->start_time)->format('h:i A') }}
-                        @elseif($booking->booking_time)
-                            <i class="fas fa-clock ml-4 mr-2"></i>{{ \Carbon\Carbon::parse($booking->booking_time)->format('h:i A') }}
-                        @endif
-                    </p>
-                    <span class="inline-block mt-2 px-3 py-1 rounded-full text-sm font-semibold
-                        @if($booking->status == 'pending') bg-yellow-100 text-yellow-800
-                        @elseif($booking->status == 'confirmed') bg-green-100 text-green-800
-                        @elseif($booking->status == 'completed') bg-blue-100 text-blue-800
-                        @else bg-red-100 text-red-800
-                        @endif">
-                        {{ ucfirst($booking->status) }}
-                    </span>
-                </div>
-                <a href="{{ route('student.bookings.show', $booking->id) }}" class="ml-4 hover:underline transition-colors" style="color: #3AA62C;" onmouseover="this.style.color='#175B0E'" onmouseout="this.style.color='#3AA62C'">
-                    View Details <i class="fas fa-arrow-right"></i>
+    {{-- Side panels --}}
+    <div class="flex flex-col gap-6 xl:col-span-2">
+        @if($upcomingBookings->count() > 0)
+        <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <h2 class="mb-4 text-lg font-bold text-gray-900">Upcoming Classes</h2>
+            <div class="space-y-3">
+                @foreach($upcomingBookings->take(4) as $booking)
+                <a href="{{ route('student.bookings.show', $booking->id) }}" class="block rounded-xl border border-gray-100 bg-gray-50/80 p-4 transition hover:border-emerald-200 hover:bg-emerald-50/40">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h3 class="truncate font-semibold text-gray-900">{{ $booking->service->title }}</h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                <i class="far fa-calendar mr-1"></i>
+                                {{ $booking->booking_date?->format('M d, Y') ?? 'TBD' }}
+                                @if($booking->classSchedule)
+                                    · {{ \Carbon\Carbon::parse($booking->classSchedule->start_time)->format('g:i A') }}
+                                @elseif($booking->booking_time)
+                                    · {{ \Carbon\Carbon::parse($booking->booking_time)->format('g:i A') }}
+                                @endif
+                            </p>
+                        </div>
+                        <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold
+                            @if($booking->status == 'pending') bg-amber-100 text-amber-800
+                            @elseif($booking->status == 'confirmed') bg-emerald-100 text-emerald-800
+                            @else bg-gray-100 text-gray-700
+                            @endif">
+                            {{ ucfirst($booking->status) }}
+                        </span>
+                    </div>
                 </a>
+                @endforeach
             </div>
         </div>
-        @endforeach
-    </div>
-</div>
-@endif
+        @endif
 
-@if(isset($pastBookings) && $pastBookings->count() > 0)
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Past Classes</h2>
-    <div class="space-y-3">
-        @foreach($pastBookings->take(5) as $booking)
-            <div class="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
-                <div>
-                    <h3 class="font-semibold">{{ $booking->service->title }}</h3>
-                    <p class="text-sm text-gray-600">{{ optional($booking->booking_date)->format('M d, Y') ?? '—' }} · {{ ucfirst($booking->status) }}</p>
-                </div>
-                <a href="{{ route('student.bookings.show', $booking->id) }}" class="text-sm" style="color: #3AA62C;">Details</a>
+        @if(isset($pastBookings) && $pastBookings->count() > 0)
+        <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <h2 class="mb-4 text-lg font-bold text-gray-900">Past Classes</h2>
+            <div class="space-y-2">
+                @foreach($pastBookings->take(4) as $booking)
+                <a href="{{ route('student.bookings.show', $booking->id) }}" class="flex items-center justify-between gap-3 rounded-lg px-2 py-2.5 transition hover:bg-gray-50">
+                    <div class="min-w-0">
+                        <p class="truncate text-sm font-medium text-gray-900">{{ $booking->service->title }}</p>
+                        <p class="text-xs text-gray-500">{{ optional($booking->booking_date)->format('M d, Y') ?? '—' }}</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+                </a>
+                @endforeach
             </div>
-        @endforeach
+        </div>
+        @endif
     </div>
 </div>
-@endif
 
-<!-- Recent Bookings -->
-@if($bookings->count() > 0)
-<div class="bg-white rounded-lg shadow p-6">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Recent Bookings</h2>
-        <a href="{{ route('student.bookings') }}" class="hover:underline transition-colors" style="color: #3AA62C;" onmouseover="this.style.color='#175B0E'" onmouseout="this.style.color='#3AA62C'">
-            View All <i class="fas fa-arrow-right"></i>
+{{-- Recent table --}}
+@if($recentBookings->count() > 0)
+<div class="mt-6 rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-6">
+    <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-lg font-bold text-gray-900">Recent Bookings</h2>
+        <a href="{{ route('student.bookings') }}" class="text-sm font-semibold text-[var(--brand)] hover:text-[var(--brand-dark)]">
+            View all <i class="fas fa-arrow-right ml-1 text-xs"></i>
         </a>
     </div>
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+        <table class="min-w-full">
+            <thead>
+                <tr class="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <th class="pb-3 pr-4">Service</th>
+                    <th class="pb-3 pr-4">Date</th>
+                    <th class="pb-3 pr-4">Status</th>
+                    <th class="pb-3 text-right">Action</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="divide-y divide-gray-50">
                 @foreach($recentBookings as $booking)
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">{{ $booking->service->title }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-500">{{ $booking->booking_date->format('M d, Y') }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                            @if($booking->status == 'pending') bg-yellow-100 text-yellow-800
-                            @elseif($booking->status == 'confirmed') bg-green-100 text-green-800
-                            @elseif($booking->status == 'completed') bg-blue-100 text-blue-800
+                <tr class="text-sm">
+                    <td class="py-3.5 pr-4 font-medium text-gray-900">{{ $booking->service->title }}</td>
+                    <td class="py-3.5 pr-4 text-gray-500">{{ $booking->booking_date?->format('M d, Y') ?? '—' }}</td>
+                    <td class="py-3.5 pr-4">
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold
+                            @if($booking->status == 'pending') bg-amber-100 text-amber-800
+                            @elseif($booking->status == 'confirmed') bg-emerald-100 text-emerald-800
+                            @elseif($booking->status == 'completed') bg-slate-100 text-slate-700
                             @else bg-red-100 text-red-800
                             @endif">
                             {{ ucfirst($booking->status) }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="{{ route('student.bookings.show', $booking->id) }}" class="transition-colors" style="color: #3AA62C;" onmouseover="this.style.color='#175B0E'" onmouseout="this.style.color='#3AA62C'">View</a>
+                    <td class="py-3.5 text-right">
+                        <a href="{{ route('student.bookings.show', $booking->id) }}" class="font-semibold text-[var(--brand)] hover:text-[var(--brand-dark)]">View</a>
                     </td>
                 </tr>
                 @endforeach
@@ -193,15 +229,42 @@
         </table>
     </div>
 </div>
+@endif
+
 @else
-<div class="bg-white rounded-lg shadow p-12 text-center">
-    <div class="max-w-md mx-auto">
-        <i class="fas fa-calendar-times text-6xl text-gray-400 mb-4"></i>
-        <h3 class="text-2xl font-bold text-gray-800 mb-2">No Bookings Yet</h3>
-        <p class="text-gray-600 mb-6">You haven't booked any services yet. Start by exploring our training services.</p>
-        <a href="{{ route('services') }}" class="inline-block text-white font-bold py-3 px-6 rounded transition-colors shadow-md" style="background-color: #3AA62C;" onmouseover="this.style.backgroundColor='#175B0E'" onmouseout="this.style.backgroundColor='#3AA62C'">
-            Browse Services
+{{-- Empty state --}}
+<div class="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-14 text-center shadow-sm sm:px-10">
+    <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-[var(--brand)]">
+        <i class="fas fa-calendar-plus text-2xl"></i>
+    </div>
+    <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">No bookings yet</h2>
+    <p class="mx-auto mt-2 max-w-md text-sm text-gray-500 sm:text-base">
+        You have not enrolled in any classes. Browse available training and reserve your seat with a deposit.
+    </p>
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="{{ route('services') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]">
+            <i class="fas fa-search text-xs"></i>
+            Browse Training Classes
         </a>
+        <a href="{{ route('class-calendar') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50">
+            <i class="far fa-calendar text-xs"></i>
+            View Class Calendar
+        </a>
+    </div>
+
+    <div class="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
+        <div class="rounded-xl bg-gray-50 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Step 1</p>
+            <p class="mt-1 text-sm font-medium text-gray-800">Choose a class</p>
+        </div>
+        <div class="rounded-xl bg-gray-50 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Step 2</p>
+            <p class="mt-1 text-sm font-medium text-gray-800">Pick a schedule</p>
+        </div>
+        <div class="rounded-xl bg-gray-50 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Step 3</p>
+            <p class="mt-1 text-sm font-medium text-gray-800">Pay deposit to enroll</p>
+        </div>
     </div>
 </div>
 @endif

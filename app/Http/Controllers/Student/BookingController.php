@@ -12,11 +12,9 @@ use App\Models\Payment;
 use App\Models\Service;
 use App\Models\ServiceBooking;
 use App\Models\User;
-use App\Services\BankIntegrationService;
 use App\Services\BookingPricingService;
 use App\Services\EnrollmentConfirmationService;
 use App\Services\QuickBooksPaymentsService;
-use App\Services\QuickBooksService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -453,13 +451,18 @@ class BookingController extends Controller
         }
 
         $qbPaymentsService = app(QuickBooksPaymentsService::class);
-        $qbPaymentsEnabled = $qbPaymentsService->isEnabled();
+        $qbConnection = $qbPaymentsService->connectionState();
+        $qbPaymentsEnabled = $qbConnection['ready'];
+        $qbPaymentsMessage = $qbConnection['message'];
         $qbEnv = optional(\App\Models\SiteSetting::first())->quickbooks_environment ?? 'sandbox';
+        $allowManualDeposit = ! $qbPaymentsEnabled;
 
         return view('student.booking-payment', compact(
             'booking',
             'qbPaymentsEnabled',
-            'qbEnv'
+            'qbPaymentsMessage',
+            'qbEnv',
+            'allowManualDeposit'
         ));
     }
 
@@ -523,8 +526,17 @@ class BookingController extends Controller
         );
 
         if (! $result['success']) {
+            $message = $result['message'] ?? 'Please try again.';
+            if (
+                str_contains($message, 'invalid_grant')
+                || str_contains(strtolower($message), 'token invalid')
+                || str_contains(strtolower($message), 'token expired')
+            ) {
+                $message = 'Card payments are temporarily unavailable. An administrator must reconnect QuickBooks in Site Settings, or mark your deposit as paid from Bookings.';
+            }
+
             return redirect()->route('student.booking.payment', $booking->id)
-                ->with('error', 'Payment failed: '.($result['message'] ?? 'Please try again.'));
+                ->with('error', 'Payment failed: '.$message);
         }
 
         $isFullPayment = $chargeAmount >= $booking->total_amount;
@@ -590,7 +602,7 @@ class BookingController extends Controller
     }
 
     /**
-     * Process deposit payment.
+     * Process deposit payment (manual fallback when QuickBooks is unavailable).
      */
     public function processPayment(Request $request, $bookingId)
     {
@@ -598,12 +610,24 @@ class BookingController extends Controller
         $booking = ServiceBooking::where('student_id', $student->id)
             ->findOrFail($bookingId);
 
+        if (in_array($booking->payment_status, ['deposit_paid', 'fully_paid'], true)) {
+            return redirect()->route('student.bookings.show', $booking->id)
+                ->with('info', 'Deposit has already been paid.');
+        }
+
+        $qbReady = app(QuickBooksPaymentsService::class)->isReady();
+        if ($qbReady) {
+            return redirect()->route('student.booking.payment', $booking->id)
+                ->with('error', 'Please use the card payment form.');
+        }
+
         $validated = $request->validate([
-            'payment_method' => 'required|in:credit_card',
-            'transaction_id' => 'nullable|string|max:255',
+            'payment_method' => 'required|in:manual',
         ]);
 
+        $chargeAmount = (float) $booking->deposit_amount;
         $payment = null;
+
         DB::beginTransaction();
         try {
             if ($booking->class_schedule_id) {
@@ -621,19 +645,23 @@ class BookingController extends Controller
                 $svc->increment('current_students', $booking->number_of_students);
             }
 
+            $isFullPayment = $chargeAmount >= (float) $booking->total_amount;
             $booking->update([
-                'payment_status' => 'deposit_paid',
+                'payment_status' => $isFullPayment ? 'fully_paid' : 'deposit_paid',
                 'status' => 'confirmed',
+                'remaining_amount' => max(0, (float) $booking->total_amount - $chargeAmount),
             ]);
 
             $payment = Payment::create([
                 'booking_id' => $booking->id,
                 'student_id' => $student->id,
-                'amount' => $booking->deposit_amount,
-                'payment_type' => 'deposit',
-                'payment_method' => $validated['payment_method'],
-                'transaction_id' => $validated['transaction_id'] ?? null,
-                'status' => $validated['payment_method'] === 'cash' ? 'pending' : 'completed',
+                'amount' => $chargeAmount,
+                'payment_type' => $isFullPayment ? 'full_payment' : 'deposit',
+                'payment_method' => 'other',
+                'transaction_id' => 'MANUAL-DEP-'.$booking->id.'-'.now()->format('YmdHis'),
+                'payment_gateway' => 'manual',
+                'notes' => 'Deposit completed via manual fallback (QuickBooks unavailable).',
+                'status' => 'completed',
                 'payment_date' => now(),
             ]);
 
@@ -645,48 +673,11 @@ class BookingController extends Controller
                 ->with('error', $e->getMessage());
         }
 
-        // Auto-sync to QuickBooks and Bank if enabled (only for completed payments)
-        if ($payment->status === 'completed') {
-            try {
-                // Sync to QuickBooks
-                $quickBooksService = app(QuickBooksService::class);
-                $quickBooksResult = $quickBooksService->syncPayment($payment);
-                if (! $quickBooksResult['success']) {
-                    Log::warning('QuickBooks auto-sync failed', [
-                        'payment_id' => $payment->id,
-                        'error' => $quickBooksResult['message'],
-                    ]);
-                }
-            } catch (\Exception $e) {
-                Log::error('QuickBooks auto-sync exception', [
-                    'payment_id' => $payment->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-
-            try {
-                // Sync to Bank
-                $bankService = app(BankIntegrationService::class);
-                $bankResult = $bankService->syncPayment($payment);
-                if (! $bankResult['success']) {
-                    Log::warning('Bank auto-sync failed', [
-                        'payment_id' => $payment->id,
-                        'error' => $bankResult['message'],
-                    ]);
-                }
-            } catch (\Exception $e) {
-                Log::error('Bank auto-sync exception', [
-                    'payment_id' => $payment->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        $this->enrollmentConfirmation->sendAfterSuccessfulDeposit($booking, $payment);
+        $this->enrollmentConfirmation->sendAfterSuccessfulDeposit($booking->fresh(['student', 'service', 'classSchedule']), $payment);
         $this->sendAdminPaymentReceivedEmail($booking, $payment);
 
         return redirect()->route('student.bookings.show', $booking->id)
-            ->with('success', 'Deposit payment received. Your booking is confirmed!');
+            ->with('success', 'Deposit recorded. Your booking is confirmed and online modules are unlocked.');
     }
 
     /**

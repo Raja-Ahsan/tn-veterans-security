@@ -241,6 +241,12 @@
                    class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-center transition-colors mb-3">
                     <i class="fas fa-credit-card mr-2"></i> Pay Deposit
                 </a>
+                @if($booking->service->has_online_parts)
+                    <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                        <i class="fas fa-laptop mr-1"></i>
+                        Online modules &amp; quizzes unlock after you pay this deposit.
+                    </div>
+                @endif
             @elseif($booking->payment_status === 'deposit_paid' && $booking->remaining_amount > 0)
                 <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-3">
                     <p class="text-sm text-blue-800">
@@ -248,13 +254,25 @@
                         Deposit paid. Remaining balance can be paid later.
                     </p>
                 </div>
+                @if($booking->service->has_online_parts)
+                    <a href="{{ route('student.online-course.index', $booking->service) }}"
+                       class="mb-3 block w-full rounded-lg bg-[var(--brand)] py-3 px-6 text-center font-bold text-white transition hover:bg-[var(--brand-dark)]">
+                        <i class="fas fa-play mr-2"></i> Start Online Modules &amp; Quizzes
+                    </a>
+                @endif
             @elseif($booking->payment_status === 'fully_paid')
-                <div class="bg-green-50 border border-green-200 rounded p-4">
+                <div class="bg-green-50 border border-green-200 rounded p-4 mb-3">
                     <p class="text-sm text-green-800">
                         <i class="fas fa-check-circle mr-1"></i>
                         Fully paid. Thank you!
                     </p>
                 </div>
+                @if($booking->service->has_online_parts)
+                    <a href="{{ route('student.online-course.index', $booking->service) }}"
+                       class="mb-3 block w-full rounded-lg bg-[var(--brand)] py-3 px-6 text-center font-bold text-white transition hover:bg-[var(--brand-dark)]">
+                        <i class="fas fa-play mr-2"></i> Continue Online Course
+                    </a>
+                @endif
             @endif
         </div>
 

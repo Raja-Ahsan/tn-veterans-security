@@ -13,13 +13,22 @@ use Illuminate\Support\Facades\Mail;
 
 class BlendedCourseCompletionService
 {
-    public function __construct(private SmsService $smsService) {}
+    public function __construct(
+        private SmsService $smsService,
+        private CertificateService $certificateService
+    ) {}
 
     public function notifyIfCourseCompleted(Student $student, Service $service, BlendedCourseService $blendedCourse, CourseModule $completedModule): void
     {
         if (! $service->has_online_parts) {
             return;
         }
+
+        if (! $blendedCourse->isEligibleForInPersonTesting($student, $service)) {
+            return;
+        }
+
+        $this->certificateService->issueForOnlineCourseCompletion($student, $service);
 
         $modules = $blendedCourse->getModulesForService($service);
         $lastModule = $modules->last();
@@ -28,13 +37,8 @@ class BlendedCourseCompletionService
             return;
         }
 
-        if (! $blendedCourse->isEligibleForInPersonTesting($student, $service)) {
-            return;
-        }
-
         $timestamp = now()->format('M d, Y g:i A');
         $message = "{$student->name} completed the online portion of {$service->title} on {$timestamp}. Eligible for in-person testing.";
-
         try {
             Mail::to($student->email)->send(new BlendedCourseCompletedMail($student, $service, true));
         } catch (\Throwable $e) {

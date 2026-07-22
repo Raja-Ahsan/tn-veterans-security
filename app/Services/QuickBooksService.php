@@ -76,7 +76,10 @@ class QuickBooksService
             $newToken = $oauth2Helper->refreshAccessTokenWithRefreshToken($this->settings->quickbooks_refresh_token);
         } catch (\Exception $e) {
             Log::warning('QuickBooks token refresh failed', ['error' => $e->getMessage()]);
-            throw new \Exception('QuickBooks token expired or invalid. Please reconnect in Site Settings → QuickBooks: '.$e->getMessage());
+            $this->clearStoredTokens();
+            throw new \Exception(
+                'QuickBooks connection expired. Admin must reconnect in Site Settings → QuickBooks (Connect with QuickBooks).'
+            );
         }
         // Persist new tokens (QuickBooks may return a new refresh token)
         $this->settings->update([
@@ -86,6 +89,46 @@ class QuickBooksService
         $this->settings->refresh();
 
         return $newToken;
+    }
+
+    /**
+     * Clear expired/invalid OAuth tokens so Connect must be run again.
+     */
+    public function clearStoredTokens(): void
+    {
+        if (! $this->settings) {
+            return;
+        }
+
+        $this->settings->update([
+            'quickbooks_access_token' => null,
+            'quickbooks_refresh_token' => null,
+        ]);
+        $this->settings->refresh();
+    }
+
+    /**
+     * Whether QuickBooks is connected with a refreshable access token.
+     */
+    public function hasValidConnection(): bool
+    {
+        try {
+            if (! $this->settings || ! $this->settings->quickbooks_enabled) {
+                return false;
+            }
+            if (
+                empty($this->settings->quickbooks_access_token)
+                || empty($this->settings->quickbooks_refresh_token)
+                || empty($this->settings->quickbooks_company_id)
+            ) {
+                return false;
+            }
+            $this->getValidAccessToken();
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**

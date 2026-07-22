@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CourseModule;
 use App\Models\InPersonTestResult;
+use App\Models\ModuleQuizAttempt;
+use App\Models\ModuleQuizSession;
 use App\Models\Service;
 use App\Models\ServiceBooking;
 use App\Models\Student;
@@ -90,7 +92,17 @@ class BlendedCourseAdminController extends Controller
             ->where('course_module_id', $courseModule->id)
             ->delete();
 
-        return back()->with('success', 'Module progress reset for this student.');
+        ModuleQuizAttempt::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $courseModule->id)
+            ->delete();
+
+        ModuleQuizSession::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $courseModule->id)
+            ->delete();
+
+        return back()->with('success', 'Module progress reset. Student can attempt the quiz again (update questions first if needed).');
     }
 
     public function storeInPersonTest(Request $request, Service $service, Student $student): RedirectResponse

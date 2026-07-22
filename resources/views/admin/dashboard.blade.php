@@ -7,7 +7,7 @@
 <!-- Summary Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     <!-- Total Revenue -->
-    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+    <a href="{{ route('admin.payments.index') }}" class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white block hover:from-green-600 hover:to-green-700 transition-colors">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-green-100 text-sm font-medium">Total Revenue</p>
@@ -20,10 +20,10 @@
                 <i class="fas fa-dollar-sign text-3xl"></i>
             </div>
         </div>
-    </div>
+    </a>
 
     <!-- Total Bookings -->
-    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+    <a href="{{ route('admin.bookings.index') }}" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white block hover:from-blue-600 hover:to-blue-700 transition-colors">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-blue-100 text-sm font-medium">Total Bookings</p>
@@ -36,10 +36,10 @@
                 <i class="fas fa-calendar-check text-3xl"></i>
             </div>
         </div>
-    </div>
+    </a>
 
     <!-- Today's Revenue -->
-    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+    <a href="{{ route('admin.payments.index') }}" class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white block hover:from-purple-600 hover:to-purple-700 transition-colors">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-purple-100 text-sm font-medium">Today's Revenue</p>
@@ -52,7 +52,7 @@
                 <i class="fas fa-chart-line text-3xl"></i>
             </div>
         </div>
-    </div>
+    </a>
 
     <!-- Total Students -->
     <a href="{{ route('admin.students.index') }}" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white block hover:from-orange-600 hover:to-orange-700 transition-colors">
@@ -88,7 +88,7 @@
 <!-- Secondary Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     <!-- Services -->
-    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+    <a href="{{ route('admin.classes.index') }}" class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500 block hover:bg-gray-50 transition-colors">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-600 text-sm">Total Classes</p>
@@ -97,10 +97,10 @@
             </div>
             <i class="fas fa-briefcase text-green-500 text-2xl"></i>
         </div>
-    </div>
+    </a>
 
     <!-- Class Schedules -->
-    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+    <a href="{{ route('admin.class-schedules.index') }}" class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500 block hover:bg-gray-50 transition-colors">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-600 text-sm">Upcoming Classes</p>
@@ -109,10 +109,10 @@
             </div>
             <i class="fas fa-calendar-alt text-blue-500 text-2xl"></i>
         </div>
-    </div>
+    </a>
 
     <!-- Pending Payments -->
-    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+    <a href="{{ route('admin.payments.index', ['status' => 'pending']) }}" class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500 block hover:bg-gray-50 transition-colors">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-600 text-sm">Pending Payments</p>
@@ -121,10 +121,10 @@
             </div>
             <i class="fas fa-hourglass-half text-yellow-500 text-2xl"></i>
         </div>
-    </div>
+    </a>
 
     <!-- Booking Status -->
-    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+    <a href="{{ route('admin.bookings.index', ['status' => 'confirmed']) }}" class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500 block hover:bg-gray-50 transition-colors">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-600 text-sm">Confirmed</p>
@@ -133,7 +133,7 @@
             </div>
             <i class="fas fa-check-circle text-purple-500 text-2xl"></i>
         </div>
-    </div>
+    </a>
 </div>
 
 <!-- Charts Row -->

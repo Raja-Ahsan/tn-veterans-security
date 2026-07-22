@@ -4,12 +4,33 @@
 @section('page-title', 'Create New Class')
 
 @section('content')
-<div class="bg-white rounded-lg shadow p-6">
-    <form method="POST" action="{{ route('admin.classes.store') }}" enctype="multipart/form-data">
+<div class="mb-6">
+    <h3 class="text-xl font-semibold text-gray-900">Create New Class</h3>
+    <p class="mt-1 text-sm text-gray-500">Fill the sections below. You can add bookable date/time sessions in step 4, or later from Class Schedules.</p>
+</div>
+
+<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+    <div class="flex gap-3">
+        <i class="fas fa-info-circle mt-0.5 text-blue-500"></i>
+        <div class="space-y-1">
+            <p class="font-semibold">Quick guide</p>
+            <ul class="list-disc space-y-0.5 pl-4 text-blue-800">
+                <li><span class="font-medium">Basics</span> — name, image, and where the class appears on the website.</li>
+                <li><span class="font-medium">Pricing & capacity</span> — student price and default seat limits.</li>
+                <li><span class="font-medium">Sessions</span> — each session is one date/time students can book (optional now).</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{{ route('admin.classes.store') }}" enctype="multipart/form-data" class="space-y-6 pb-24">
         @csrf
 
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        @include('admin.classes.partials.section-header', ['step' => '1', 'title' => 'Basics', 'hint' => 'Title and short info shown on the website and in the admin list.'])
+
         <div class="mb-4">
-            <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Title *</label>
+            <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Class title *</label>
             <input type="text" 
                    id="title" 
                    name="title" 
@@ -116,29 +137,34 @@
             @enderror
         </div>
 
-        <div class="mb-4">
-            <label for="min_students" class="block text-gray-700 text-sm font-bold mb-2">Min Students</label>
-            <input type="number" 
-                   id="min_students" 
-                   name="min_students" 
-                   value="{{ old('min_students', 1) }}"
-                   min="1"
-                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+            <div>
+                <label for="min_students" class="block text-gray-700 text-sm font-bold mb-2">Default min students</label>
+                <input type="number"
+                       id="min_students"
+                       name="min_students"
+                       value="{{ old('min_students', 1) }}"
+                       min="1"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p class="text-xs text-gray-500 mt-1">Minimum needed for a session to run (used as default for new sessions).</p>
+            </div>
+            <div>
+                <label for="max_students" class="block text-gray-700 text-sm font-bold mb-2">Default max students</label>
+                <input type="number"
+                       id="max_students"
+                       name="max_students"
+                       value="{{ old('max_students', 10) }}"
+                       min="1"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p class="text-xs text-gray-500 mt-1">Seat capacity per session (used as default for new sessions).</p>
+            </div>
         </div>
+        </div>{{-- end section 1 --}}
 
-        <div class="mb-4">
-            <label for="max_students" class="block text-gray-700 text-sm font-bold mb-2">Max Students</label>
-            <input type="number" 
-                   id="max_students" 
-                   name="max_students" 
-                   value="{{ old('max_students', 10) }}"
-                   min="1"
-                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-        </div>
         <!-- Category Section -->
-        <div class="mb-6 border-t pt-4 mt-6">
-            <h3 class="text-lg font-bold mb-4">Category & Organization</h3>
-            <p class="text-sm text-gray-600 mb-3">Categories are optional. If you leave all unchecked and set a <strong>Direct page slug</strong> above, this service will appear only on its direct page (e.g. /service/asp).</p>
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            @include('admin.classes.partials.section-header', ['step' => '2', 'title' => 'Category & Organization', 'hint' => 'Optional. Use categories for listing pages, or a direct slug for a standalone page.'])
+            <p class="text-sm text-gray-600 mb-3">If you leave all categories unchecked and set a <strong>Direct page slug</strong> above, this class appears only at <strong>/service/{slug}</strong>.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Categories (optional)</label>
@@ -193,38 +219,42 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="flex items-center">
-                        <input type="checkbox" 
-                               name="requires_dallas_law" 
-                               value="1"
-                               {{ old('requires_dallas_law') ? 'checked' : '' }}
-                               class="mr-2">
-                        <span class="text-sm text-gray-700">Requires Dallas Law Training</span>
-                    </label>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                <label for="requires_dallas_law" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-purple-300 has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
+                    <input type="checkbox"
+                           id="requires_dallas_law"
+                           name="requires_dallas_law"
+                           value="1"
+                           {{ old('requires_dallas_law') ? 'checked' : '' }}
+                           class="mt-0.5 rounded border-gray-400 text-purple-600 focus:ring-purple-500">
+                    <div>
+                        <span class="text-sm font-semibold text-gray-900">Requires Dallas Law Training</span>
+                        <p class="mt-0.5 text-xs text-gray-500">Students should complete Dallas Law before this class.</p>
+                    </div>
+                </label>
 
-                <div>
-                    <label class="flex items-center">
-                        <input type="checkbox" 
-                               name="requires_active_shooter" 
-                               value="1"
-                               {{ old('requires_active_shooter') ? 'checked' : '' }}
-                               class="mr-2">
-                        <span class="text-sm text-gray-700">Requires Active Shooter Training</span>
-                    </label>
-                </div>
+                <label for="requires_active_shooter" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-rose-300 has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50">
+                    <input type="checkbox"
+                           id="requires_active_shooter"
+                           name="requires_active_shooter"
+                           value="1"
+                           {{ old('requires_active_shooter') ? 'checked' : '' }}
+                           class="mt-0.5 rounded border-gray-400 text-rose-600 focus:ring-rose-500">
+                    <div>
+                        <span class="text-sm font-semibold text-gray-900">Requires Active Shooter Training</span>
+                        <p class="mt-0.5 text-xs text-gray-500">Students should complete Active Shooter before this class.</p>
+                    </div>
+                </label>
             </div>
-        </div>
+        </div>{{-- end section 2 --}}
 
         <!-- Pricing Section -->
-        <div class="mb-6 border-t pt-4 mt-6">
-            <h3 class="text-lg font-bold mb-4">Pricing & Class Configuration</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            @include('admin.classes.partials.section-header', ['step' => '3', 'title' => 'Pricing & Class Setup', 'hint' => 'What students pay and how the class is delivered.'])
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-start">
                 <div>
-                    <label for="price" class="block text-gray-700 text-sm font-bold mb-2">Price ($)</label>
+                    <label for="price" class="block text-gray-700 text-sm font-bold mb-2">Full price ($)</label>
                     <input type="number" 
                            id="price" 
                            name="price" 
@@ -239,7 +269,7 @@
                 </div>
 
                 <div>
-                    <label for="deposit_amount" class="block text-gray-700 text-sm font-bold mb-2">Deposit Amount ($)</label>
+                    <label for="deposit_amount" class="block text-gray-700 text-sm font-bold mb-2">Deposit amount ($)</label>
                     <input type="number" 
                            id="deposit_amount" 
                            name="deposit_amount" 
@@ -248,13 +278,12 @@
                            min="0"
                            placeholder="0.00"
                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <p class="text-xs text-gray-500 mt-1">Optional at booking; remainder later.</p>
                     @error('deposit_amount')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="class_type" class="block text-gray-700 text-sm font-bold mb-2">Class Type</label>
                     <select id="class_type" 
@@ -269,36 +298,19 @@
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="has_online_parts" 
-                           value="1"
-                           {{ old('has_online_parts') ? 'checked' : '' }}
-                           class="mr-2">
-                    <span class="text-sm text-gray-700">Has online parts/components</span>
-                </label>
-            </div>
-
-            <div class="mb-4">
-                <label class="flex items-center">
-                    <input type="checkbox" 
-                           name="testing_in_person" 
-                           value="1"
-                           {{ old('testing_in_person', true) ? 'checked' : '' }}
-                           class="mr-2">
-                    <span class="text-sm text-gray-700">Testing is in-person (always true)</span>
-                </label>
-            </div>
+            @include('admin.classes.partials.blended-delivery-options')
 
             @include('admin.classes._extended_fields')
-        </div>
+        </div>{{-- end section 3 --}}
 
         <!-- Class sessions (saved to class_schedules) -->
-        <div class="mb-6 border-t pt-4 mt-6">
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <input type="hidden" name="sync_schedules" value="1">
-            <h3 class="text-lg font-bold mb-2">Class sessions (schedule)</h3>
-            <p class="text-sm text-gray-600 mb-3">Add dates and times students can book. These appear on the public booking form instead of a free-form date.</p>
+            @include('admin.classes.partials.section-header', ['step' => '4', 'title' => 'Class Sessions', 'hint' => 'Each session = one bookable date/time. Leave empty if you will add sessions later.'])
+            <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <i class="fas fa-lightbulb mr-1 text-amber-600"></i>
+                <strong>Sessions</strong> are what show on Class Schedules and the public booking form. Min/max on each session can override the class defaults above.
+            </div>
             <div id="schedules-container" class="space-y-4">
                 @php
                     $schedRows = old('schedules');
@@ -307,9 +319,12 @@
                     }
                 @endphp
                 @foreach($schedRows as $idx => $sch)
-                    <div class="schedule-row border rounded-lg p-4 bg-gray-50 space-y-3">
+                    <div class="schedule-row rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-semibold text-gray-700">Session <span class="schedule-num">{{ $loop->iteration }}</span></span>
+                            <span class="inline-flex items-center gap-2 text-sm font-semibold text-gray-800">
+                                <span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-700 text-xs text-white"><span class="schedule-num">{{ $loop->iteration }}</span></span>
+                                Session
+                            </span>
                             <button type="button" class="schedule-remove text-red-600 hover:text-red-800 text-sm font-medium">Remove</button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -371,18 +386,18 @@
                     </div>
                 @endforeach
             </div>
-            <button type="button" id="add-schedule-row" class="mt-3 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium">
-                <i class="fas fa-plus mr-1"></i> Add session
+            <button type="button" id="add-schedule-row" class="mt-3 inline-flex items-center px-4 py-2 bg-green-50 text-green-800 ring-1 ring-inset ring-green-200 rounded hover:bg-green-100 text-sm font-medium">
+                <i class="fas fa-plus mr-1"></i> Add another session
             </button>
             @error('schedules')
                 <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
             @enderror
-        </div>
+        </div>{{-- end section 4 --}}
 
         <!-- Linked Services (Related Trainings) -->
-        <div class="mb-6 border-t pt-4 mt-6">
-            <h3 class="text-lg font-bold mb-2">Linked Services (Related Trainings)</h3>
-            <p class="text-sm text-gray-600 mb-3">Select trainings to show as related on this service’s page (e.g. Unarmed → Less Lethal, Dallas Law). Order is determined by the list below.</p>
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            @include('admin.classes.partials.section-header', ['step' => '5', 'title' => 'Related Trainings', 'hint' => 'Optional. Other classes to suggest on this class’s public page.'])
+            <p class="text-sm text-gray-600 mb-3">Select trainings to show as related (e.g. Unarmed → Less Lethal, Dallas Law).</p>
             <div class="max-h-48 overflow-y-auto border rounded p-3 bg-gray-50 space-y-2">
                 @forelse(($allServices ?? collect()) as $s)
                     <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
@@ -403,29 +418,30 @@
             @error('linked_services.*')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
-        </div>
 
-        <div class="mb-6">
-            <label class="flex items-center">
-                <input type="checkbox" 
-                       name="is_active" 
-                       value="1"
-                       {{ old('is_active', true) ? 'checked' : '' }}
-                       class="mr-2">
-                <span class="text-sm text-gray-700">Active</span>
-            </label>
-        </div>
+            <div class="mt-6 border-t border-gray-100 pt-4">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox"
+                           name="is_active"
+                           value="1"
+                           {{ old('is_active', true) ? 'checked' : '' }}
+                           class="rounded border-gray-400 text-green-600 focus:ring-green-500">
+                    <span class="text-sm font-medium text-gray-800">Active — show this class on the website</span>
+                </label>
+            </div>
+        </div>{{-- end section 5 --}}
 
-        <div class="flex gap-4">
-            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                <i class="fas fa-save mr-2"></i> Create Service
-            </button>
-            <a href="{{ route('admin.classes.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Cancel
-            </a>
+        <div class="fixed bottom-0 inset-x-0 z-20 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 shadow-lg sm:static sm:inset-auto sm:z-auto sm:mt-2 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
+            <div class="mx-auto flex max-w-full flex-wrap items-center justify-end gap-3 sm:justify-start">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-5 rounded shadow-sm">
+                    <i class="fas fa-save mr-2"></i> Create Class
+                </button>
+                <a href="{{ route('admin.classes.index') }}" class="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-5 rounded border border-gray-300">
+                    Cancel
+                </a>
+            </div>
         </div>
-    </form>
-</div>
+</form>
 
 <!-- Quill Rich Text Editor -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -544,9 +560,10 @@
             addScheduleBtn.addEventListener('click', function() {
                 var i = scheduleIndex++;
                 var div = document.createElement('div');
-                div.className = 'schedule-row border rounded-lg p-4 bg-gray-50 space-y-3';
+                div.className = 'schedule-row rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3';
                 div.innerHTML = '<div class="flex justify-between items-center">' +
-                    '<span class="text-sm font-semibold text-gray-700">Session <span class="schedule-num">0</span></span>' +
+                    '<span class="inline-flex items-center gap-2 text-sm font-semibold text-gray-800">' +
+                    '<span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-700 text-xs text-white"><span class="schedule-num">0</span></span> Session</span>' +
                     '<button type="button" class="schedule-remove text-red-600 hover:text-red-800 text-sm font-medium">Remove</button></div>' +
                     '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">' +
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Date *</label>' +

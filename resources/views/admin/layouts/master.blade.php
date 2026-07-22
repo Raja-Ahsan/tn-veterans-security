@@ -52,11 +52,11 @@
                     <a href="{{ route('admin.students.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.students.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-users mr-3"></i> Students
                     </a>
-                    <a href="{{ route('admin.class-schedules.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.class-schedules.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
-                        <i class="fas fa-calendar-check mr-3"></i> Class Schedules
-                    </a>
                     <a href="{{ route('admin.classes.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.classes.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-briefcase mr-3"></i> Classes
+                    </a>
+                    <a href="{{ route('admin.class-schedules.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.class-schedules.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-calendar-check mr-3"></i> Class Schedules
                     </a>
                     <a href="{{ route('admin.bookings.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.bookings.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-calendar-check mr-3"></i> Bookings
@@ -128,23 +128,48 @@
             </header>
 
             <div class="overflow-x-hidden p-4 sm:p-6">
-                @if(session('success'))
-                    <div class="mb-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
                 @yield('content')
             </div>
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            @if(session('success'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: @json(session('success')),
+                showConfirmButton: false,
+                timer: 3500,
+                timerProgressBar: true,
+            });
+            @endif
+
+            @if(session('error'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: @json(session('error')),
+                showConfirmButton: false,
+                timer: 4500,
+                timerProgressBar: true,
+            });
+            @endif
+
+            @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Please fix the form',
+                html: `<ul style="text-align:left;margin:0;padding-left:1.25rem;">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                confirmButtonColor: '#16a34a',
+            });
+            @endif
+        });
+    </script>
     <script>
         (function () {
             const sidebar = document.getElementById('admin-sidebar');

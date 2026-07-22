@@ -282,9 +282,33 @@
                         <p class="text-xs text-gray-500 mt-1">This token is automatically generated during OAuth authentication</p>
                     </div>
 
-                    <a href="{{ route('quickbooks.connect') }}" class="btn btn-primary">
-                        Connect with QuickBooks
+                    <a href="{{ route('quickbooks.connect') }}" class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                        <i class="fab fa-quickbooks mr-2"></i> Connect with QuickBooks
                     </a>
+                    @php
+                        $qbConnected = filled($settings->quickbooks_access_token ?? null) && filled($settings->quickbooks_refresh_token ?? null);
+                        $qbReady = false;
+                        if ($qbConnected && ($settings->quickbooks_enabled ?? false)) {
+                            try {
+                                $qbReady = app(\App\Services\QuickBooksService::class)->hasValidConnection();
+                            } catch (\Throwable) {
+                                $qbReady = false;
+                            }
+                        }
+                    @endphp
+                    @if(($settings->quickbooks_enabled ?? false) && ! $qbReady)
+                        <div class="md:col-span-2 mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                            <p class="font-semibold"><i class="fas fa-exclamation-circle mr-1"></i> QuickBooks reconnect required</p>
+                            <p class="mt-1">
+                                The OAuth token is expired or invalid (<code>invalid_grant</code>). Student card payments will fail until you click
+                                <strong>Connect with QuickBooks</strong> again and approve access.
+                            </p>
+                        </div>
+                    @elseif($qbReady)
+                        <div class="md:col-span-2 mt-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i> QuickBooks is connected and ready for payments.
+                        </div>
+                    @endif
                 </div>
             </div>
             

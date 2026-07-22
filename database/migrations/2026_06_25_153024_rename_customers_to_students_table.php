@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -50,7 +49,9 @@ return new class extends Migration
 
         foreach ($this->tablesWithCustomerId as $table) {
             if (Schema::hasColumn($table, 'customer_id')) {
-                DB::statement("ALTER TABLE `{$table}` CHANGE `customer_id` `student_id` BIGINT UNSIGNED NOT NULL");
+                Schema::table($table, function (Blueprint $blueprint) {
+                    $blueprint->renameColumn('customer_id', 'student_id');
+                });
 
                 Schema::table($table, function (Blueprint $blueprint) {
                     $blueprint->foreign('student_id')->references('id')->on('students')->cascadeOnDelete();
@@ -118,7 +119,9 @@ return new class extends Migration
 
         foreach ($this->tablesWithCustomerId as $table) {
             if (Schema::hasColumn($table, 'student_id')) {
-                DB::statement("ALTER TABLE `{$table}` CHANGE `student_id` `customer_id` BIGINT UNSIGNED NOT NULL");
+                Schema::table($table, function (Blueprint $blueprint) {
+                    $blueprint->renameColumn('student_id', 'customer_id');
+                });
 
                 Schema::table($table, function (Blueprint $blueprint) {
                     $blueprint->foreign('customer_id')->references('id')->on('customers')->cascadeOnDelete();
