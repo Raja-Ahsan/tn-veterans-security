@@ -8,8 +8,8 @@
 @if($certificates->isEmpty())
     <div class="bg-white rounded-lg shadow p-8 text-center text-gray-600">
         <i class="fas fa-certificate text-4xl text-gray-300 mb-4"></i>
-        <p>No certificates yet. Certificates are issued after you complete a non-blended class.</p>
-        <p class="text-sm text-gray-500 mt-2">Blended courses do not issue certificates per program policy.</p>
+        <p>No certificates yet. Complete all online modules for a course to earn your certificate.</p>
+        <p class="text-sm text-gray-500 mt-2">Certificates are issued automatically when you pass every required module quiz.</p>
     </div>
 @else
     <div class="grid gap-4">
