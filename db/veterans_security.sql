@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 08, 2026 at 11:10 PM
+-- Generation Time: Jul 23, 2026 at 06:51 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -32,6 +32,16 @@ CREATE TABLE `cache` (
   `value` mediumtext NOT NULL,
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('tn-veterans-security-cache-356a192b7913b04c54574d18c28d46e6395428ab', 'i:2;', 1784306688),
+('tn-veterans-security-cache-356a192b7913b04c54574d18c28d46e6395428ab:timer', 'i:1784306687;', 1784306687),
+('tn-veterans-security-cache-5c785c036466adea360111aa28563bfd556b5fba', 'i:1;', 1784820990),
+('tn-veterans-security-cache-5c785c036466adea360111aa28563bfd556b5fba:timer', 'i:1784820990;', 1784820990);
 
 -- --------------------------------------------------------
 
@@ -64,6 +74,18 @@ CREATE TABLE `class_notifications` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `class_notifications`
+--
+
+INSERT INTO `class_notifications` (`id`, `class_schedule_id`, `sent_by`, `notification_type`, `delivery_method`, `message`, `student_ids`, `sent_count`, `failed_count`, `created_at`, `updated_at`) VALUES
+(1, 4, 1, 'reschedule', 'both', 'Your class has been rescheduled.\n\nNew date/time will appear in your student portal. Please arrive 15 minutes early with a valid photo ID.', '[21,22,20]', 5, 0, '2026-07-22 05:15:00', '2026-07-22 05:15:00'),
+(2, 5, 1, 'time_change', 'email', 'Important update: class start time has changed to 9:00 AM.\n\nPlease update your calendar and contact us if you cannot attend.', '[21,22,20]', 4, 1, '2026-07-21 09:18:00', '2026-07-21 09:18:00'),
+(3, 6, 1, 'location_change', 'sms', 'Class location moved. Check your email/portal for the updated address. Reply STOP to opt out of SMS.', '[21,22,20]', 3, 0, '2026-07-20 04:21:00', '2026-07-20 04:21:00'),
+(4, 7, 1, 'instructor_change', 'email', 'Your instructor has been updated for this scheduled class.\n\nTraining content and certification requirements remain the same.', '[21,22,20]', 6, 0, '2026-07-18 11:24:00', '2026-07-18 11:24:00'),
+(5, 8, 1, 'cancellation', 'both', 'Unfortunately this class session has been cancelled due to instructor availability.\n\nOur team will contact you with make-up options or a refund path.', '[21,22]', 2, 1, '2026-07-16 06:27:00', '2026-07-16 06:27:00'),
+(6, 4, 1, 'general', 'email', 'Reminder: please bring your security registration paperwork and a government-issued ID to class.\n\nParking is available behind the training building.', '[21,22,20]', 7, 0, '2026-07-23 03:30:00', '2026-07-23 03:30:00');
 
 -- --------------------------------------------------------
 
@@ -115,7 +137,9 @@ INSERT INTO `class_schedules` (`id`, `service_id`, `class_date`, `start_time`, `
 (16, 34, '2026-04-10', '09:00:00', '11:00:00', 2, 10, 1, 2, '1', 'Location A', NULL, 'John', NULL, 0, 'scheduled', 0, NULL, NULL, '2026-04-08 19:32:28', '2026-04-08 19:41:14'),
 (17, 68, '2026-04-10', '09:00:00', '17:00:00', 8, 10, 1, 10, '25', 'Location A', NULL, 'Jayson', NULL, 0, 'full', 0, NULL, NULL, '2026-04-09 10:51:01', '2026-04-09 11:22:45'),
 (18, 101, '2026-04-09', '16:10:00', '02:10:00', 10, 13, 1, 0, 'Quaerat quo nihil earum quis voluptate facere minus minima hic minima magnam animi fugiat qui', 'Location A', NULL, 'Sit ipsum cupidatat et vitae quo qui omnis sit in architecto ratione cupiditate omnis voluptate excepteur perferendis ducimus vitae praesentium', NULL, 0, 'scheduled', 0, 'Velit possimus est sapiente veniam nisi corrupti harum vel sed nihil', NULL, '2026-04-09 15:13:04', '2026-04-09 15:13:04'),
-(19, 102, '2026-07-22', '09:00:00', '17:00:00', 8, 12, 2, 1, 'Demo Room A', 'Main Training Center', NULL, 'Demo Instructor', NULL, 1, 'scheduled', 0, 'Seeded schedule for blended course demo testing.', NULL, '2026-07-08 15:02:28', '2026-07-08 15:02:28');
+(19, 102, '2026-07-22', '09:00:00', '17:00:00', 8, 12, 2, 1, 'Demo Room A', 'Main Training Center', NULL, 'Demo Instructor', NULL, 1, 'scheduled', 0, 'Seeded schedule for blended course demo testing.', NULL, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(20, 99, '2026-07-17', '21:40:00', '23:40:00', 2, 10, 2, 2, NULL, 'Shooter\'s Guns, Ammo, and Range, Nashville, TN', 1, 'Jayson', 1, 0, 'scheduled', 0, NULL, NULL, NULL, '2026-07-22 16:01:44'),
+(21, 99, '2026-07-17', '21:40:00', '23:40:00', 2, 10, 2, 0, NULL, 'Guns and Leather, Greenbrier, TN', 2, NULL, NULL, 0, 'scheduled', 0, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -154,6 +178,13 @@ CREATE TABLE `course_certificates` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `course_certificates`
+--
+
+INSERT INTO `course_certificates` (`id`, `student_id`, `service_id`, `service_booking_id`, `certificate_number`, `issued_at`, `issued_by`, `created_at`, `updated_at`) VALUES
+(1, 21, 102, 17, 'TNV-2026-VMMWAI9C', '2026-07-23 10:23:28', NULL, '2026-07-23 10:23:28', '2026-07-23 10:23:28');
+
 -- --------------------------------------------------------
 
 --
@@ -169,6 +200,10 @@ CREATE TABLE `course_modules` (
   `image_path` varchar(255) DEFAULT NULL,
   `order` int(10) UNSIGNED NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `quiz_time_limit_minutes` int(10) UNSIGNED DEFAULT NULL,
+  `passing_score` tinyint(3) UNSIGNED NOT NULL DEFAULT 90,
+  `max_attempts` tinyint(3) UNSIGNED NOT NULL DEFAULT 1,
+  `materials` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`materials`)),
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -177,9 +212,12 @@ CREATE TABLE `course_modules` (
 -- Dumping data for table `course_modules`
 --
 
-INSERT INTO `course_modules` (`id`, `service_id`, `title`, `content`, `video_url`, `image_path`, `order`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 102, 'Module 1: Security Basics', 'Welcome to blended security training.\n\nIn this module you will learn:\n- Role of a security officer\n- Observe and report mindset\n- Emergency response basics', NULL, NULL, 1, 1, '2026-07-08 15:02:27', '2026-07-08 15:02:27'),
-(2, 102, 'Module 2: Patrol Procedures', 'This module covers patrol best practices.\n\nTopics:\n- Patrol intervals\n- Incident documentation\n- Supervisor communication', NULL, NULL, 2, 1, '2026-07-08 15:02:27', '2026-07-08 15:02:27');
+INSERT INTO `course_modules` (`id`, `service_id`, `title`, `content`, `video_url`, `image_path`, `order`, `is_active`, `quiz_time_limit_minutes`, `passing_score`, `max_attempts`, `materials`, `created_at`, `updated_at`) VALUES
+(1, 102, 'Module 1: Security Basics', 'Welcome to blended security training.\n\nIn this module you will learn:\n- Role of a security officer\n- Observe and report mindset\n- Emergency response basics', NULL, NULL, 1, 1, NULL, 90, 1, NULL, '2026-07-08 15:02:27', '2026-07-08 15:02:27'),
+(2, 102, 'Module 2: Patrol Procedures', 'This module covers patrol best practices.\n\nTopics:\n- Patrol intervals\n- Incident documentation\n- Supervisor communication', NULL, NULL, 2, 1, NULL, 90, 1, NULL, '2026-07-08 15:02:27', '2026-07-08 15:02:27'),
+(3, 99, 'First Module', 'Nobis et odit nobis', 'https://www.youtube.com/watch?v=k_ucGw9cXDI', NULL, 1, 1, 10, 90, 1, NULL, '2026-07-17 11:39:35', '2026-07-22 18:23:26'),
+(4, 99, 'Second Module', 'Module 2 covers carry laws, prohibited locations, and interactions with law enforcement. Complete the quiz at 90% or higher to continue.', NULL, NULL, 2, 1, 2, 90, 1, NULL, '2026-07-17 17:59:44', '2026-07-22 17:57:19'),
+(5, 99, 'Third Module', 'Optio officia ab ma', 'https://www.youtube.com/watch?v=G8Y2liwGRl8', NULL, 3, 1, 2, 90, 1, NULL, '2026-07-17 18:11:11', '2026-07-22 17:57:26');
 
 -- --------------------------------------------------------
 
@@ -241,6 +279,13 @@ CREATE TABLE `in_person_test_results` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `in_person_test_results`
+--
+
+INSERT INTO `in_person_test_results` (`id`, `student_id`, `service_id`, `class_schedule_id`, `result`, `notes`, `marked_by`, `tested_at`, `created_at`, `updated_at`) VALUES
+(1, 20, 99, 20, 'passed', NULL, 1, '2026-07-22 17:56:55', '2026-07-22 17:56:55', '2026-07-22 17:56:55');
 
 -- --------------------------------------------------------
 
@@ -361,7 +406,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (35, '2026_06_22_164848_create_blended_course_tables', 17),
 (36, '2026_06_22_164936_add_sms_settings_to_site_settings_table', 17),
 (37, '2026_06_22_184330_create_course_certificates_table', 18),
-(38, '2026_06_25_153024_rename_customers_to_students_table', 19);
+(38, '2026_06_25_153024_rename_customers_to_students_table', 19),
+(39, '2026_07_22_213915_add_timed_quiz_features_to_modules_and_questions', 20),
+(40, '2026_07_22_213916_create_module_quiz_sessions_table', 21),
+(41, '2026_07_22_235640_add_lms_fields_to_course_modules_table', 22);
 
 -- --------------------------------------------------------
 
@@ -386,7 +434,22 @@ CREATE TABLE `module_quiz_attempts` (
 
 INSERT INTO `module_quiz_attempts` (`id`, `student_id`, `course_module_id`, `score`, `passed`, `answers`, `created_at`, `updated_at`) VALUES
 (1, 21, 1, 100, 1, '{\"1\":\"Observe and report\",\"2\":\"Call 911\"}', '2026-07-08 15:32:31', '2026-07-08 15:32:31'),
-(2, 21, 2, 100, 1, '{\"3\":\"Every 30 minutes\",\"4\":\"Document and notify supervisor\"}', '2026-07-08 15:33:02', '2026-07-08 15:33:02');
+(2, 21, 2, 100, 1, '{\"3\":\"Every 30 minutes\",\"4\":\"Document and notify supervisor\"}', '2026-07-08 15:33:02', '2026-07-08 15:33:02'),
+(3, 20, 3, 0, 0, '{\"12\":\"Elit sed dolor ulla\",\"13\":\"Quidem minus reicien\",\"14\":\"Voluptatem et conseq\",\"15\":\"Non incididunt et et\"}', '2026-07-22 16:06:44', '2026-07-22 16:06:44'),
+(4, 20, 3, 0, 0, '{\"12\":\"Sunt sed dolores des\",\"13\":\"Vero sint fugit et\",\"14\":\"Voluptatem et conseq\",\"15\":\"Non incididunt et et\"}', '2026-07-22 16:06:55', '2026-07-22 16:06:55'),
+(5, 20, 3, 0, 0, '{\"12\":\"Elit sed dolor ulla\",\"13\":\"Quidem minus reicien\",\"14\":\"Iste voluptatem iur\",\"15\":\"Id earum sit volupt\"}', '2026-07-22 16:07:04', '2026-07-22 16:07:04'),
+(6, 20, 3, 0, 0, '{\"12\":\"Elit sed dolor ulla\",\"13\":\"Quidem minus reicien\",\"14\":\"Iste voluptatem iur\",\"15\":\"Id earum sit volupt\"}', '2026-07-22 16:08:57', '2026-07-22 16:08:57'),
+(7, 20, 3, 25, 0, '{\"25\":\"Dolore qui ex culpa\",\"26\":\"Nihil elit et exerc\",\"27\":\"Dolore illo rerum ex\",\"28\":\"Excepteur incidunt\"}', '2026-07-22 16:16:34', '2026-07-22 16:16:34'),
+(8, 20, 3, 100, 1, '{\"25\":\"Earum corrupti temp\",\"26\":\"Tenetur hic nulla mo\",\"27\":\"Dolore illo rerum ex\",\"28\":\"Distinctio Dolorum\"}', '2026-07-22 16:16:53', '2026-07-22 16:16:53'),
+(9, 20, 4, 0, 0, '{\"16\":\"abc\"}', '2026-07-22 16:17:24', '2026-07-22 16:17:24'),
+(10, 20, 4, 0, 0, '{\"16\":\"Et in eos repellendu\"}', '2026-07-22 16:17:28', '2026-07-22 16:17:28'),
+(11, 20, 4, 100, 1, '{\"16\":\"Assumenda exercitati\"}', '2026-07-22 16:17:30', '2026-07-22 16:17:30'),
+(12, 20, 5, 0, 0, '{\"29\":\"Numquam sint dolor\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 17:05:04', '2026-07-22 17:05:04'),
+(13, 20, 5, 50, 0, '{\"29\":\"Iusto ex unde sit et\",\"30\":\"Sit impedit tempor\"}', '2026-07-22 17:06:13', '2026-07-22 17:06:13'),
+(14, 20, 5, 50, 0, '{\"29\":\"Iusto ex unde sit et\"}', '2026-07-22 17:33:36', '2026-07-22 17:33:36'),
+(15, 20, 5, 0, 0, '{\"29\":\"Ipsa eveniet esse\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 17:46:37', '2026-07-22 17:46:37'),
+(16, 20, 5, 50, 0, '{\"29\":\"Numquam sint dolor\",\"30\":\"Corporis eu nulla op\"}', '2026-07-22 17:46:59', '2026-07-22 17:46:59'),
+(17, 20, 5, 0, 0, '{\"29\":\"Numquam sint dolor\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 17:48:26', '2026-07-22 17:48:26');
 
 -- --------------------------------------------------------
 
@@ -399,6 +462,7 @@ CREATE TABLE `module_quiz_questions` (
   `course_module_id` bigint(20) UNSIGNED NOT NULL,
   `question` text NOT NULL,
   `options` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`options`)),
+  `allow_multiple` tinyint(1) NOT NULL DEFAULT 0,
   `correct_answer` varchar(255) NOT NULL,
   `order` int(10) UNSIGNED NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -409,11 +473,52 @@ CREATE TABLE `module_quiz_questions` (
 -- Dumping data for table `module_quiz_questions`
 --
 
-INSERT INTO `module_quiz_questions` (`id`, `course_module_id`, `question`, `options`, `correct_answer`, `order`, `created_at`, `updated_at`) VALUES
-(1, 1, 'What is the primary duty of a security officer?', '[\"Use force first\",\"Observe and report\",\"Ignore suspicious activity\",\"Leave the post early\"]', 'Observe and report', 1, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
-(2, 1, 'Who should you contact first in a life-threatening emergency?', '[\"Social media\",\"Call 911\",\"Wait until shift ends\",\"Only tell a coworker\"]', 'Call 911', 2, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
-(3, 2, 'How often should patrol rounds typically be completed on most sites?', '[\"Once per week\",\"Every 30 minutes\",\"Only at clock-in\",\"Never\"]', 'Every 30 minutes', 1, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
-(4, 2, 'What should you do after finding a minor incident during patrol?', '[\"Ignore it\",\"Document and notify supervisor\",\"Delete camera footage\",\"Post online\"]', 'Document and notify supervisor', 2, '2026-07-08 15:02:28', '2026-07-08 15:02:28');
+INSERT INTO `module_quiz_questions` (`id`, `course_module_id`, `question`, `options`, `allow_multiple`, `correct_answer`, `order`, `created_at`, `updated_at`) VALUES
+(1, 1, 'What is the primary duty of a security officer?', '[\"Use force first\",\"Observe and report\",\"Ignore suspicious activity\",\"Leave the post early\"]', 0, '[\"Observe and report\"]', 1, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(2, 1, 'Who should you contact first in a life-threatening emergency?', '[\"Social media\",\"Call 911\",\"Wait until shift ends\",\"Only tell a coworker\"]', 0, '[\"Call 911\"]', 2, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(3, 2, 'How often should patrol rounds typically be completed on most sites?', '[\"Once per week\",\"Every 30 minutes\",\"Only at clock-in\",\"Never\"]', 0, '[\"Every 30 minutes\"]', 1, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(4, 2, 'What should you do after finding a minor incident during patrol?', '[\"Ignore it\",\"Document and notify supervisor\",\"Delete camera footage\",\"Post online\"]', 0, '[\"Document and notify supervisor\"]', 2, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(35, 4, 'Saepe voluptate susc', '[\"Et in eos repellendu\",\"Assumenda exercitati\",\"Molestias alias plac\",\"Quia numquam officia\",\"abc\"]', 0, '[\"Assumenda exercitati\"]', 0, '2026-07-22 17:57:19', '2026-07-22 17:57:19'),
+(36, 5, 'Est ut quisquam quae', '[\"Numquam sint dolor\",\"Ipsa eveniet esse\",\"Nobis repellendus L\",\"Iusto ex unde sit et\"]', 0, '[\"Iusto ex unde sit et\"]', 0, '2026-07-22 17:57:26', '2026-07-22 17:57:26'),
+(37, 5, 'Est facere qui aperi', '[\"Sit impedit tempor\",\"Corporis eu nulla op\",\"Irure nobis voluptat\",\"Nostrum repellendus\"]', 0, '[\"Corporis eu nulla op\"]', 1, '2026-07-22 17:57:26', '2026-07-22 17:57:26'),
+(58, 3, 'Provident dignissim', '[\"Corporis cupidatat s\",\"Dolore qui ex culpa\",\"Earum corrupti temp\",\"Est sint ipsam enim\"]', 0, '[\"Earum corrupti temp\"]', 0, '2026-07-22 18:23:26', '2026-07-22 18:23:26'),
+(59, 3, 'Qui totam aliquid od', '[\"Qui velit ut eos po\",\"Adipisicing quia nes\",\"Nihil elit et exerc\",\"Tenetur hic nulla mo\"]', 0, '[\"Tenetur hic nulla mo\"]', 1, '2026-07-22 18:23:26', '2026-07-22 18:23:26'),
+(60, 3, 'Deserunt facilis est', '[\"Distinctio Dolorum\",\"Mollitia quod atque\",\"Voluptatem assumenda\",\"Excepteur incidunt\"]', 0, '[\"Distinctio Dolorum\"]', 2, '2026-07-22 18:23:26', '2026-07-22 18:23:26'),
+(61, 3, 'At autem nulla nihil', '[\"Officia consequatur\",\"Dolore illo rerum ex\",\"Ducimus aspernatur\",\"Eiusmod rem enim dol\"]', 0, '[\"Dolore illo rerum ex\"]', 3, '2026-07-22 18:23:26', '2026-07-22 18:23:26');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `module_quiz_sessions`
+--
+
+CREATE TABLE `module_quiz_sessions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `student_id` bigint(20) UNSIGNED NOT NULL,
+  `service_id` bigint(20) UNSIGNED NOT NULL,
+  `course_module_id` bigint(20) UNSIGNED NOT NULL,
+  `current_index` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `answers` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`answers`)),
+  `started_at` datetime NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'in_progress',
+  `module_quiz_attempt_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `submitted_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `module_quiz_sessions`
+--
+
+INSERT INTO `module_quiz_sessions` (`id`, `student_id`, `service_id`, `course_module_id`, `current_index`, `answers`, `started_at`, `expires_at`, `status`, `module_quiz_attempt_id`, `submitted_at`, `created_at`, `updated_at`) VALUES
+(1, 20, 99, 5, 1, '{\"29\":\"Numquam sint dolor\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 21:50:37', '2026-07-22 22:05:37', 'submitted', 12, '2026-07-22 22:05:04', '2026-07-22 16:50:37', '2026-07-22 17:05:04'),
+(2, 20, 99, 5, 1, '{\"29\":\"Iusto ex unde sit et\",\"30\":\"Sit impedit tempor\"}', '2026-07-22 22:06:02', '2026-07-22 22:21:02', 'submitted', 13, '2026-07-22 22:06:13', '2026-07-22 17:06:02', '2026-07-22 17:06:13'),
+(3, 20, 99, 5, 0, '{\"29\":\"Iusto ex unde sit et\"}', '2026-07-22 22:12:22', '2026-07-22 22:27:22', 'expired', 14, '2026-07-22 22:33:36', '2026-07-22 17:12:22', '2026-07-22 17:33:36'),
+(4, 20, 99, 5, 1, '{\"29\":\"Ipsa eveniet esse\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 22:33:51', '2026-07-22 22:48:51', 'submitted', 15, '2026-07-22 22:46:37', '2026-07-22 17:33:51', '2026-07-22 17:46:37'),
+(5, 20, 99, 5, 1, '{\"29\":\"Numquam sint dolor\",\"30\":\"Corporis eu nulla op\"}', '2026-07-22 22:46:49', '2026-07-22 23:01:49', 'submitted', 16, '2026-07-22 22:46:59', '2026-07-22 17:46:49', '2026-07-22 17:46:59'),
+(6, 20, 99, 5, 1, '{\"29\":\"Numquam sint dolor\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 22:47:39', '2026-07-22 23:02:39', 'submitted', 17, '2026-07-22 22:48:26', '2026-07-22 17:47:39', '2026-07-22 17:48:26');
 
 -- --------------------------------------------------------
 
@@ -455,6 +560,13 @@ CREATE TABLE `payments` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`id`, `booking_id`, `student_id`, `amount`, `payment_type`, `payment_method`, `status`, `transaction_id`, `payment_gateway`, `gateway_response`, `synced_to_quickbooks`, `quickbooks_invoice_id`, `quickbooks_payment_id`, `quickbooks_synced_at`, `synced_to_bank`, `bank_synced_at`, `notes`, `payment_date`, `created_at`, `updated_at`) VALUES
+(8, 18, 20, 40.00, 'deposit', 'other', 'completed', 'MANUAL-DEP-18-20260722210144', 'manual', NULL, 0, NULL, NULL, NULL, 0, NULL, 'Deposit completed via manual fallback (QuickBooks unavailable).', '2026-07-22', '2026-07-22 16:01:44', '2026-07-22 16:01:44');
 
 -- --------------------------------------------------------
 
@@ -542,7 +654,7 @@ INSERT INTO `services` (`id`, `title`, `slug`, `short_description`, `requirement
 (39, 'First Aid CPR AED', NULL, 'Gain life-saving skills with this comprehensive Red Cross certification. This course prepares you to recognize and care for emergencies involving adults, children, and infants, including cardiac arrest, choking, and sudden illness. Ideal for security professionals and workplace safety, this training covers CPR, AED use, and basic first aid. Successful completion results in a nationally recognized 2-year digital certificate that meets OSHA requirements.', '<p><strong>Physical Capability: </strong>Must be physically able to perform chest compressions on the floor and demonstrate hands-on skills such as AED pad placement and airway management.</p><p><strong>Attendance:</strong> Must attend the full instructional period and demonstrate proficiency in all required skills to the instructor.</p><p><strong>Blended Learning (if applicable):</strong> If enrolled in a \"Blended Learning\" course, the online portion must be completed and the certificate of completion presented before the in-person skills session.</p><p><strong>Performance: </strong>Must pass the final written assessment and skill evaluations with a score of 80% or higher.</p><p><strong>Identification:</strong> Bring a valid government-issued photo ID for certification verification.</p>', NULL, NULL, '[]', '<p>The Red Cross Adult and Pediatric First Aid/CPR/AED course provides the most up-to-date emergency cardiovascular care science to ensure you are ready to act in a crisis. You will learn to identify and manage critical emergencies such as head and neck injuries, burns, cuts, and environmental emergencies like heat stroke. The curriculum emphasizes high-quality chest compressions, the effective use of an Automated External Defibrillator (AED), and clearing obstructed airways for choking victims of all ages. This course is specifically designed for those who require a certification that meets strict regulatory or workplace safety standards. Training is delivered through a combination of lecture and hands-on practice with professional-grade manikins to ensure you leave the class with the confidence and skills necessary to save a life.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-10 17:25:03', '2026-03-27 16:34:37', '[\"red_cross\"]', 0),
 (41, 'Baton', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', NULL, NULL, NULL, NULL, '<p><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-10 17:39:37', '2026-02-13 18:44:28', '[\"asp_less_than_lethal\"]', 0),
 (42, 'Enhanced Handgun Permit', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', '<p><br></p>', NULL, NULL, '[]', '<p><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-10 17:43:06', '2026-03-26 21:44:18', '[\"handgun_carry_permit\"]', 0),
-(43, 'Unarmed renewal (2 Year)', NULL, 'This state-mandated 2-hour refresher course is designed for currently licensed unarmed security professionals in Tennessee. The curriculum provides essential updates on the Use of Force Continuum, de-escalation strategies, and the legal powers and limitations of security personnel. Completion of this course satisfies the training requirements necessary to renew your unarmed registration card for another two-year period, ensuring you remain in full compliance with state law.', '<p><strong>Current License:</strong> Must hold a valid Tennessee Unarmed Security Guard License that is active or expired for no more than 90 days.</p><p><strong>Minimum Age: </strong>Must be at least 18 years old.</p><p><strong>Legal Status:</strong> Must be a U.S. citizen or a legally resident alien.</p><p><strong>Course Attendance:</strong> Must complete the full 2-hour instructional period and pass the final 50-question examination with a score of 70% or higher.</p><p><strong>Required Documentation:</strong> A digital head-and-shoulders photo (passport style) and a copy of your current guard card for verification.</p><p><strong>Technical:</strong> Access to a computer, tablet, or smartphone with a reliable internet connection (for online versions).&nbsp;</p>', NULL, NULL, '[]', '<p>Keep your professional credentials current with this comprehensive 2-hour recertification course, specifically tailored for Tennessee Unarmed Security Guards and Officers. Regulated by the Department of Commerce and Insurance, this training refreshes your knowledge of core security principles while introducing recent updates to state statutes and safety protocols. Key topics include mastering the Use of Force Continuum to ensure appropriate response levels, advanced verbal de-escalation techniques to defuse hostile situations without physical intervention, and a deep dive into Tennessee Private Protective Services rules (Rule 0780-05-02).. You will also review criminal and civil liability under TN Titles 39 and 40 to protect yourself and your employer. This course concludes with a mandatory exam to verify competency and provides the transcript required for your state renewal application.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-10 17:46:35', '2026-03-27 17:26:37', '[\"renewals\"]', 0),
+(43, 'Unarmed Guard Renewal', 'unarmed-guard-renewal', 'This state-mandated 2-hour refresher course is designed for currently licensed unarmed security professionals in Tennessee. The curriculum provides essential updates on the Use of Force Continuum, de-escalation strategies, and the legal powers and limitations of security personnel. Completion of this course satisfies the training requirements necessary to renew your unarmed registration card for another two-year period, ensuring you remain in full compliance with state law.', '<p><strong>Current License:</strong> Must hold a valid Tennessee Unarmed Security Guard License that is active or expired for no more than 90 days.</p><p><strong>Minimum Age: </strong>Must be at least 18 years old.</p><p><strong>Legal Status:</strong> Must be a U.S. citizen or a legally resident alien.</p><p><strong>Course Attendance:</strong> Must complete the full 2-hour instructional period and pass the final 50-question examination with a score of 70% or higher.</p><p><strong>Required Documentation:</strong> A digital head-and-shoulders photo (passport style) and a copy of your current guard card for verification.</p><p><strong>Technical:</strong> Access to a computer, tablet, or smartphone with a reliable internet connection (for online versions).&nbsp;</p>', NULL, NULL, '[]', '<p>Keep your professional credentials current with this comprehensive 2-hour recertification course, specifically tailored for Tennessee Unarmed Security Guards and Officers. Regulated by the Department of Commerce and Insurance, this training refreshes your knowledge of core security principles while introducing recent updates to state statutes and safety protocols. Key topics include mastering the Use of Force Continuum to ensure appropriate response levels, advanced verbal de-escalation techniques to defuse hostile situations without physical intervention, and a deep dive into Tennessee Private Protective Services rules (Rule 0780-05-02).. You will also review criminal and civil liability under TN Titles 39 and 40 to protect yourself and your employer. This course concludes with a mandatory exam to verify competency and provides the transcript required for your state renewal application.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-10 17:46:35', '2026-07-09 12:54:31', '[\"renewals\"]', 0),
 (46, 'Restraints', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', NULL, NULL, NULL, NULL, '<p><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:18:44', '2026-02-11 11:18:44', '[\"asp_less_than_lethal\"]', 0),
 (47, 'OC  Spray', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', NULL, NULL, NULL, NULL, '<p><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:20:31', '2026-02-13 18:46:16', '[\"asp_less_than_lethal\"]', 0),
 (48, 'Flashlight', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.', NULL, NULL, NULL, NULL, '<p><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:22:04', '2026-02-13 18:46:58', '[\"asp_less_than_lethal\"]', 0),
@@ -551,10 +663,10 @@ INSERT INTO `services` (`id`, `title`, `slug`, `short_description`, `requirement
 (51, 'Armed  Security', NULL, NULL, NULL, NULL, NULL, NULL, '<p><br></p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:32:27', '2026-02-25 02:39:16', '[\"security_guard\"]', 0),
 (53, 'De-escalation', NULL, NULL, NULL, NULL, NULL, NULL, '<p><br></p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:39:58', '2026-02-25 02:38:19', '[\"dallas_law\"]', 0),
 (55, 'First Aid CPR AED', NULL, NULL, NULL, NULL, NULL, NULL, '<p><br></p>', 0.00, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:43:59', '2026-02-25 02:37:44', '[\"dallas_law\"]', 0),
-(56, 'Armed guard renewal (2 Year)', NULL, 'This mandatory 4-hour recertification course is required every two years for Tennessee armed security professionals. The program covers essential legal updates, weapon safety, and advanced marksmanship. Participants must complete a live-fire qualification on an approved silhouette target course, achieving a minimum score of 70%. This course provides the state-required training and qualification transcript needed to maintain your armed registration and legal carry status.', '<p><strong>Current License</strong>: Must hold a valid Tennessee Armed Security Guard License (active or within the 90-day grace period).</p><p><strong>Minimum Age: </strong>Must be at least 21 years old.</p><p><strong>Equipment:</strong> A reliable, duty-quality handgun (centerfire only; no rimfire). Note: You must qualify with each firearm type/caliber you intend to carry on duty.</p><p><strong>Ammunition: </strong>50 rounds of factory-new ammunition (no reloads). Some instructors may require up to 100 rounds for practice and qualification.</p><p><strong>Gear:</strong> A sturdy belt, a quality holster (outside-the-waistband preferred), at least two magazines or speed-loaders, and eye and ear protection.</p><p><strong>Performance: </strong>Must pass a written examination and achieve a minimum of 70% on the live-fire silhouette target course.</p><p><strong>Legal Status:</strong> Must maintain eligibility as a U.S. citizen or legally resident alien with no new disqualifying criminal convictions</p>', NULL, NULL, '[]', '<p>Ensure your professional credentials remain active with our comprehensive Armed Guard Renewal course, fully compliant with Tennessee Code Annotated § 62-35-122. This intensive 4-hour program is designed to refresh and refine the skills of current armed officers. The curriculum includes a deep dive into legal limitations on the use of a firearm, liability issues under Tennessee Titles 39 and 40, and modern de-escalation strategies. A major portion of the class is dedicated to hands-on marksmanship and safety protocols. You will be required to demonstrate proficiency through a live-fire qualification course on a commissioner-approved silhouette target, where a score of 70% or higher is mandatory for passing. Upon successful completion, you will receive the certified training transcript and documentation required for your biennial renewal application through the state’s online portal.</p>', 70.00, 30.00, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:46:33', '2026-03-27 17:19:53', '[\"renewals\"]', 0),
-(58, 'Enhanced Armed Guard To be Determined', NULL, 'The Enhanced Armed Guard endorsement is required for officers carrying rifles or shotguns on duty. Applicants must have 5 years of full‑time law enforcement experience or 4 years of active‑duty military service in a combat MOS. This endorsement adds advanced firearms training and higher‑level decision‑making standards for elevated‑risk assignments.', NULL, NULL, NULL, NULL, '<p>The Tennessee Enhanced Armed Guard endorsement is a specialized credential for security professionals who carry rifles or shotguns in the performance of duty. This endorsement reflects a higher level of responsibility, training, and operational readiness than the standard armed guard license. It is designed for officers working in elevated‑risk environments where long‑gun deployment may be necessary, such as critical infrastructure, high‑value asset protection, or specialized response roles.</p><p>Enhanced Armed Guards are expected to demonstrate advanced judgment, disciplined firearm handling, and the ability to operate safely under pressure. The training emphasizes threat assessment, legal considerations, safe long‑gun operation, and the elevated standards required when carrying weapons with greater range, penetration, and tactical impact. Officers learn to evaluate rapidly changing situations, maintain strict muzzle discipline, and apply force only when legally justified and tactically appropriate.</p><p>This endorsement ensures that only individuals with proven high‑risk experience and advanced weapons proficiency are authorized to carry long guns in a security capacity. It reinforces professionalism, accountability, and the heightened expectations placed on officers trusted with greater firepower.</p><p>Eligibility Requirements</p><p>To qualify for the Tennessee Enhanced Armed Guard endorsement, applicants must meet one of the following background requirements:</p><p>• A minimum of 5 years of full‑time law enforcement service, or</p><p>• A minimum of 4 years of active‑duty military service in a combat MOS</p><p>These requirements ensure that Enhanced Armed Guards have real‑world experience in high‑stress environments where disciplined firearm handling and sound judgment are essential.</p><p>Training and Certification Requirements</p><p>Applicants must also hold a valid Tennessee Armed Guard registration, complete the Enhanced Armed Guard training course, pass the written exam, and successfully complete the advanced firearms qualification for long‑gun proficiency. All required state applications and fees must be submitted for approval.</p><p>Why This Endorsement Matters</p><p>The Enhanced Armed Guard credential signals that an officer has proven experience in tactical or high‑risk environments, advanced firearms discipline, and the decision‑making skills needed for elevated‑risk assignments. It is often required for roles involving critical infrastructure, executive protection, high‑value transport, and environments where long‑gun capability is part of the security posture.</p>', 150.00, 30.00, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:50:20', '2026-02-25 02:23:36', '[\"renewals\"]', 0),
-(59, 'Dallas Law renewal (2 year)', NULL, 'Dallas Law requires any security officer working at a Tennessee establishment that serves alcohol to complete additional training in de‑escalation, safe restraint techniques, CPR, and First Aid. This training must be completed within 15 days of assignment and refreshed before renewal to ensure officers can safely manage incidents in alcohol‑related environments.', NULL, NULL, NULL, '[]', '<p>Dallas Law is a Tennessee statute that establishes enhanced training standards for security officers working in environments where alcohol is served. The law was created to improve safety, reduce unnecessary force, and ensure that officers assigned to bars, restaurants, nightclubs, event venues, and other on‑premises alcohol establishments are properly prepared for the unique risks associated with those settings.</p><p>Under Dallas Law, any armed or unarmed security officer working at an alcohol‑licensed location must complete additional training within 15 days of assignment. This training covers four essential areas: de‑escalation, safe restraint techniques, CPR, and First Aid. These skills address the most common challenges in alcohol‑related environments, where impaired judgment, heightened emotions, and unpredictable behavior can quickly escalate into medical or physical emergencies.</p><p>For annual renewal, officers must show that they have maintained this training and remain current on all Dallas Law requirements. This ensures that personnel working around alcohol can manage confrontations professionally, respond to medical issues effectively, and apply force only when necessary and appropriate. Dallas Law raises the standard of care for security operations in alcohol‑serving establishments and reinforces the officer’s responsibility to protect patrons, staff, and the public</p>', 60.00, 60.00, NULL, NULL, 10, 2, 'group', 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:53:26', '2026-03-16 13:06:29', '[\"renewals\"]', 0),
-(60, 'Active Shooter Renewal Annual', NULL, 'A focused refresher course that reinforces critical response principles, threat recognition, rapid decision‑making, and coordinated action during active‑shooter events. Students review updated best practices, strengthen their situational awareness, and practice clear, decisive communication to improve safety and survivability.', NULL, NULL, NULL, NULL, '<p>Our Active Shooter Annual Renewal course reinforces the critical skills security professionals need to respond decisively during violent‑intruder events. This annual refresher focuses on updated best practices, threat recognition, rapid decision‑making, and coordinated movement under pressure. Students review core response principles, strengthen situational awareness, and practice clear, assertive communication that supports safer outcomes.</p><p>Through scenario‑based discussion and practical application, participants sharpen their ability to assess evolving threats, guide others to safety, and work effectively with responding law enforcement. This course ensures officers remain confident, current, and prepared to act with purpose when seconds matter.</p>', 75.00, 30.00, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:55:24', '2026-02-25 02:01:04', '[\"renewals\"]', 0);
+(56, 'Armed Guard Renewal', 'armed-guard-renewal', 'This mandatory 4-hour recertification course is required every two years for Tennessee armed security professionals. The program covers essential legal updates, weapon safety, and advanced marksmanship. Participants must complete a live-fire qualification on an approved silhouette target course, achieving a minimum score of 70%. This course provides the state-required training and qualification transcript needed to maintain your armed registration and legal carry status.', '<p><strong>Current License</strong>: Must hold a valid Tennessee Armed Security Guard License (active or within the 90-day grace period).</p><p><strong>Minimum Age: </strong>Must be at least 21 years old.</p><p><strong>Equipment:</strong> A reliable, duty-quality handgun (centerfire only; no rimfire). Note: You must qualify with each firearm type/caliber you intend to carry on duty.</p><p><strong>Ammunition: </strong>50 rounds of factory-new ammunition (no reloads). Some instructors may require up to 100 rounds for practice and qualification.</p><p><strong>Gear:</strong> A sturdy belt, a quality holster (outside-the-waistband preferred), at least two magazines or speed-loaders, and eye and ear protection.</p><p><strong>Performance: </strong>Must pass a written examination and achieve a minimum of 70% on the live-fire silhouette target course.</p><p><strong>Legal Status:</strong> Must maintain eligibility as a U.S. citizen or legally resident alien with no new disqualifying criminal convictions</p>', NULL, NULL, '[]', '<p>Ensure your professional credentials remain active with our comprehensive Armed Guard Renewal course, fully compliant with Tennessee Code Annotated § 62-35-122. This intensive 4-hour program is designed to refresh and refine the skills of current armed officers. The curriculum includes a deep dive into legal limitations on the use of a firearm, liability issues under Tennessee Titles 39 and 40, and modern de-escalation strategies. A major portion of the class is dedicated to hands-on marksmanship and safety protocols. You will be required to demonstrate proficiency through a live-fire qualification course on a commissioner-approved silhouette target, where a score of 70% or higher is mandatory for passing. Upon successful completion, you will receive the certified training transcript and documentation required for your biennial renewal application through the state’s online portal.</p>', 70.00, 30.00, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:46:33', '2026-07-09 12:54:31', '[\"renewals\"]', 0),
+(58, 'Enhanced Armed Guard To be Determined', NULL, 'The Enhanced Armed Guard endorsement is required for officers carrying rifles or shotguns on duty. Applicants must have 5 years of full‑time law enforcement experience or 4 years of active‑duty military service in a combat MOS. This endorsement adds advanced firearms training and higher‑level decision‑making standards for elevated‑risk assignments.', NULL, NULL, NULL, NULL, '<p>The Tennessee Enhanced Armed Guard endorsement is a specialized credential for security professionals who carry rifles or shotguns in the performance of duty. This endorsement reflects a higher level of responsibility, training, and operational readiness than the standard armed guard license. It is designed for officers working in elevated‑risk environments where long‑gun deployment may be necessary, such as critical infrastructure, high‑value asset protection, or specialized response roles.</p><p>Enhanced Armed Guards are expected to demonstrate advanced judgment, disciplined firearm handling, and the ability to operate safely under pressure. The training emphasizes threat assessment, legal considerations, safe long‑gun operation, and the elevated standards required when carrying weapons with greater range, penetration, and tactical impact. Officers learn to evaluate rapidly changing situations, maintain strict muzzle discipline, and apply force only when legally justified and tactically appropriate.</p><p>This endorsement ensures that only individuals with proven high‑risk experience and advanced weapons proficiency are authorized to carry long guns in a security capacity. It reinforces professionalism, accountability, and the heightened expectations placed on officers trusted with greater firepower.</p><p>Eligibility Requirements</p><p>To qualify for the Tennessee Enhanced Armed Guard endorsement, applicants must meet one of the following background requirements:</p><p>• A minimum of 5 years of full‑time law enforcement service, or</p><p>• A minimum of 4 years of active‑duty military service in a combat MOS</p><p>These requirements ensure that Enhanced Armed Guards have real‑world experience in high‑stress environments where disciplined firearm handling and sound judgment are essential.</p><p>Training and Certification Requirements</p><p>Applicants must also hold a valid Tennessee Armed Guard registration, complete the Enhanced Armed Guard training course, pass the written exam, and successfully complete the advanced firearms qualification for long‑gun proficiency. All required state applications and fees must be submitted for approval.</p><p>Why This Endorsement Matters</p><p>The Enhanced Armed Guard credential signals that an officer has proven experience in tactical or high‑risk environments, advanced firearms discipline, and the decision‑making skills needed for elevated‑risk assignments. It is often required for roles involving critical infrastructure, executive protection, high‑value transport, and environments where long‑gun capability is part of the security posture.</p>', 150.00, 30.00, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:50:20', '2026-07-09 12:54:30', NULL, 0),
+(59, 'Renewal Dallas Law', 'renewal-dallas-law', 'Dallas Law requires any security officer working at a Tennessee establishment that serves alcohol to complete additional training in de‑escalation, safe restraint techniques, CPR, and First Aid. This training must be completed within 15 days of assignment and refreshed before renewal to ensure officers can safely manage incidents in alcohol‑related environments.', NULL, NULL, NULL, '[]', '<p>Dallas Law is a Tennessee statute that establishes enhanced training standards for security officers working in environments where alcohol is served. The law was created to improve safety, reduce unnecessary force, and ensure that officers assigned to bars, restaurants, nightclubs, event venues, and other on‑premises alcohol establishments are properly prepared for the unique risks associated with those settings.</p><p>Under Dallas Law, any armed or unarmed security officer working at an alcohol‑licensed location must complete additional training within 15 days of assignment. This training covers four essential areas: de‑escalation, safe restraint techniques, CPR, and First Aid. These skills address the most common challenges in alcohol‑related environments, where impaired judgment, heightened emotions, and unpredictable behavior can quickly escalate into medical or physical emergencies.</p><p>For annual renewal, officers must show that they have maintained this training and remain current on all Dallas Law requirements. This ensures that personnel working around alcohol can manage confrontations professionally, respond to medical issues effectively, and apply force only when necessary and appropriate. Dallas Law raises the standard of care for security operations in alcohol‑serving establishments and reinforces the officer’s responsibility to protect patrons, staff, and the public</p>', 60.00, 60.00, NULL, NULL, 10, 2, 'group', 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:53:26', '2026-07-09 12:54:30', NULL, 0),
+(60, 'Active Shooter Renewal Annual', NULL, 'A focused refresher course that reinforces critical response principles, threat recognition, rapid decision‑making, and coordinated action during active‑shooter events. Students review updated best practices, strengthen their situational awareness, and practice clear, decisive communication to improve safety and survivability.', NULL, NULL, NULL, NULL, '<p>Our Active Shooter Annual Renewal course reinforces the critical skills security professionals need to respond decisively during violent‑intruder events. This annual refresher focuses on updated best practices, threat recognition, rapid decision‑making, and coordinated movement under pressure. Students review core response principles, strengthen situational awareness, and practice clear, assertive communication that supports safer outcomes.</p><p>Through scenario‑based discussion and practical application, participants sharpen their ability to assess evolving threats, guide others to safety, and work effectively with responding law enforcement. This course ensures officers remain confident, current, and prepared to act with purpose when seconds matter.</p>', 75.00, 30.00, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-11 11:55:24', '2026-07-09 12:54:30', NULL, 0);
 INSERT INTO `services` (`id`, `title`, `slug`, `short_description`, `requirements`, `what_to_bring`, `prerequisites`, `sub_titles`, `description`, `price`, `deposit_amount`, `refund_policy`, `duration_hours`, `max_students`, `min_students`, `class_type`, `has_online_parts`, `testing_in_person`, `is_travel_based`, `travel_distance_fee`, `travel_lodging_fee`, `travel_time_fee`, `travel_minimum_students`, `travel_notes`, `lodging_instructions`, `image`, `order`, `is_active`, `subcategory`, `location`, `requires_dallas_law`, `requires_active_shooter`, `requires_conditional_questions`, `created_at`, `updated_at`, `categories`, `current_students`) VALUES
 (61, 'Force Science (De-Escalation)', NULL, 'A focused, scenario‑based class that teaches security officers how to stay calm, read behavior, and guide tense situations toward safe, voluntary compliance. Students learn practical communication skills, proven de‑escalation strategies, and a structured approach they can use immediately on shift.', NULL, NULL, NULL, NULL, '<p class=\"ql-align-justify\"><br></p><p>Our De‑Escalation Training course gives security officers the practical tools they need to confidently manage tense situations while maintaining safety, professionalism, and control. Built on proven principles from Force Science, behavioral psychology, and real‑world security operations, this class focuses on what officers actually face on shift—not theory, but usable skills.</p><p>Participants learn how to recognize behavioral cues, reduce emotional&nbsp;</p>', 200.00, 30.00, NULL, NULL, 10, 2, 'group', 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-12 10:39:28', '2026-02-25 01:57:45', '[\"force_science\"]', 0),
 (62, 'Less Lethal', NULL, 'Less‑than‑lethal tools are items security officers use to control someone without using deadly force. These tools are meant to stop a person, slow them down, or protect the officer while causing only temporary pain or discomfort. Common examples include pepper spray, batons, Tasers, and handcuffs. Tennessee requires officers to be trained before they can carry or use any of these tools on duty.', NULL, NULL, NULL, NULL, '<p>In Tennessee security work, “less‑than‑lethal” refers to tools that are designed to stop or control a person without causing death. These tools give security officers safe options to handle problems before a situation becomes dangerous. They are meant to cause temporary pain, discomfort, or loss of movement so the officer can take control without using deadly force.</p><p>Less‑than‑lethal tools are important because security officers often deal with people who are angry, aggressive, or refusing to follow instructions. These tools help officers protect themselves and others while lowering the chance of serious injury. Common less‑than‑lethal tools include pepper spray, batons, Tasers, and handcuffs. Each tool works in a different way, but all of them are meant to control a person safely and quickly.</p><p>Tennessee requires security officers to be properly trained before they can carry or use any less‑than‑lethal device. Training teaches officers how each tool works, when it is allowed, and how to use it without causing unnecessary harm. Officers also learn the laws about force, how to give clear commands, and how to check on a person after the tool is used.</p><p>Less‑than‑lethal tools help officers stay professional, make good decisions, and keep situations from getting out of control. By using these tools correctly, security officers can protect people, avoid injuries, and handle problems in a safe and responsible way.</p>', NULL, NULL, NULL, NULL, 10, 2, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-02-25 02:37:00', '2026-02-25 02:37:00', NULL, 0),
@@ -585,11 +697,14 @@ INSERT INTO `services` (`id`, `title`, `slug`, `short_description`, `requirement
 (93, 'Initial Active shooter (1 Year)', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', NULL, NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:02:32', '2026-03-27 17:02:32', '[\"security_training\"]', 0),
 (94, 'Initial BLS(Basic Life Support Hospital)  2 Years', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', NULL, NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:03:15', '2026-03-27 17:03:15', '[\"security_training\"]', 0),
 (95, 'Less than Lethal (1 Time as long as you have the Certificate)', NULL, '“This course trains security guards in the safe, legal use of less‑than‑lethal tools such as batons, OC spray, and electronic control devices. Students learn proper deployment, use‑of‑force limits, decision‑making, and liability awareness. Tennessee requires device‑specific certification before a guard may carry or use any less‑lethal weapon on duty.”', NULL, NULL, NULL, '[\"Only Offered to Law Enforcement and Security Personnel\"]', '<p>In‑Depth Description: Tennessee Less‑Than‑Lethal Training for Security Guards Tennessee’s Less‑Than‑Lethal Training provides security guards with the knowledge and skills needed to safely carry and use non‑deadly defensive tools while on duty.&nbsp;The course focuses on legally compliant, responsible, and controlled use of devices such as batons, chemical agents (OC spray), and electronic control devices. Because these tools can still cause injury or create liability, Tennessee requires guards to complete device‑specific&nbsp;certification before carrying any less‑than‑lethal weapon in the performance of their duties.Training begins with an overview of Tennessee law, including the guard’s legal authority, use‑of‑force limitations, and civil and criminal liabilities associated with improper use.&nbsp;Students learn how less‑than‑lethal tools fit into the force continuum and how to make sound decisions under pressure.The course emphasizes threat assessment, situational awareness, and the importance of using verbal commands and de‑escalation before resorting to physical tools. Students practice safe striking zones for batons, correct spray patterns and distances for OC, and the operational and safety features of electronic control devices.&nbsp;The training also addresses aftercare responsibilities, reporting requirements, and how to document incidents to protect both the guard and their employer. By the end of the course, guards understand when and how to use less‑than‑lethal tools safely, effectively, and legally. Tennessee law requires guards to carry proof of certification for each device they are authorized to use, and employers must maintain training records. certification before carrying any less‑than‑lethal weapon in the performance of their duties.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>', 150.00, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:03:53', '2026-03-27 17:23:37', '[\"security_training\"]', 0),
-(96, 'BLS Renewal (Hospital 2 Year)', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', '<p class=\"ql-align-justify\"><br></p>', NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:07:04', '2026-03-27 17:07:04', '[\"renewals\"]', 0),
-(97, 'First AID CPR AED (2 Year )', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', NULL, NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:07:32', '2026-03-27 17:07:32', '[\"renewals\"]', 0),
-(99, 'Handgun Carry Permit', NULL, 'Tennessee’s Enhanced Handgun Carry Permit course now requires a minimum of 4 hours of classroom instruction plus a live‑fire range component.Most instructors deliver the class in about 6 hours total. Training covers firearm safety, legal responsibilities, carry laws, and a required shooting qualification.', NULL, NULL, NULL, '[]', '<p>The Tennessee Enhanced Handgun Carry Permit course is designed to provide citizens with a comprehensive understanding of handgun safety, legal responsibilities, and practical firearm handling.&nbsp;The state now requires a minimum of 4 hours of classroom instruction combined with a mandatory live‑fire range component, resulting in an average total course time of approximately 6 hours, depending on class size and instructor pacing.</p><h2><strong>Classroom Instruction (Minimum 4 Hours)</strong></h2><p>The classroom portion focuses on the knowledge and judgment required to responsibly carry a handgun in Tennessee. Core topics include:</p><p>• Firearm safety fundamentals Safe handling, storage, transportation, and accident prevention.</p><p>• Handgun operation and maintenance Understanding firearm parts, function, loading/unloading, and basic care</p><p>• Tennessee laws governing carry and use of force Legal definitions, prohibited locations, duty to retreat, and lawful self‑defense</p><p>• Interactions with law enforcement Best practices during traffic stops and public encounters while carrying.</p><p>• Situational awareness and conflict avoidance Recognizing threats, de‑escalation principles, and responsible decision‑making.</p><h2><strong>This section ensures students understand not only how to carry a handgun, but when and why it is legally and ethically appropriate to use one.</strong></h2><p><strong>&nbsp;Live‑Fire Range Component</strong></p><p>Following classroom instruction, students complete a required practical shooting portion. This includes:</p><p>• Safe range conduct and firearm handling</p><p>• Live‑fire exercises or qualification demonstrating basic proficiency</p><p>• Instructor evaluation of accuracy, control, and safe operation</p><p><strong>Purpose of the EHCP Trainin</strong></p><p>The Enhanced Permit provides the broadest carry privileges in Tennessee and is recognized by more states through reciprocity agreements.&nbsp;</p><p>The course is structured to:</p><p>• Build safe, confident handgun carriers</p><p>• Ensure students understand Tennessee’s legal framework</p><p>• Prepare individuals for responsible concealed or open carry in daily life</p><p><strong>Tennessee Enhanced Handgun Carry Permit – Eligibility Requirements</strong></p><p>To qualify for an EHCP, an applicant must meet all of the following:</p><p><br></p><p><br></p>', 100.00, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:52:51', '2026-07-08 16:05:06', '[\"homeland_security\"]', 0),
+(96, 'BLS Renewal (Hospital 2 Year)', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', '<p class=\"ql-align-justify\"><br></p>', NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:07:04', '2026-07-09 12:54:30', NULL, 0),
+(97, 'First AID CPR AED (2 Year )', NULL, 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s,', NULL, NULL, NULL, '[]', '<p class=\"ql-align-justify\"><strong>Lorem Ipsum</strong>&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p><br></p>', NULL, NULL, NULL, NULL, 10, 1, 'group', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:07:32', '2026-07-09 12:54:30', NULL, 0),
+(99, 'Handgun Carry Permit', NULL, 'Tennessee’s Enhanced Handgun Carry Permit course now requires a minimum of 4 hours of classroom instruction plus a live‑fire range component.Most instructors deliver the class in about 6 hours total. Training covers firearm safety, legal responsibilities, carry laws, and a required shooting qualification.', NULL, NULL, NULL, '[]', '<p>The Tennessee Enhanced Handgun Carry Permit course is designed to provide citizens with a comprehensive understanding of handgun safety, legal responsibilities, and practical firearm handling.&nbsp;The state now requires a minimum of 4 hours of classroom instruction combined with a mandatory live‑fire range component, resulting in an average total course time of approximately 6 hours, depending on class size and instructor pacing.</p><h2><strong>Classroom Instruction (Minimum 4 Hours)</strong></h2><p>The classroom portion focuses on the knowledge and judgment required to responsibly carry a handgun in Tennessee. Core topics include:</p><p>• Firearm safety fundamentals Safe handling, storage, transportation, and accident prevention.</p><p>• Handgun operation and maintenance Understanding firearm parts, function, loading/unloading, and basic care</p><p>• Tennessee laws governing carry and use of force Legal definitions, prohibited locations, duty to retreat, and lawful self‑defense</p><p>• Interactions with law enforcement Best practices during traffic stops and public encounters while carrying.</p><p>• Situational awareness and conflict avoidance Recognizing threats, de‑escalation principles, and responsible decision‑making.</p><h2><strong>This section ensures students understand not only how to carry a handgun, but when and why it is legally and ethically appropriate to use one.</strong></h2><p><strong>&nbsp;Live‑Fire Range Component</strong></p><p>Following classroom instruction, students complete a required practical shooting portion. This includes:</p><p>• Safe range conduct and firearm handling</p><p>• Live‑fire exercises or qualification demonstrating basic proficiency</p><p>• Instructor evaluation of accuracy, control, and safe operation</p><p><strong>Purpose of the EHCP Trainin</strong></p><p>The Enhanced Permit provides the broadest carry privileges in Tennessee and is recognized by more states through reciprocity agreements.&nbsp;</p><p>The course is structured to:</p><p>• Build safe, confident handgun carriers</p><p>• Ensure students understand Tennessee’s legal framework</p><p>• Prepare individuals for responsible concealed or open carry in daily life</p><p><strong>Tennessee Enhanced Handgun Carry Permit – Eligibility Requirements</strong></p><p>To qualify for an EHCP, an applicant must meet all of the following:</p><p><br></p><p><br></p>', 100.00, NULL, NULL, NULL, 10, 1, 'group', 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, NULL, NULL, 0, 0, 0, '2026-03-27 17:52:51', '2026-07-17 11:37:54', '[\"homeland_security\"]', 0),
 (101, 'Qui nulla sed archit', 'ffdghnulla', 'Ad nobis voluptate sed Nam quidem molestias at est aut sed sunt quasi voluptatem', '<p>Neque velit, sapient.</p>', NULL, NULL, '[]', '<p>Sed id ut at ex quas.</p>', 431.00, 72.00, NULL, NULL, 34, 1, 'one-on-one', 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 'Nisi qui natus qui d', 'Location B', 1, 1, 0, '2026-04-09 15:13:04', '2026-04-09 15:13:04', '[\"nra\",\"homeland_security\",\"active_shooter\",\"force_science\",\"dallas_law\"]', 0),
-(102, 'Blended Security Training (Demo)', NULL, 'Demo blended course for testing online modules and quizzes.', NULL, NULL, NULL, NULL, 'Use this class to test the full blended learning flow: online modules, 90% quiz pass, and in-person test marking.', 150.00, 20.00, NULL, 8, 12, 2, 'group', 1, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 99, 1, 'Blended Demo', NULL, 0, 0, 0, '2026-07-08 15:02:27', '2026-07-08 15:02:27', '[\"security_training\"]', 0);
+(102, 'Blended Security Training (Demo)', NULL, 'Demo blended course for testing online modules and quizzes.', NULL, NULL, NULL, NULL, 'Use this class to test the full blended learning flow: online modules, 90% quiz pass, and in-person test marking.', 150.00, 20.00, NULL, 8, 12, 2, 'group', 1, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 99, 1, 'Blended Demo', NULL, 0, 0, 0, '2026-07-08 15:02:27', '2026-07-08 15:02:27', '[\"security_training\"]', 0),
+(103, 'Renewal Enhanced Armed Guard', 'renewal-enhanced-armed-guard', 'Renewal Enhanced Armed Guard renewal training for Tennessee security professionals.', NULL, NULL, NULL, NULL, NULL, 100.00, 20.00, NULL, NULL, 10, 2, 'group', 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 100, 1, NULL, NULL, 0, 0, 0, '2026-07-09 12:53:58', '2026-07-09 12:54:31', '[\"renewals\"]', 0),
+(104, 'Handle With Care', 'handle-with-care', 'Specialized training for safely managing individuals with special needs in school and hospital environments.', NULL, 'Valid photo ID, comfortable clothing suitable for physical training.', 'None required.', NULL, '<p>Handle With Care training teaches de-escalation and safe physical intervention techniques for caregivers and security professionals working in schools, hospitals, and similar settings.</p>', 150.00, 20.00, NULL, NULL, 10, 2, 'group', 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 15, 1, NULL, NULL, 0, 0, 0, '2026-07-09 12:53:58', '2026-07-09 12:53:58', '[\"red_cross\"]', 0),
+(105, 'Renewal Dallas Law', 'dallas-law-renewal-2-year', 'Renewal Dallas Law renewal training for Tennessee security professionals.', NULL, NULL, NULL, NULL, NULL, 100.00, 20.00, NULL, NULL, 10, 2, 'group', 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 100, 1, NULL, NULL, 0, 0, 0, '2026-07-09 12:54:31', '2026-07-09 12:54:31', '[\"renewals\"]', 0);
 
 -- --------------------------------------------------------
 
@@ -623,7 +738,8 @@ CREATE TABLE `service_bookings` (
 --
 
 INSERT INTO `service_bookings` (`id`, `student_id`, `service_id`, `booking_date`, `booking_time`, `status`, `notes`, `created_at`, `updated_at`, `class_schedule_id`, `location`, `total_amount`, `deposit_amount`, `remaining_amount`, `payment_status`, `booking_type`, `number_of_students`, `group_name`) VALUES
-(17, 21, 102, '2026-07-08', '09:00:00', 'confirmed', NULL, '2026-07-08 15:02:29', '2026-07-08 15:02:29', 19, 'Main Training Center', 150.00, 20.00, 130.00, 'deposit_paid', 'group', 1, NULL);
+(17, 21, 102, '2026-07-08', '09:00:00', 'confirmed', NULL, '2026-07-08 15:02:29', '2026-07-08 15:02:29', 19, 'Main Training Center', 150.00, 20.00, 130.00, 'deposit_paid', 'group', 1, NULL),
+(18, 20, 99, '2026-07-17', '21:40:00', 'pending', NULL, '2026-07-17 11:48:23', '2026-07-22 18:17:23', 20, 'Shooter\'s Guns, Ammo, and Range, Nashville, TN', 200.00, 40.00, 160.00, 'deposit_paid', 'group', 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -689,7 +805,10 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('X9zFF5n5Wf1NQoI3JjiILITX2bpS4XyaQFvbcxQB', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYm52bzd4YUJRQndvSDZsQUFnSUhmTGhsSXk1bXdsdmVNSlhXRko3UiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9hZG1pbi9zZXJ2aWNlcyI7czo1OiJyb3V0ZSI7czoyMDoiYWRtaW4uc2VydmljZXMuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1783544779);
+('5qs30NdguvHzi4AXvdZ1FocULMQrtd6aUtmGd3Ds', 21, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidmZxWk1aeklzTDFRaENwa2t1MzBDN2txQWZxWTVRWEdtYmFEQ05jdiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdHVkZW50L2Jvb2tpbmdzLzE3IjtzOjU6InJvdXRlIjtzOjIxOiJzdHVkZW50LmJvb2tpbmdzLnNob3ciO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjU0OiJsb2dpbl9zdHVkZW50XzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MjE7fQ==', 1784820335),
+('KoCVIznZZ3EofJhFCPgzRkAULpqNMa99yfzzlbZy', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVU95Q2hJMmhWTnYyTFZwd2l3ZGZya1dvdTNjU3NLNG12aWU4bU1rVCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NjA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9jbGFzc2VzLzk5L2NvdXJzZS1tb2R1bGVzLzMvZWRpdCI7czo1OiJyb3V0ZSI7czozMzoiYWRtaW4uY2xhc3Nlcy5jb3Vyc2UtbW9kdWxlcy5lZGl0Ijt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1784764930),
+('YF4Up4EVxzrqL7x7VnD0DgtCCOCXrZWg05P4rVfn', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.12.30 Chrome/144.0.7559.236 Electron/40.10.3 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYWNTSmF1d3k5MGV2bW1FZTROaklKM2EyQkJYVWdMa3hyeHc3MGVaaiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9wYXltZW50cyI7czo1OiJyb3V0ZSI7czoyMDoiYWRtaW4ucGF5bWVudHMuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1784821872),
+('ymhPOGuUo6UdSnncpqODmpgKYVYFSWW7t1d1e5oy', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.12.17 Chrome/144.0.7559.236 Electron/40.10.3 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibUpURWJCdFZDQm9ZSlB0VHlyWGNmVG5yaVpQekc0bXMzSWFaR2xTMCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdHVkZW50L2xvZ2luIjtzOjU6InJvdXRlIjtzOjEzOiJzdHVkZW50LmxvZ2luIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozOToiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3N0dWRlbnQvZGFzaGJvYXJkIjt9fQ==', 1784764812);
 
 -- --------------------------------------------------------
 
@@ -742,7 +861,7 @@ CREATE TABLE `site_settings` (
 --
 
 INSERT INTO `site_settings` (`id`, `header_logo`, `footer_logo`, `favicon`, `phone`, `email`, `address`, `facebook_url`, `twitter_url`, `instagram_url`, `linkedin_url`, `youtube_url`, `quickbooks_client_id`, `quickbooks_client_secret`, `quickbooks_company_id`, `quickbooks_environment`, `quickbooks_access_token`, `quickbooks_refresh_token`, `quickbooks_enabled`, `bank_api_provider`, `bank_api_key`, `bank_api_secret`, `bank_account_id`, `bank_sync_enabled`, `created_at`, `updated_at`, `jayson_bio`, `kenny_bio`, `square_application_id`, `square_access_token`, `square_location_id`, `square_environment`, `square_enabled`, `sms_enabled`, `twilio_sid`, `twilio_token`, `twilio_from_number`) VALUES
-(1, 'settings/Gdsv46RCzD3YqQiuTdf0Q0lzRSNsD224rO0C6PxL.png', 'settings/xu8sOfV6uFL63fsdP9HxOizUO0VEGUXDYnOukCyo.png', 'settings/hAcwmfQmRtDi3elHarODMcslw4ikTigtJFThuUPh.png', '615-554-1131', 'Jayson@tnveteranssecurity.com', '123 Security Way,\r\nNashville, TN 37201', NULL, NULL, NULL, NULL, NULL, 'AB0rfAJ4fBfjUdm23xtDaBr8R95pzD0D0MNqeSGuvsVpURht4a', 'l6vtWPm9Q8RuJlLxy1T0gSX9vIt6mD0EY2S3tj9L', '9341456376232298', 'sandbox', 'eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwieC5vcmciOiJIMCJ9..dCITLbkmMWksSpidMJHSYw.BeaFBB6vgED8cCaJBLV61QVpt2Bu8o0ZMCW6LsFLy5vSImvMWaW6rmrkUSouuJIgdFFS4GvUnvcSyr6yZHXI0yhuHISGBHVerh1hmAg04-WYwWYkH_-JnEd6QykahRFoUOetI74BOKX8kaqXYXJSDawZpaHi1aojAqJ1Sr1Xe2cROKjtkgA75KjaJRGz6rvsFN7J8kU1AGh9E9Vx7eDB746Iwj66WZWUrG9hL_37Z3S6kmtuNu1U-AI3r1MxMnWMZ80ft2vG30NnS3MbC17myc5lz9YaNOemraa0XEI9caejW9hbC2imhy7CvfYq4f2wwYepzfzpmDv-HCAYMLrepCF_hUBqYnsZf1CZaeAlGXxVSrC3W-eIXeMEPE9TeH7qxLNfc0QUhZkk3Ch6RTfw1Y1M2xA4syNrNR-XKTa4DV_vzfE3xoPvbwNAToW5AfYiCnvs6IdQNy1w6OzZ2kluHfS0jGfdBzKjHek912Dgo0K9JF0LBdJHOguTS3ZCApGw.JNpmHU1-G_hvBa5zLL_sSg', 'RT1-189-H0-17844158501zbp4nylg1k2s8kek7hi', 1, NULL, NULL, NULL, NULL, 0, '2026-01-12 13:30:50', '2026-06-12 12:13:50', 'Jayson Wheat is a retired U.S. Army veteran and the founder of TN Veterans Security Services and Training LLC, operating as The Security Firm LLC. He brings real‑world experience, professionalism, and a student‑first approach to every class he teaches.\r\n\r\nDuring his military career, Jayson completed multiple overseas deployments—including Iraq, Afghanistan, Kuwait, and Bosnia—where he gained extensive experience in threat assessment, weapons handling, and decision‑making under pressure. These experiences shape the practical, safety‑driven training he provides to students today.\r\n\r\nJayson is an NRA Certified Pistol Instructor, Tennessee Enhanced Handgun Carry Permit (EHCP) Instructor, and PPS Certified Instructor, authorized to train and certify both armed and unarmed security officers. Students appreciate his calm teaching style, clear communication, and ability to break down complex skills into simple, achievable steps.\r\n\r\nWhether you’re a first‑time firearm owner, a security professional, or someone seeking to build confidence and competence, Jayson’s mission is to ensure you leave every class safer, more capable, and fully prepared.', NULL, NULL, NULL, NULL, 'sandbox', 0, 0, NULL, NULL, NULL);
+(1, 'settings/Gdsv46RCzD3YqQiuTdf0Q0lzRSNsD224rO0C6PxL.png', 'settings/xu8sOfV6uFL63fsdP9HxOizUO0VEGUXDYnOukCyo.png', 'settings/hAcwmfQmRtDi3elHarODMcslw4ikTigtJFThuUPh.png', '615-554-1131', 'Jayson@tnveteranssecurity.com', '123 Security Way,\r\nNashville, TN 37201', NULL, NULL, NULL, NULL, NULL, 'AB0rfAJ4fBfjUdm23xtDaBr8R95pzD0D0MNqeSGuvsVpURht4a', 'l6vtWPm9Q8RuJlLxy1T0gSX9vIt6mD0EY2S3tj9L', '9341456376232298', 'sandbox', NULL, NULL, 1, NULL, NULL, NULL, NULL, 0, '2026-01-12 13:30:50', '2026-07-22 16:01:25', 'Jayson Wheat is a retired U.S. Army veteran and the founder of TN Veterans Security Services and Training LLC, operating as The Security Firm LLC. He brings real‑world experience, professionalism, and a student‑first approach to every class he teaches.\r\n\r\nDuring his military career, Jayson completed multiple overseas deployments—including Iraq, Afghanistan, Kuwait, and Bosnia—where he gained extensive experience in threat assessment, weapons handling, and decision‑making under pressure. These experiences shape the practical, safety‑driven training he provides to students today.\r\n\r\nJayson is an NRA Certified Pistol Instructor, Tennessee Enhanced Handgun Carry Permit (EHCP) Instructor, and PPS Certified Instructor, authorized to train and certify both armed and unarmed security officers. Students appreciate his calm teaching style, clear communication, and ability to break down complex skills into simple, achievable steps.\r\n\r\nWhether you’re a first‑time firearm owner, a security professional, or someone seeking to build confidence and competence, Jayson’s mission is to ensure you leave every class safer, more capable, and fully prepared.', NULL, NULL, NULL, NULL, 'sandbox', 0, 0, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -772,8 +891,9 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `name`, `email`, `password`, `phone`, `address`, `has_security_registration`, `security_registration_number`, `security_registration_expiration`, `profile_picture`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(20, 'AD Developer', 'asjadmmc67@gmail.com', '$2y$12$TdBglUKteKLvCFJ2wtvxsexIUV1b11/jlDMi/7./hTnpEApu7K6cy', NULL, NULL, 1, '123456', '2027-11-22', NULL, NULL, NULL, '2026-06-22 12:35:51', '2026-06-22 12:43:15'),
-(21, 'Demo Student', 'student.demo@test.com', '$2y$12$qaw.HWgn9vI3Z0JQOlUbqO44hcUXVgNREbliIPPHz76pfgbqY5OBm', '615-555-0100', NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-07-08 15:02:28', '2026-07-08 15:02:28');
+(20, 'AD Developer', 'testing@gmail.com', '$2y$12$TdBglUKteKLvCFJ2wtvxsexIUV1b11/jlDMi/7./hTnpEApu7K6cy', NULL, NULL, 1, '123456', '2027-11-22', NULL, NULL, NULL, '2026-06-22 12:35:51', '2026-07-09 13:28:19'),
+(21, 'Demo Student', 'student.demo@test.com', '$2y$12$qaw.HWgn9vI3Z0JQOlUbqO44hcUXVgNREbliIPPHz76pfgbqY5OBm', '615-555-0100', NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
+(22, 'Testing', 'test@gmail.com', '$2y$12$pnVmom5.cFg1Il8sr4dug.CSScHAC1dkgAIQLfQJFxjgXoTcN5D9y', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-07-22 14:48:31', '2026-07-22 14:48:31');
 
 -- --------------------------------------------------------
 
@@ -801,7 +921,10 @@ CREATE TABLE `student_module_progress` (
 
 INSERT INTO `student_module_progress` (`id`, `student_id`, `service_id`, `course_module_id`, `is_completed`, `best_score`, `attempts`, `completed_at`, `admin_override`, `created_at`, `updated_at`) VALUES
 (1, 21, 102, 1, 1, 100, 1, '2026-07-08 15:32:31', 0, '2026-07-08 15:32:31', '2026-07-08 15:32:31'),
-(2, 21, 102, 2, 1, 100, 1, '2026-07-08 15:33:02', 0, '2026-07-08 15:33:02', '2026-07-08 15:33:02');
+(2, 21, 102, 2, 1, 100, 1, '2026-07-08 15:33:02', 0, '2026-07-08 15:33:02', '2026-07-08 15:33:02'),
+(3, 20, 99, 3, 1, 100, 6, '2026-07-22 16:16:54', 0, '2026-07-22 16:06:44', '2026-07-22 16:16:54'),
+(4, 20, 99, 4, 1, 100, 3, '2026-07-22 16:17:30', 0, '2026-07-22 16:17:24', '2026-07-22 16:17:30'),
+(5, 20, 99, 5, 0, 50, 6, NULL, 0, '2026-07-22 17:05:04', '2026-07-22 17:48:26');
 
 -- --------------------------------------------------------
 
@@ -826,7 +949,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `profile_picture`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Super Admin', 'admin@admin.com', 'profiles/Sb70mG22z3uNt3cNlqo9vjUcbn43yxKDTe72vGtj.png', NULL, '$2y$12$T9.zhU.ZeaSdCwIQi2RaWO78E.qibh7giBZyXVvcQ8jSwuWmXWAZa', 'pOXyAk3Z7yDA4X4pCKOVqI5sxdnQnnd5MhouUWwACaH6JQIAJhsHyOwQDv33', '2026-01-12 12:47:43', '2026-04-08 18:27:15');
+(1, 'Super Admin', 'admin@admin.com', 'profiles/Sb70mG22z3uNt3cNlqo9vjUcbn43yxKDTe72vGtj.png', NULL, '$2y$12$T9.zhU.ZeaSdCwIQi2RaWO78E.qibh7giBZyXVvcQ8jSwuWmXWAZa', 'McVGwMUr8HfoYEqdFX9c0YRgEcUKPRjV4w1NrA88doOJJXqRBfB0A6lYiboL', '2026-01-12 12:47:43', '2026-04-08 18:27:15');
 
 -- --------------------------------------------------------
 
@@ -967,6 +1090,16 @@ ALTER TABLE `module_quiz_questions`
   ADD KEY `module_quiz_questions_course_module_id_foreign` (`course_module_id`);
 
 --
+-- Indexes for table `module_quiz_sessions`
+--
+ALTER TABLE `module_quiz_sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `module_quiz_sessions_service_id_foreign` (`service_id`),
+  ADD KEY `module_quiz_sessions_course_module_id_foreign` (`course_module_id`),
+  ADD KEY `module_quiz_sessions_module_quiz_attempt_id_foreign` (`module_quiz_attempt_id`),
+  ADD KEY `module_quiz_sessions_student_id_course_module_id_status_index` (`student_id`,`course_module_id`,`status`);
+
+--
 -- Indexes for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
@@ -1065,13 +1198,13 @@ ALTER TABLE `waitlist_entries`
 -- AUTO_INCREMENT for table `class_notifications`
 --
 ALTER TABLE `class_notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `class_schedules`
 --
 ALTER TABLE `class_schedules`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `contact_submissions`
@@ -1083,13 +1216,13 @@ ALTER TABLE `contact_submissions`
 -- AUTO_INCREMENT for table `course_certificates`
 --
 ALTER TABLE `course_certificates`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `course_modules`
 --
 ALTER TABLE `course_modules`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1107,7 +1240,7 @@ ALTER TABLE `instructors`
 -- AUTO_INCREMENT for table `in_person_test_results`
 --
 ALTER TABLE `in_person_test_results`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -1125,25 +1258,31 @@ ALTER TABLE `locations`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `module_quiz_attempts`
 --
 ALTER TABLE `module_quiz_attempts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `module_quiz_questions`
 --
 ALTER TABLE `module_quiz_questions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+
+--
+-- AUTO_INCREMENT for table `module_quiz_sessions`
+--
+ALTER TABLE `module_quiz_sessions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `security_company_links`
@@ -1155,13 +1294,13 @@ ALTER TABLE `security_company_links`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 
 --
 -- AUTO_INCREMENT for table `service_bookings`
 --
 ALTER TABLE `service_bookings`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `service_relationships`
@@ -1179,13 +1318,13 @@ ALTER TABLE `site_settings`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `student_module_progress`
 --
 ALTER TABLE `student_module_progress`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -1254,6 +1393,15 @@ ALTER TABLE `module_quiz_attempts`
 --
 ALTER TABLE `module_quiz_questions`
   ADD CONSTRAINT `module_quiz_questions_course_module_id_foreign` FOREIGN KEY (`course_module_id`) REFERENCES `course_modules` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `module_quiz_sessions`
+--
+ALTER TABLE `module_quiz_sessions`
+  ADD CONSTRAINT `module_quiz_sessions_course_module_id_foreign` FOREIGN KEY (`course_module_id`) REFERENCES `course_modules` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `module_quiz_sessions_module_quiz_attempt_id_foreign` FOREIGN KEY (`module_quiz_attempt_id`) REFERENCES `module_quiz_attempts` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `module_quiz_sessions_service_id_foreign` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `module_quiz_sessions_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `payments`
