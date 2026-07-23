@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ContactFormReceivedMail;
 use App\Models\ContactSubmission;
+use App\Models\SiteSetting;
+use App\Models\User;
+use App\Services\AdminNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class ContactController extends Controller
@@ -30,7 +36,7 @@ class ContactController extends Controller
             ]);
         }
 
-        ContactSubmission::create([
+        $submission = ContactSubmission::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
@@ -42,6 +48,54 @@ class ContactController extends Controller
 
         session()->forget('contact_captcha_answer');
 
+        $this->sendContactEmails($submission);
+
+        AdminNotifier::broadcast(
+            'New contact form submission',
+            trim("{$submission->first_name} {$submission->last_name}").' sent: '.($submission->subject ?: 'General Inquiry'),
+            'envelope',
+            route('admin.contact-submissions.show', $submission),
+            'contact'
+        );
+
         return redirect()->route('contact')->with('success', 'Thank you! Your message has been received. We will reply within 24 hours.');
+    }
+
+    private function sendContactEmails(ContactSubmission $submission): void
+    {
+        try {
+            $adminEmails = User::query()
+                ->whereNotNull('email')
+                ->pluck('email')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            $businessEmail = SiteSetting::first()?->email;
+            if ($businessEmail) {
+                $adminEmails[] = $businessEmail;
+            }
+
+            $adminEmails = array_values(array_unique(array_filter($adminEmails)));
+
+            if ($adminEmails !== []) {
+                Mail::to($adminEmails)->send(new ContactFormReceivedMail($submission, true));
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('Contact form admin email failed', [
+                'submission_id' => $submission->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        try {
+            Mail::to($submission->email)->send(new ContactFormReceivedMail($submission, false));
+        } catch (\Throwable $exception) {
+            Log::warning('Contact form confirmation email failed', [
+                'submission_id' => $submission->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }

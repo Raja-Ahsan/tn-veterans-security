@@ -15,7 +15,7 @@
         <p><strong>Location:</strong> {{ $schedule->location_name }}</p>
     @endif
 
-    <p>{!! nl2br(e($message)) !!}</p>
+    <p>{!! nl2br(e($notificationBody)) !!}</p>
 
     <p>Thank you,<br>{{ config('app.name') }}</p>
 </body>

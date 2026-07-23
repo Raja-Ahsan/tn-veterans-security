@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 23, 2026 at 09:17 PM
+-- Generation Time: Jul 24, 2026 at 01:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,8 +40,8 @@ CREATE TABLE `cache` (
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
 ('tn-veterans-security-cache-356a192b7913b04c54574d18c28d46e6395428ab', 'i:2;', 1784306688),
 ('tn-veterans-security-cache-356a192b7913b04c54574d18c28d46e6395428ab:timer', 'i:1784306687;', 1784306687),
-('tn-veterans-security-cache-5c785c036466adea360111aa28563bfd556b5fba', 'i:1;', 1784826415),
-('tn-veterans-security-cache-5c785c036466adea360111aa28563bfd556b5fba:timer', 'i:1784826415;', 1784826415);
+('tn-veterans-security-cache-5c785c036466adea360111aa28563bfd556b5fba', 'i:1;', 1784848381),
+('tn-veterans-security-cache-5c785c036466adea360111aa28563bfd556b5fba:timer', 'i:1784848381;', 1784848381);
 
 -- --------------------------------------------------------
 
@@ -85,7 +85,14 @@ INSERT INTO `class_notifications` (`id`, `class_schedule_id`, `sent_by`, `notifi
 (3, 6, 1, 'location_change', 'sms', 'Class location moved. Check your email/portal for the updated address. Reply STOP to opt out of SMS.', '[21,22,20]', 3, 0, '2026-07-20 04:21:00', '2026-07-20 04:21:00'),
 (4, 7, 1, 'instructor_change', 'email', 'Your instructor has been updated for this scheduled class.\n\nTraining content and certification requirements remain the same.', '[21,22,20]', 6, 0, '2026-07-18 11:24:00', '2026-07-18 11:24:00'),
 (5, 8, 1, 'cancellation', 'both', 'Unfortunately this class session has been cancelled due to instructor availability.\n\nOur team will contact you with make-up options or a refund path.', '[21,22]', 2, 1, '2026-07-16 06:27:00', '2026-07-16 06:27:00'),
-(6, 4, 1, 'general', 'email', 'Reminder: please bring your security registration paperwork and a government-issued ID to class.\n\nParking is available behind the training building.', '[21,22,20]', 7, 0, '2026-07-23 03:30:00', '2026-07-23 03:30:00');
+(6, 4, 1, 'general', 'email', 'Reminder: please bring your security registration paperwork and a government-issued ID to class.\n\nParking is available behind the training building.', '[21,22,20]', 7, 0, '2026-07-23 03:30:00', '2026-07-23 03:30:00'),
+(7, 4, 1, 'class_rescheduled', 'both', 'testing notification', '[]', 0, 0, '2026-07-23 16:48:17', '2026-07-23 16:48:17'),
+(8, 20, 1, 'class_rescheduled', 'both', 'testing notification', '[20]', 0, 1, '2026-07-23 16:50:28', '2026-07-23 16:50:28'),
+(9, 20, 1, 'class_rescheduled', 'email', 'testing', '[20]', 0, 1, '2026-07-23 16:51:41', '2026-07-23 16:51:41'),
+(10, 20, 1, 'class_rescheduled', 'email', 'testing', '[20]', 0, 1, '2026-07-23 17:03:49', '2026-07-23 17:03:49'),
+(11, 20, 1, 'class_rescheduled', 'email', 'testing', '[20]', 1, 0, '2026-07-23 17:06:44', '2026-07-23 17:06:44'),
+(12, 20, 1, 'class_rescheduled', 'email', 'testing', '[20]', 1, 0, '2026-07-23 17:16:37', '2026-07-23 17:16:37'),
+(13, 20, 1, 'class_moved', 'email', 'testing purpose', '[20]', 1, 0, '2026-07-23 17:34:36', '2026-07-23 17:34:36');
 
 -- --------------------------------------------------------
 
@@ -410,7 +417,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (40, '2026_07_22_213916_create_module_quiz_sessions_table', 21),
 (41, '2026_07_22_235640_add_lms_fields_to_course_modules_table', 22),
 (42, '2026_07_23_173756_create_service_categories_table', 23),
-(43, '2026_07_23_181500_seed_legacy_service_categories', 24);
+(43, '2026_07_23_181500_seed_legacy_service_categories', 24),
+(44, '2026_07_23_215848_create_notifications_table', 25);
 
 -- --------------------------------------------------------
 
@@ -520,6 +528,32 @@ INSERT INTO `module_quiz_sessions` (`id`, `student_id`, `service_id`, `course_mo
 (4, 20, 99, 5, 1, '{\"29\":\"Ipsa eveniet esse\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 22:33:51', '2026-07-22 22:48:51', 'submitted', 15, '2026-07-22 22:46:37', '2026-07-22 17:33:51', '2026-07-22 17:46:37'),
 (5, 20, 99, 5, 1, '{\"29\":\"Numquam sint dolor\",\"30\":\"Corporis eu nulla op\"}', '2026-07-22 22:46:49', '2026-07-22 23:01:49', 'submitted', 16, '2026-07-22 22:46:59', '2026-07-22 17:46:49', '2026-07-22 17:46:59'),
 (6, 20, 99, 5, 1, '{\"29\":\"Numquam sint dolor\",\"30\":\"Irure nobis voluptat\"}', '2026-07-22 22:47:39', '2026-07-22 23:02:39', 'submitted', 17, '2026-07-22 22:48:26', '2026-07-22 17:47:39', '2026-07-22 17:48:26');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` char(36) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `notifiable_type` varchar(255) NOT NULL,
+  `notifiable_id` bigint(20) UNSIGNED NOT NULL,
+  `data` text NOT NULL,
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `type`, `notifiable_type`, `notifiable_id`, `data`, `read_at`, `created_at`, `updated_at`) VALUES
+('13864f7c-e60c-4a37-b309-b3725994c428', 'App\\Notifications\\StudentAlert', 'App\\Models\\Student', 20, '{\"title\":\"Class update: Class rescheduled\",\"body\":\"testing\",\"icon\":\"info\",\"url\":\"http:\\/\\/127.0.0.1:8000\\/student\\/bookings\",\"category\":\"class_update\"}', '2026-07-23 17:19:12', '2026-07-23 17:06:44', '2026-07-23 17:19:12'),
+('5e6027f6-abc1-418c-a29b-8a97d36a6360', 'App\\Notifications\\StudentAlert', 'App\\Models\\Student', 20, '{\"title\":\"Class update: Class rescheduled\",\"body\":\"testing\",\"icon\":\"info\",\"url\":\"http:\\/\\/127.0.0.1:8000\\/student\\/bookings\",\"category\":\"class_update\"}', '2026-07-23 17:18:46', '2026-07-23 17:03:49', '2026-07-23 17:18:46'),
+('7bfa1ed3-78d3-440f-81c6-1a15e5fbf2e0', 'App\\Notifications\\StudentAlert', 'App\\Models\\Student', 20, '{\"title\":\"Class update: Class rescheduled\",\"body\":\"testing\",\"icon\":\"info\",\"url\":\"http:\\/\\/127.0.0.1:8000\\/student\\/bookings\",\"category\":\"class_update\"}', '2026-07-23 17:19:15', '2026-07-23 17:16:37', '2026-07-23 17:19:15');
 
 -- --------------------------------------------------------
 
@@ -812,7 +846,11 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('Gnts7QmkfWcQa9Fq27gLvVd9J9EDKoMYvKiczAB1', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiTUtHYzRjRVpyZ3JERFRoRnRWaFdJSTJZZnlvRjIybDdkWDlRb1lOeSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9jZXJ0aWZpY2F0ZXMiO3M6NToicm91dGUiO3M6MjQ6ImFkbWluLmNlcnRpZmljYXRlcy5pbmRleCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozOToiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3N0dWRlbnQvZGFzaGJvYXJkIjt9fQ==', 1784833887);
+('9WJlGHBwZpkGgWw8FHMAqU7t4zPQgp72mYNozHyR', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoicW5FZ2VmOEpsMW0wbFFZaEZ2QmttU2ltYTIxY0Y5WnY5QVVkUHEyeiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6MTU6ImFkbWluLmRhc2hib2FyZCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1784846220),
+('BeFwP2U4X7tb6fEOsJQEpPdTMXFQfyoyoLqijcbv', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.12.30 Chrome/144.0.7559.236 Electron/40.10.3 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoic2RlYXBxWVVlNHlFODg5bmx6eVZhM3EwOFJZYWppMnRzclFkNDE0YSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9sb2dpbiI7czo1OiJyb3V0ZSI7czoxMToiYWRtaW4ubG9naW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1784847098),
+('hp7sVrucMFqdJIryQ2RAMWYUiOON3BnJstV7WjhS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiS0dLc2ZxSEJVVHVrQkZuN09lQnlvZWVmeWhxc2hoQVJqNU9vaEpMZCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1784848308),
+('m13VfZ0RuRIeGCCBoxtaSMtZVz43Yx9CtiwY8jFM', 20, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYTVvZzFVRGY2dUwxVkxnQmh2amMzZ25nZDdtVTdoTlNNZ01ZMGR3dSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdHVkZW50L2Rhc2hib2FyZCI7czo1OiJyb3V0ZSI7czoxNzoic3R1ZGVudC5kYXNoYm9hcmQiO31zOjU0OiJsb2dpbl9zdHVkZW50XzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MjA7fQ==', 1784848295),
+('nzMY070wNB8pbUBVg3i2TIJoB8Bf73wnVl6meL78', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiODcwcXR0MmJ2VEoyVU53c0laaHlHRDliODZmYVdkeDRFRFl0UGlkNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NTE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9jbGFzcy1zY2hlZHVsZXMvMjAvZWRpdCI7czo1OiJyb3V0ZSI7czoyNjoiYWRtaW4uY2xhc3Mtc2NoZWR1bGVzLmVkaXQiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1784849142);
 
 -- --------------------------------------------------------
 
@@ -895,7 +933,7 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `name`, `email`, `password`, `phone`, `address`, `has_security_registration`, `security_registration_number`, `security_registration_expiration`, `profile_picture`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(20, 'AD Developer', 'testing@gmail.com', '$2y$12$TdBglUKteKLvCFJ2wtvxsexIUV1b11/jlDMi/7./hTnpEApu7K6cy', NULL, NULL, 1, '123456', '2027-11-22', NULL, NULL, NULL, '2026-06-22 12:35:51', '2026-07-09 13:28:19'),
+(20, 'AD Developer', 'production8419@gmail.com', '$2y$12$TdBglUKteKLvCFJ2wtvxsexIUV1b11/jlDMi/7./hTnpEApu7K6cy', NULL, NULL, 1, '123456', '2027-11-22', NULL, NULL, NULL, '2026-06-22 12:35:51', '2026-07-09 13:28:19'),
 (21, 'Demo Student', 'student.demo@test.com', '$2y$12$qaw.HWgn9vI3Z0JQOlUbqO44hcUXVgNREbliIPPHz76pfgbqY5OBm', '615-555-0100', NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-07-08 15:02:28', '2026-07-08 15:02:28'),
 (22, 'Testing', 'test@gmail.com', '$2y$12$pnVmom5.cFg1Il8sr4dug.CSScHAC1dkgAIQLfQJFxjgXoTcN5D9y', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-07-22 14:48:31', '2026-07-22 14:48:31');
 
@@ -953,7 +991,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `profile_picture`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Super Admin', 'admin@admin.com', 'profiles/Sb70mG22z3uNt3cNlqo9vjUcbn43yxKDTe72vGtj.png', NULL, '$2y$12$T9.zhU.ZeaSdCwIQi2RaWO78E.qibh7giBZyXVvcQ8jSwuWmXWAZa', 'McVGwMUr8HfoYEqdFX9c0YRgEcUKPRjV4w1NrA88doOJJXqRBfB0A6lYiboL', '2026-01-12 12:47:43', '2026-04-08 18:27:15');
+(1, 'Super Admin', 'admin@admin.com', 'profiles/Sb70mG22z3uNt3cNlqo9vjUcbn43yxKDTe72vGtj.png', NULL, '$2y$12$T9.zhU.ZeaSdCwIQi2RaWO78E.qibh7giBZyXVvcQ8jSwuWmXWAZa', '62OP8PojyteeTVngF5hhYygOnlFoItbBwOTZXunvKESNvMUpCNyDgqewA5ZY', '2026-01-12 12:47:43', '2026-04-08 18:27:15');
 
 -- --------------------------------------------------------
 
@@ -1104,6 +1142,13 @@ ALTER TABLE `module_quiz_sessions`
   ADD KEY `module_quiz_sessions_student_id_course_module_id_status_index` (`student_id`,`course_module_id`,`status`);
 
 --
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `notifications_notifiable_type_notifiable_id_index` (`notifiable_type`,`notifiable_id`);
+
+--
 -- Indexes for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
@@ -1209,7 +1254,7 @@ ALTER TABLE `waitlist_entries`
 -- AUTO_INCREMENT for table `class_notifications`
 --
 ALTER TABLE `class_notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `class_schedules`
@@ -1269,7 +1314,7 @@ ALTER TABLE `locations`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `module_quiz_attempts`

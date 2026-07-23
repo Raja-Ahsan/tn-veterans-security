@@ -4,10 +4,22 @@
 @section('page-title', 'Class Schedule Details')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('admin.class-schedules.index') }}" class="text-blue-600 hover:underline inline-flex items-center gap-2 mb-4">
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <a href="{{ route('admin.class-schedules.index') }}" class="text-blue-600 hover:underline inline-flex items-center gap-2">
         <i class="fas fa-arrow-left"></i> Back to Schedules
     </a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.notification-tool.index', ['schedule' => $classSchedule->id]) }}"
+           class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700">
+            <i class="fas fa-bullhorn"></i>
+            Notify Enrolled Students
+        </a>
+        <a href="#notify-enrolled"
+           class="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-semibold text-green-800 transition hover:bg-green-100">
+            <i class="fas fa-paper-plane"></i>
+            Quick Notify
+        </a>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -187,7 +199,7 @@
         </div>
 
         <!-- Notify Enrolled Students -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div id="notify-enrolled" class="bg-white rounded-lg shadow p-6 scroll-mt-24">
             <h3 class="text-xl font-bold mb-4">Notify Enrolled Students</h3>
             <form method="POST" action="{{ route('admin.class-schedules.notify', $classSchedule) }}" class="space-y-4">
                 @csrf
@@ -213,9 +225,12 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
                     <textarea name="message" rows="4" required class="w-full border rounded px-3 py-2" placeholder="Enter the message students will receive..."></textarea>
                 </div>
-                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded font-semibold">
-                    <i class="fas fa-paper-plane mr-2"></i> Send Notification
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded font-semibold">
+                    <i class="fas fa-paper-plane mr-2"></i> Notify Enrolled Students
                 </button>
+                <a href="{{ route('admin.notification-tool.index', ['schedule' => $classSchedule->id]) }}" class="block text-center text-sm text-green-700 hover:underline">
+                    Open full Notification Tool →
+                </a>
             </form>
         </div>
 

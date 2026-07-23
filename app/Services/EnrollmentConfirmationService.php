@@ -23,6 +23,36 @@ class EnrollmentConfirmationService
         $this->sendStudentEmail($booking, $payment);
         $this->sendStudentSms($booking);
         $this->sendAdminEmail($booking, $payment);
+        $this->pushStudentNotification($booking);
+    }
+
+    private function pushStudentNotification(ServiceBooking $booking): void
+    {
+        if (! $booking->student) {
+            return;
+        }
+
+        $className = $booking->service?->title ?? 'your class';
+        $date = $booking->booking_date
+            ? Carbon::parse($booking->booking_date)->format('M d, Y')
+            : 'TBD';
+
+        StudentNotifier::push(
+            $booking->student,
+            'Enrollment confirmed',
+            "You are enrolled in {$className} on {$date}. Check your email for details.",
+            'calendar',
+            route('student.bookings.show', $booking->id),
+            'enrollment'
+        );
+
+        AdminNotifier::broadcast(
+            'Student enrolled',
+            "{$booking->student->name} is enrolled in {$className} on {$date}.",
+            'calendar',
+            route('admin.bookings.show', $booking),
+            'enrollment'
+        );
     }
 
     private function sendStudentEmail(ServiceBooking $booking, Payment $payment): void

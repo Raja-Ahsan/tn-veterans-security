@@ -8,13 +8,25 @@
         <i class="fas fa-arrow-left"></i> Back to Bookings
     </a>
     <h1 class="text-3xl font-bold text-gray-800 mb-4">Booking Details</h1>
-    <div class="px-4 py-3 rounded mb-6 font-semibold
-        @if($booking->status == 'pending') bg-yellow-100 border border-yellow-400 text-yellow-800
-        @elseif($booking->status == 'confirmed') bg-green-100 border border-green-400 text-green-700
-        @elseif($booking->status == 'completed') bg-blue-100 border border-blue-400 text-blue-700
-        @else bg-red-100 border border-red-400 text-red-700
+    <div class="px-4 py-3 rounded mb-6
+        @if($booking->status == 'pending') bg-yellow-100 border border-yellow-400 text-yellow-900
+        @elseif($booking->status == 'confirmed') bg-green-100 border border-green-400 text-green-800
+        @elseif($booking->status == 'completed') bg-blue-100 border border-blue-400 text-blue-800
+        @else bg-red-100 border border-red-400 text-red-800
         @endif">
-        {{ ucfirst($booking->status) }}
+        <p class="font-semibold">Booking status: {{ ucfirst($booking->status) }}</p>
+        <p class="mt-1 text-sm opacity-90">
+            Payment:
+            @if($booking->payment_status === 'deposit_paid')
+                Deposit paid — remaining balance can be paid later.
+            @elseif($booking->payment_status === 'fully_paid')
+                Fully paid.
+            @elseif($booking->payment_status === 'refunded')
+                Refunded.
+            @else
+                {{ ucfirst(str_replace('_', ' ', (string) $booking->payment_status)) ?: 'Not paid yet' }}.
+            @endif
+        </p>
     </div>
 </div>
 

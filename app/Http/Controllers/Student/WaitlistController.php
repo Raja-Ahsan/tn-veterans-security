@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\ClassSchedule;
 use App\Models\WaitlistEntry;
+use App\Services\AdminNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,6 +38,15 @@ class WaitlistController extends Controller
             'number_of_students' => $validated['number_of_students'],
             'status' => 'waiting',
         ]);
+
+        $classSchedule->loadMissing('service');
+        AdminNotifier::broadcast(
+            'Student joined waitlist',
+            "{$student->name} joined the waitlist for ".($classSchedule->service?->title ?? 'a class').'.',
+            'info',
+            route('admin.class-schedules.show', $classSchedule),
+            'booking'
+        );
 
         return back()->with('success', 'You have been added to the waitlist. We will notify you if a spot opens.');
     }

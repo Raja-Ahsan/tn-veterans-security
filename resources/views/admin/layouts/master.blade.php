@@ -65,8 +65,8 @@
                     <a href="{{ route('admin.contact-submissions.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.contact-submissions.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-envelope mr-3"></i> Contact Forms
                     </a>
-                    <a href="{{ route('admin.communication-logs.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.communication-logs.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
-                        <i class="fas fa-bullhorn mr-3"></i> Communication Logs
+                    <a href="{{ route('admin.notification-tool.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.notification-tool.*') || request()->routeIs('admin.communication-logs.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-bullhorn mr-3"></i> Notification Tool
                     </a>
                     <a href="{{ route('admin.instructors.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.instructors.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-chalkboard-teacher mr-3"></i> Instructors
@@ -118,6 +118,7 @@
                     </button>
                     <h2 class="min-w-0 flex-1 truncate text-lg font-semibold text-gray-800 sm:text-2xl">@yield('page-title', 'Dashboard')</h2>
                     <div class="flex shrink-0 items-center gap-2 sm:gap-4">
+                        @include('admin.partials.notification-dropdown')
                         <a href="{{ route('admin.profile.show') }}" class="flex max-w-[40vw] items-center gap-2 hover:opacity-80 sm:max-w-none sm:gap-3">
                             @if(Auth::user()->profile_picture)
                                 <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}"
@@ -135,6 +136,26 @@
             </header>
 
             <div class="overflow-x-hidden p-4 sm:p-6">
+                @if(session('notification_context'))
+                    @php $notificationContext = session('notification_context'); @endphp
+                    <div id="admin-notification-context" role="status" class="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-4 text-green-950 shadow-sm sm:px-5">
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-green-700">
+                                <i class="fas fa-bell"></i>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-green-700/70">From your notification</p>
+                                <h3 class="mt-1 text-base font-bold">{{ $notificationContext['title'] ?? 'Update' }}</h3>
+                                @if(! empty($notificationContext['body']))
+                                    <p class="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-green-900/90">{{ $notificationContext['body'] }}</p>
+                                @endif
+                            </div>
+                            <button type="button" onclick="document.getElementById('admin-notification-context')?.remove()" class="rounded-lg p-2 text-green-700/60 hover:bg-green-100 hover:text-green-900" aria-label="Dismiss">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
                 @yield('content')
             </div>
         </main>
@@ -235,6 +256,53 @@
             window.addEventListener('resize', function () {
                 if (!isMobile()) {
                     closeDrawer();
+                }
+            });
+        })();
+
+        (function () {
+            const root = document.getElementById('admin-notification-root');
+            const toggle = document.getElementById('admin-notification-toggle');
+            const panel = document.getElementById('admin-notification-panel');
+            const closeBtn = document.getElementById('admin-notification-close');
+
+            if (!root || !toggle || !panel) {
+                return;
+            }
+
+            function openPanel() {
+                panel.classList.remove('hidden');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+
+            function closePanel() {
+                panel.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+
+            toggle.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (panel.classList.contains('hidden')) {
+                    openPanel();
+                } else {
+                    closePanel();
+                }
+            });
+
+            closeBtn?.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closePanel();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!root.contains(e.target)) {
+                    closePanel();
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closePanel();
                 }
             });
         })();

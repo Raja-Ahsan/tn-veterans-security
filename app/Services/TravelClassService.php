@@ -56,6 +56,14 @@ class TravelClassService
                     'travel_update',
                     $message
                 ));
+                StudentNotifier::push(
+                    $booking->student,
+                    'Travel class update',
+                    ($schedule->service?->title ? $schedule->service->title.': ' : '').$message,
+                    'info',
+                    route('student.bookings.show', $booking->id),
+                    'class_update'
+                );
                 $sent++;
             } catch (\Throwable $e) {
                 Log::warning('Travel class notification failed', [

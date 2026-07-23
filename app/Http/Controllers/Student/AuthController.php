@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Mail\StudentWelcomeMail;
 use App\Models\Student;
+use App\Services\AdminNotifier;
+use App\Services\StudentNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -92,6 +97,32 @@ class AuthController extends Controller
         Auth::guard('student')->login($student);
 
         $request->session()->regenerate();
+
+        try {
+            Mail::to($student->email)->send(new StudentWelcomeMail($student));
+        } catch (\Throwable $exception) {
+            Log::warning('Student welcome email failed', [
+                'student_id' => $student->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        StudentNotifier::push(
+            $student,
+            'Welcome to TN Veterans Security',
+            'Your student account is ready. Browse classes and manage your bookings from the dashboard.',
+            'user',
+            route('student.dashboard'),
+            'welcome'
+        );
+
+        AdminNotifier::broadcast(
+            'New student registered',
+            "{$student->name} ({$student->email}) created a student account.",
+            'user',
+            route('admin.students.show', $student),
+            'registration'
+        );
 
         $intended = $request->session()->pull('url.intended', route('student.dashboard'));
         if ($intended === route('student.login') || str_contains($intended, '/student/login')) {

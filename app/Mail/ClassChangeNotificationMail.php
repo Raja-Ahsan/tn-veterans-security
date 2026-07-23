@@ -16,7 +16,7 @@ class ClassChangeNotificationMail extends Mailable
         public Student $student,
         public ClassSchedule $schedule,
         public string $notificationType,
-        public string $message
+        public string $notificationBody
     ) {}
 
     public function build(): self
@@ -29,7 +29,7 @@ class ClassChangeNotificationMail extends Mailable
                 'student' => $this->student,
                 'schedule' => $this->schedule,
                 'notificationType' => $typeLabel,
-                'message' => $this->message,
+                'notificationBody' => $this->notificationBody,
             ]);
     }
 }

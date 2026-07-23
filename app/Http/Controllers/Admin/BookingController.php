@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\ServiceBooking;
 use App\Services\CertificateService;
 use App\Services\EnrollmentConfirmationService;
+use App\Services\StudentNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -127,6 +128,18 @@ class BookingController extends Controller
                     'new_status' => $validated['status'],
                     'error' => $exception->getMessage(),
                 ]);
+            }
+
+            if ($booking->student) {
+                $classTitle = $booking->service?->title ?? 'your class';
+                StudentNotifier::push(
+                    $booking->student,
+                    'Booking status updated',
+                    "Your booking for {$classTitle} changed from {$oldStatus} to {$validated['status']}.",
+                    'info',
+                    route('student.bookings.show', $booking->id),
+                    'status'
+                );
             }
 
             if ($validated['status'] === 'completed') {

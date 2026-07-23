@@ -9,9 +9,14 @@
         <h3 class="text-xl font-semibold text-gray-900">All Class Schedules</h3>
         <p class="mt-1 text-sm text-gray-500">Each row is one class. Click a row to see its individual date/time sessions.</p>
     </div>
-    <a href="{{ route('admin.class-schedules.create') }}" class="inline-flex shrink-0 items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-        <i class="fas fa-plus mr-2"></i> Create New Schedule
-    </a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.notification-tool.index') }}" class="inline-flex shrink-0 items-center justify-center rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">
+            <i class="fas fa-bullhorn mr-2"></i> Notification Tool
+        </a>
+        <a href="{{ route('admin.class-schedules.create') }}" class="inline-flex shrink-0 items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            <i class="fas fa-plus mr-2"></i> Create New Schedule
+        </a>
+    </div>
 </div>
 
 {{-- How to read this page --}}
@@ -202,13 +207,16 @@
                                                         </td>
                                                         <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
                                                             <div class="flex gap-2">
-                                                                <a href="{{ route('admin.class-schedules.show', $schedule) }}" class="text-blue-600 hover:text-blue-900" title="View Details">
+                                                                <a href="{{ route('admin.class-schedules.show', $schedule) }}#notify-enrolled" class="text-green-600 hover:text-green-800" title="Notify Enrolled Students" onclick="event.stopPropagation();">
+                                                                    <i class="fas fa-bullhorn"></i>
+                                                                </a>
+                                                                <a href="{{ route('admin.class-schedules.show', $schedule) }}" class="text-blue-600 hover:text-blue-900" title="View Details" onclick="event.stopPropagation();">
                                                                     <i class="fas fa-eye"></i>
                                                                 </a>
-                                                                <a href="{{ route('admin.class-schedules.edit', $schedule) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
+                                                                <a href="{{ route('admin.class-schedules.edit', $schedule) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit" onclick="event.stopPropagation();">
                                                                     <i class="fas fa-edit"></i>
                                                                 </a>
-                                                                <form method="POST" action="{{ route('admin.class-schedules.destroy', $schedule) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this session?');">
+                                                                <form method="POST" action="{{ route('admin.class-schedules.destroy', $schedule) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this session?');" onclick="event.stopPropagation();">
                                                                     @csrf
                                                                     @method('DELETE')
                                                                     <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">

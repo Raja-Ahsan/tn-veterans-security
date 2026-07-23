@@ -366,6 +366,9 @@ Route::prefix('student')->name('student.')->group(function () {
     // Protected Student Routes
     Route::middleware([\App\Http\Middleware\AuthenticateStudent::class])->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [App\Http\Controllers\Student\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::post('/notifications/{id}/read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::get('/profile', [App\Http\Controllers\Student\ProfileController::class, 'show'])->name('profile');
         Route::post('/profile', [App\Http\Controllers\Student\ProfileController::class, 'update'])->name('profile.update');
         Route::get('/payment-history', [App\Http\Controllers\Student\PaymentHistoryController::class, 'index'])->name('payment-history');
@@ -452,8 +455,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return redirect($target, 301);
         })->where('path', '.*');
 
-        Route::get('/communication-logs', [App\Http\Controllers\Admin\CommunicationLogController::class, 'index'])->name('communication-logs.index');
-        Route::get('/communication-logs/{communicationLog}', [App\Http\Controllers\Admin\CommunicationLogController::class, 'show'])->name('communication-logs.show');
+        Route::get('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::post('/notifications/{id}/read', [App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.read');
+
+        Route::get('/notification-tool', [App\Http\Controllers\Admin\NotificationToolController::class, 'index'])->name('notification-tool.index');
+        Route::get('/notification-tool/{communicationLog}', [App\Http\Controllers\Admin\NotificationToolController::class, 'show'])->name('notification-tool.show');
+        Route::get('/communication-logs/{communicationLog}', function (App\Models\ClassNotification $communicationLog) {
+            return redirect()->route('admin.notification-tool.show', $communicationLog, 301);
+        })->name('communication-logs.show');
+        Route::get('/communication-logs', function () {
+            return redirect()->route('admin.notification-tool.index', request()->query(), 301);
+        })->name('communication-logs.index');
         Route::post('/class-schedules/{classSchedule}/notify', [App\Http\Controllers\Admin\ClassNotificationController::class, 'store'])->name('class-schedules.notify');
         Route::post('/class-schedules/{classSchedule}/notify-waitlist', [App\Http\Controllers\Admin\ClassNotificationController::class, 'notifyWaitlist'])->name('class-schedules.notify-waitlist');
 

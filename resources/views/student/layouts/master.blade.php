@@ -81,6 +81,7 @@
                         Website
                     </a>
                     @auth('student')
+                        @include('student.partials.notification-dropdown')
                         <div class="hidden items-center gap-2 rounded-full border border-gray-200 bg-gray-50 py-1.5 pl-1.5 pr-3 md:flex">
                             <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-bold text-white">
                                 {{ strtoupper(substr(Auth::guard('student')->user()->name, 0, 1)) }}
@@ -139,6 +140,12 @@
                         <a href="{{ route('student.dashboard') }}" class="student-nav-link {{ request()->routeIs('student.dashboard') ? 'is-active' : '' }}">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
+                        <a href="{{ route('student.notifications.index') }}" class="student-nav-link {{ request()->routeIs('student.notifications*') ? 'is-active' : '' }}">
+                            <i class="fas fa-bell"></i> Notifications
+                            @if(($unreadNotificationCount ?? 0) > 0)
+                                <span class="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $unreadNotificationCount > 9 ? '9+' : $unreadNotificationCount }}</span>
+                            @endif
+                        </a>
                         <a href="{{ route('student.bookings') }}" class="student-nav-link {{ request()->routeIs('student.bookings*') ? 'is-active' : '' }}">
                             <i class="fas fa-calendar-check"></i> My Bookings
                         </a>
@@ -166,6 +173,50 @@
 
             <main class="min-w-0 flex-1">
                 <div class="w-full overflow-x-hidden p-4 sm:p-5 lg:p-6">
+
+                @if(session('notification_context'))
+                    @php
+                        $notificationContext = session('notification_context');
+                        $contextCategory = $notificationContext['category'] ?? 'general';
+                        $contextStyles = match ($contextCategory) {
+                            'class_update' => 'border-amber-200 bg-amber-50 text-amber-950',
+                            'booking', 'enrollment' => 'border-sky-200 bg-sky-50 text-sky-950',
+                            'welcome' => 'border-green-200 bg-green-50 text-green-950',
+                            'reminder' => 'border-violet-200 bg-violet-50 text-violet-950',
+                            'status' => 'border-slate-200 bg-slate-50 text-slate-900',
+                            default => 'border-blue-200 bg-blue-50 text-blue-950',
+                        };
+                        $contextIcon = match ($contextCategory) {
+                            'class_update' => 'fa-triangle-exclamation text-amber-600',
+                            'booking', 'enrollment' => 'fa-calendar-check text-sky-600',
+                            'welcome' => 'fa-user-check text-green-600',
+                            'reminder' => 'fa-clock text-violet-600',
+                            default => 'fa-bell text-blue-600',
+                        };
+                    @endphp
+                    <div id="student-notification-context" role="status" class="mb-5 rounded-xl border px-4 py-4 shadow-sm sm:px-5 {{ $contextStyles }}">
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/80">
+                                <i class="fas {{ $contextIcon }}"></i>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-semibold uppercase tracking-wide opacity-70">From your notification</p>
+                                <h2 class="mt-1 text-base font-bold sm:text-lg">{{ $notificationContext['title'] ?? 'Update' }}</h2>
+                                @if(! empty($notificationContext['body']))
+                                    <p class="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed opacity-90">{{ $notificationContext['body'] }}</p>
+                                @endif
+                            </div>
+                            <button
+                                type="button"
+                                onclick="document.getElementById('student-notification-context')?.remove()"
+                                class="shrink-0 rounded-lg p-2 opacity-60 transition hover:bg-black/5 hover:opacity-100"
+                                aria-label="Dismiss"
+                            >
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
 
                 @if(session('success'))
                     <div id="student-flash-alert" role="alert" class="fixed top-20 right-4 z-[70] max-w-sm rounded-xl border border-green-200 bg-white px-5 py-4 text-green-800 shadow-lg transition-opacity duration-300">
@@ -300,6 +351,57 @@
                 return;
             }
             setTimeout(dismissStudentFlash, 5000);
+        })();
+
+        (function () {
+            const root = document.getElementById('student-notification-root');
+            const toggle = document.getElementById('student-notification-toggle');
+            const panel = document.getElementById('student-notification-panel');
+            const closeBtn = document.getElementById('student-notification-close');
+
+            if (!root || !toggle || !panel) {
+                return;
+            }
+
+            function openPanel() {
+                panel.classList.remove('hidden');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+
+            function closePanel() {
+                panel.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+
+            function togglePanel() {
+                if (panel.classList.contains('hidden')) {
+                    openPanel();
+                } else {
+                    closePanel();
+                }
+            }
+
+            toggle.addEventListener('click', function (e) {
+                e.stopPropagation();
+                togglePanel();
+            });
+
+            closeBtn?.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closePanel();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!root.contains(e.target)) {
+                    closePanel();
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closePanel();
+                }
+            });
         })();
     </script>
 </body>

@@ -42,6 +42,23 @@ class BlendedCourseCompletionService
             Log::warning('Blended completion student email failed', ['error' => $e->getMessage()]);
         }
 
+        StudentNotifier::push(
+            $student,
+            'Online course completed',
+            "You completed the online portion of {$service->title}. You are eligible for in-person testing.",
+            'graduation',
+            route('student.online-course.index', $service),
+            'blended'
+        );
+
+        AdminNotifier::broadcast(
+            'Online course completed',
+            "{$student->name} completed the online portion of {$service->title} and is eligible for in-person testing.",
+            'graduation',
+            route('admin.students.show', $student),
+            'blended'
+        );
+
         if ($student->phone) {
             $this->smsService->send($student->phone, "You completed the online portion of {$service->title}. You are eligible for in-person testing. Check your email for details.");
         }

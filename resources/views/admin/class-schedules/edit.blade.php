@@ -187,6 +187,18 @@
             </div>
         </div>
 
+        @php
+            $selectedLocationId = old('location_id', $classSchedule->location_id);
+            $locationText = old('location', $classSchedule->location);
+            $selectedLocationName = optional($locations->firstWhere('id', (int) $selectedLocationId))->display_name;
+            $showCustomLocation = filled($locationText) && (blank($selectedLocationId) || $locationText !== $selectedLocationName);
+
+            $selectedInstructorId = old('instructor_id', $classSchedule->instructor_id);
+            $instructorText = old('instructor', $classSchedule->instructor);
+            $selectedInstructorName = optional($instructors->firstWhere('id', (int) $selectedInstructorId))->name;
+            $showCustomInstructor = filled($instructorText) && (blank($selectedInstructorId) || $instructorText !== $selectedInstructorName);
+        @endphp
+
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
                 <label for="location_id" class="mb-1.5 block text-sm font-bold text-gray-700">
@@ -196,12 +208,19 @@
                         class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
                     <option value="">Select location</option>
                     @foreach($locations as $loc)
-                        <option value="{{ $loc->id }}" {{ old('location_id', $classSchedule->location_id) == $loc->id ? 'selected' : '' }}>{{ $loc->display_name }}</option>
+                        <option value="{{ $loc->id }}" {{ (string) $selectedLocationId === (string) $loc->id ? 'selected' : '' }}>{{ $loc->display_name }}</option>
                     @endforeach
                 </select>
-                <input type="text" id="location" name="location" value="{{ old('location', $classSchedule->location) }}"
-                       placeholder="Or type a custom location"
-                       class="mt-2 w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                <div id="custom-location-wrap" class="mt-2 {{ $showCustomLocation ? '' : 'hidden' }}">
+                    <input type="text" id="location" name="location" value="{{ $showCustomLocation ? $locationText : '' }}"
+                           placeholder="Enter custom location"
+                           class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                </div>
+                <button type="button" id="toggle-custom-location"
+                        class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800">
+                    <i class="fas {{ $showCustomLocation ? 'fa-times' : 'fa-plus' }} text-xs"></i>
+                    <span>{{ $showCustomLocation ? 'Remove custom location' : 'Add custom location' }}</span>
+                </button>
                 @error('location_id')
                     <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                 @enderror
@@ -225,12 +244,19 @@
                         class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
                     <option value="">Select instructor</option>
                     @foreach($instructors as $inst)
-                        <option value="{{ $inst->id }}" {{ old('instructor_id', $classSchedule->instructor_id) == $inst->id ? 'selected' : '' }}>{{ $inst->name }}</option>
+                        <option value="{{ $inst->id }}" {{ (string) $selectedInstructorId === (string) $inst->id ? 'selected' : '' }}>{{ $inst->name }}</option>
                     @endforeach
                 </select>
-                <input type="text" id="instructor" name="instructor" value="{{ old('instructor', $classSchedule->instructor) }}"
-                       placeholder="Or type a custom instructor name"
-                       class="mt-2 w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                <div id="custom-instructor-wrap" class="mt-2 {{ $showCustomInstructor ? '' : 'hidden' }}">
+                    <input type="text" id="instructor" name="instructor" value="{{ $showCustomInstructor ? $instructorText : '' }}"
+                           placeholder="Enter custom instructor name"
+                           class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                </div>
+                <button type="button" id="toggle-custom-instructor"
+                        class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800">
+                    <i class="fas {{ $showCustomInstructor ? 'fa-times' : 'fa-plus' }} text-xs"></i>
+                    <span>{{ $showCustomInstructor ? 'Remove custom instructor' : 'Add custom instructor' }}</span>
+                </button>
                 @error('instructor_id')
                     <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                 @enderror
@@ -288,4 +314,69 @@
         </a>
     </div>
 </form>
+
+<script>
+(function () {
+    function setupCustomToggle({ toggleId, wrapId, inputId, selectId, addLabel, removeLabel }) {
+        const toggle = document.getElementById(toggleId);
+        const wrap = document.getElementById(wrapId);
+        const input = document.getElementById(inputId);
+        const select = document.getElementById(selectId);
+        if (!toggle || !wrap || !input) {
+            return;
+        }
+
+        const icon = toggle.querySelector('i');
+        const label = toggle.querySelector('span');
+
+        function setOpen(open) {
+            wrap.classList.toggle('hidden', !open);
+            if (icon) {
+                icon.className = 'fas ' + (open ? 'fa-times' : 'fa-plus') + ' text-xs';
+            }
+            if (label) {
+                label.textContent = open ? removeLabel : addLabel;
+            }
+            if (!open) {
+                input.value = '';
+            }
+        }
+
+        toggle.addEventListener('click', function () {
+            const willOpen = wrap.classList.contains('hidden');
+            setOpen(willOpen);
+            if (willOpen) {
+                if (select) {
+                    select.value = '';
+                }
+                input.focus();
+            }
+        });
+
+        select?.addEventListener('change', function () {
+            if (select.value) {
+                setOpen(false);
+            }
+        });
+    }
+
+    setupCustomToggle({
+        toggleId: 'toggle-custom-location',
+        wrapId: 'custom-location-wrap',
+        inputId: 'location',
+        selectId: 'location_id',
+        addLabel: 'Add custom location',
+        removeLabel: 'Remove custom location',
+    });
+
+    setupCustomToggle({
+        toggleId: 'toggle-custom-instructor',
+        wrapId: 'custom-instructor-wrap',
+        inputId: 'instructor',
+        selectId: 'instructor_id',
+        addLabel: 'Add custom instructor',
+        removeLabel: 'Remove custom instructor',
+    });
+})();
+</script>
 @endsection

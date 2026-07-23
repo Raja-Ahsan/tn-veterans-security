@@ -8,6 +8,7 @@ use App\Models\ClassNotification;
 use App\Models\ClassSchedule;
 use App\Services\ClassNotificationService;
 use App\Services\SmsService;
+use App\Services\StudentNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -35,8 +36,20 @@ class ClassNotificationController extends Controller
             $validated['message']
         );
 
-        return redirect()->route('admin.class-schedules.show', $classSchedule)
-            ->with('success', "Notification sent to {$result['sent']} student(s).".($result['failed'] > 0 ? " {$result['failed']} failed." : ''));
+        $flash = "Notification sent to {$result['sent']} student(s)."
+            .($result['failed'] > 0 ? " {$result['failed']} failed." : '');
+
+        $redirect = $request->input('redirect_to') === 'notification-tool'
+            ? redirect()->route('admin.notification-tool.index', ['schedule' => $classSchedule->id])
+            : redirect()->route('admin.class-schedules.show', $classSchedule);
+
+        if ($result['failed'] > 0 && ! empty($result['errors'])) {
+            return $redirect
+                ->with('success', $flash)
+                ->with('error', 'Delivery issues: '.implode(' | ', $result['errors']));
+        }
+
+        return $redirect->with('success', $flash);
     }
 
     public function notifyWaitlist(Request $request, ClassSchedule $classSchedule)
@@ -102,6 +115,15 @@ class ClassNotificationController extends Controller
                 $emailOk = false;
             }
         }
+
+        StudentNotifier::push(
+            $student,
+            'Waitlist update',
+            ($schedule->service?->title ? $schedule->service->title.': ' : '').$message,
+            'bell',
+            route('student.bookings'),
+            'class_update'
+        );
 
         if (in_array($deliveryMethod, ['sms', 'both'], true) && $student->phone) {
             $result = $this->smsService->send($student->phone, $message);

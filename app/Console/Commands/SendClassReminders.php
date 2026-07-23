@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Mail\ClassReminderMail;
 use App\Models\ServiceBooking;
+use App\Services\StudentNotifier;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -32,6 +33,17 @@ class SendClassReminders extends Command
             }
 
             Mail::to($booking->student->email)->send(new ClassReminderMail($booking));
+
+            $classTitle = $booking->service?->title ?? 'your class';
+            StudentNotifier::push(
+                $booking->student,
+                'Class reminder',
+                "Reminder: {$classTitle} is coming up soon. Check your email for details.",
+                'clock',
+                route('student.bookings.show', $booking->id),
+                'reminder'
+            );
+
             $sent++;
         }
 

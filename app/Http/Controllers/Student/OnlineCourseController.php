@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CourseModule;
 use App\Models\ModuleQuizSession;
 use App\Models\Service;
+use App\Services\AdminNotifier;
 use App\Services\BlendedCourseCompletionService;
 use App\Services\BlendedCourseService;
 use Illuminate\Http\Request;
@@ -363,6 +364,19 @@ class OnlineCourseController extends Controller
 
     private function afterQuizCompleted($student, Service $service, CourseModule $courseModule): void
     {
+        $attempt = $this->blendedCourse->getLatestAttempt($student, $courseModule);
+        $score = (int) ($attempt?->score ?? 0);
+        $passed = (bool) ($attempt?->passed);
+        $status = $passed ? 'passed' : 'completed';
+
+        AdminNotifier::broadcast(
+            "Quiz {$status}: {$courseModule->title}",
+            "{$student->name} scored {$score}% on {$courseModule->title} ({$service->title}).",
+            'book',
+            route('admin.students.show', $student),
+            'quiz'
+        );
+
         $this->completionService->notifyIfCourseCompleted($student, $service, $this->blendedCourse, $courseModule);
     }
 }

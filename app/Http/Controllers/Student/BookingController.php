@@ -12,9 +12,11 @@ use App\Models\Payment;
 use App\Models\Service;
 use App\Models\ServiceBooking;
 use App\Models\User;
+use App\Services\AdminNotifier;
 use App\Services\BookingPricingService;
 use App\Services\EnrollmentConfirmationService;
 use App\Services\QuickBooksPaymentsService;
+use App\Services\StudentNotifier;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -716,6 +718,26 @@ class BookingController extends Controller
                 'error' => $exception->getMessage(),
             ]);
         }
+
+        if ($booking->student) {
+            $classTitle = $booking->service?->title ?? 'your class';
+            StudentNotifier::push(
+                $booking->student,
+                'Booking created — payment pending',
+                "Complete payment to confirm your seat in {$classTitle}.",
+                'credit-card',
+                route('student.booking.payment', $booking->id),
+                'booking'
+            );
+
+            AdminNotifier::broadcast(
+                'New booking — payment pending',
+                "{$booking->student->name} booked {$classTitle}. Payment is still pending.",
+                'calendar',
+                route('admin.bookings.show', $booking),
+                'booking'
+            );
+        }
     }
 
     private function sendBookingConfirmedEmail(ServiceBooking $booking, Payment $payment): void
@@ -729,6 +751,26 @@ class BookingController extends Controller
                 'payment_id' => $payment->id,
                 'error' => $exception->getMessage(),
             ]);
+        }
+
+        if ($booking->student) {
+            $classTitle = $booking->service?->title ?? 'your class';
+            StudentNotifier::push(
+                $booking->student,
+                'Booking confirmed',
+                "Payment received. You are confirmed for {$classTitle}.",
+                'check',
+                route('student.bookings.show', $booking->id),
+                'booking'
+            );
+
+            AdminNotifier::broadcast(
+                'Booking payment received',
+                "{$booking->student->name} paid and is confirmed for {$classTitle}.",
+                'credit-card',
+                route('admin.bookings.show', $booking),
+                'payment'
+            );
         }
     }
 

@@ -207,7 +207,7 @@
             <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">3</span>
             <div>
                 <h4 class="text-base font-bold text-gray-900">Location & instructor</h4>
-                <p class="text-sm text-gray-500">Select locations from the list, or enter a custom one. One schedule is created per selected location.</p>
+                <p class="text-sm text-gray-500">Select locations from the list, or add a custom one if needed.</p>
             </div>
         </div>
 
@@ -231,19 +231,26 @@
                     </p>
                 @endforelse
             </div>
-            <div class="mt-3">
+            @php $showCustomLocation = filled(old('location')); @endphp
+            <div id="custom-location-wrap" class="mt-3 {{ $showCustomLocation ? '' : 'hidden' }}">
                 <label for="location" class="mb-1.5 block text-sm font-bold text-gray-700">
-                    Custom location <span class="font-normal text-gray-400">(optional)</span>
+                    Custom location
                 </label>
                 <input type="text" id="location" name="location" value="{{ old('location') }}"
                        placeholder="Only if none selected above"
                        class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
             </div>
+            <button type="button" id="toggle-custom-location"
+                    class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800">
+                <i class="fas {{ $showCustomLocation ? 'fa-times' : 'fa-plus' }} text-xs"></i>
+                <span>{{ $showCustomLocation ? 'Remove custom location' : 'Add custom location' }}</span>
+            </button>
             @error('location_ids')
                 <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
             @enderror
         </div>
 
+        @php $showCustomInstructor = filled(old('instructor')); @endphp
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
                 <label for="room" class="mb-1.5 block text-sm font-bold text-gray-700">
@@ -266,9 +273,16 @@
                         <option value="{{ $inst->id }}" {{ old('instructor_id') == $inst->id ? 'selected' : '' }}>{{ $inst->name }}</option>
                     @endforeach
                 </select>
-                <input type="text" id="instructor" name="instructor" value="{{ old('instructor') }}"
-                       placeholder="Or type a custom instructor name"
-                       class="mt-2 w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                <div id="custom-instructor-wrap" class="mt-2 {{ $showCustomInstructor ? '' : 'hidden' }}">
+                    <input type="text" id="instructor" name="instructor" value="{{ old('instructor') }}"
+                           placeholder="Enter custom instructor name"
+                           class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                </div>
+                <button type="button" id="toggle-custom-instructor"
+                        class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800">
+                    <i class="fas {{ $showCustomInstructor ? 'fa-times' : 'fa-plus' }} text-xs"></i>
+                    <span>{{ $showCustomInstructor ? 'Remove custom instructor' : 'Add custom instructor' }}</span>
+                </button>
                 @error('instructor_id')
                     <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                 @enderror
@@ -400,6 +414,84 @@ function removeScheduleSlot(button) {
     }
     button.closest('.schedule-slot').remove();
 }
+
+function setupCustomToggle({ toggleId, wrapId, inputId, selectId, addLabel, removeLabel, clearCheckboxes }) {
+    const toggle = document.getElementById(toggleId);
+    const wrap = document.getElementById(wrapId);
+    const input = document.getElementById(inputId);
+    const select = selectId ? document.getElementById(selectId) : null;
+    if (!toggle || !wrap || !input) {
+        return;
+    }
+
+    const icon = toggle.querySelector('i');
+    const label = toggle.querySelector('span');
+
+    function setOpen(open) {
+        wrap.classList.toggle('hidden', !open);
+        if (icon) {
+            icon.className = 'fas ' + (open ? 'fa-times' : 'fa-plus') + ' text-xs';
+        }
+        if (label) {
+            label.textContent = open ? removeLabel : addLabel;
+        }
+        if (!open) {
+            input.value = '';
+        }
+    }
+
+    toggle.addEventListener('click', function () {
+        const willOpen = wrap.classList.contains('hidden');
+        setOpen(willOpen);
+        if (willOpen) {
+            if (select) {
+                select.value = '';
+            }
+            if (clearCheckboxes) {
+                document.querySelectorAll('input[name="location_ids[]"]').forEach(function (cb) {
+                    cb.checked = false;
+                });
+            }
+            input.focus();
+        }
+    });
+
+    select?.addEventListener('change', function () {
+        if (select.value) {
+            setOpen(false);
+        }
+    });
+
+    if (clearCheckboxes) {
+        document.querySelectorAll('input[name="location_ids[]"]').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                if (document.querySelector('input[name="location_ids[]"]:checked')) {
+                    setOpen(false);
+                }
+            });
+        });
+    }
+}
+
+setupCustomToggle({
+    toggleId: 'toggle-custom-location',
+    wrapId: 'custom-location-wrap',
+    inputId: 'location',
+    selectId: null,
+    addLabel: 'Add custom location',
+    removeLabel: 'Remove custom location',
+    clearCheckboxes: true,
+});
+
+setupCustomToggle({
+    toggleId: 'toggle-custom-instructor',
+    wrapId: 'custom-instructor-wrap',
+    inputId: 'instructor',
+    selectId: 'instructor_id',
+    addLabel: 'Add custom instructor',
+    removeLabel: 'Remove custom instructor',
+    clearCheckboxes: false,
+});
 
 document.addEventListener('DOMContentLoaded', toggleScheduleType);
 </script>
