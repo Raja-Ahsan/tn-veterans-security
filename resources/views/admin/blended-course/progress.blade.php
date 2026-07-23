@@ -199,6 +199,13 @@
                                                 #{{ $loop->iteration }} {{ $module->title }}
                                             </p>
                                             <div class="flex flex-wrap items-center gap-1.5">
+                                                @php $latestAttempt = $latestAttempts[$student->id][$module->id] ?? null; @endphp
+                                                @if($latestAttempt)
+                                                    <a href="{{ route('admin.classes.blended-progress.attempt', [$service, $student, $module, $latestAttempt]) }}"
+                                                       class="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100">
+                                                        Review
+                                                    </a>
+                                                @endif
                                                 <form method="POST" action="{{ route('admin.classes.blended-progress.override', [$service, $student, $module]) }}" class="m-0 inline">
                                                     @csrf
                                                     <button type="submit" class="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50 px-2 py-1 text-[11px] font-semibold text-green-700 hover:bg-green-100">

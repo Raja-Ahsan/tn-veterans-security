@@ -50,7 +50,7 @@ class BlendedCourseService
     }
 
     /**
-     * First attempt only. After a failed attempt, admin must reset progress (re-enroll / new questions).
+     * Attempts remaining / allowed for this module.
      */
     public function canAttemptQuiz(Student $student, CourseModule $module): bool
     {
@@ -67,7 +67,7 @@ class BlendedCourseService
             return false;
         }
 
-        return (int) ($progress->attempts ?? 0) === 0;
+        return (int) ($progress->attempts ?? 0) < $module->maxAttempts();
     }
 
     public function hasExhaustedQuizAttempt(Student $student, CourseModule $module): bool
@@ -80,7 +80,7 @@ class BlendedCourseService
         return $progress !== null
             && ! $progress->is_completed
             && ! $progress->admin_override
-            && (int) ($progress->attempts ?? 0) > 0;
+            && (int) ($progress->attempts ?? 0) >= $module->maxAttempts();
     }
 
     public function isEligibleForInPersonTesting(Student $student, Service $service): bool
@@ -94,7 +94,8 @@ class BlendedCourseService
 
         foreach ($modules as $module) {
             $record = $progress->get($module->id);
-            if (! $record?->is_completed || ($record->best_score ?? 0) < self::PASSING_SCORE) {
+            $required = $module->passingScore();
+            if (! $record?->is_completed || ($record->best_score ?? 0) < $required) {
                 if (! $record?->admin_override) {
                     return false;
                 }
@@ -102,6 +103,51 @@ class BlendedCourseService
         }
 
         return true;
+    }
+
+    /**
+     * @return array{completed: int, total: int, percent: int}
+     */
+    public function progressSummary(Student $student, Service $service): array
+    {
+        $modules = $this->getModulesForService($service);
+        $progress = $this->getProgress($student, $service);
+        $total = $modules->count();
+        $completed = $modules->filter(function (CourseModule $module) use ($progress) {
+            $record = $progress->get($module->id);
+
+            return (bool) ($record?->is_completed || $record?->admin_override);
+        })->count();
+
+        return [
+            'completed' => $completed,
+            'total' => $total,
+            'percent' => $total > 0 ? (int) round(($completed / $total) * 100) : 0,
+        ];
+    }
+
+    public function firstContinueModule(Student $student, Service $service): ?CourseModule
+    {
+        $modules = $this->getModulesForService($service);
+        $progress = $this->getProgress($student, $service);
+
+        foreach ($modules as $module) {
+            if (! $this->canAccessModule($student, $module, $progress, $modules)) {
+                continue;
+            }
+
+            $record = $progress->get($module->id);
+            if (! $record?->is_completed && ! $record?->admin_override) {
+                return $module;
+            }
+        }
+
+        return $modules->last();
+    }
+
+    public function studentHasPaidAccess(Student $student, Service $service): bool
+    {
+        return $this->paidBookingForService($student, $service) !== null;
     }
 
     public function quizTimeLimitMinutes(CourseModule $module): int
@@ -248,7 +294,7 @@ class BlendedCourseService
         }
 
         $score = $total > 0 ? (int) round(($correct / $total) * 100) : 0;
-        $passed = $score >= self::PASSING_SCORE;
+        $passed = $score >= $module->passingScore();
 
         $attempt = ModuleQuizAttempt::create([
             'student_id' => $student->id,

@@ -26,17 +26,28 @@
                         <h2 class="text-lg font-bold text-gray-900">{{ $course->title }}</h2>
                         <p class="mt-1 text-sm text-gray-600">
                             Progress: <strong>{{ $course->online_progress['completed'] }}</strong> / {{ $course->online_progress['total'] }} modules
+                            ({{ $course->online_progress['percent'] }}%)
                         </p>
+                        <div class="mt-2 h-2 max-w-xs overflow-hidden rounded-full bg-gray-200">
+                            <div class="h-full rounded-full bg-[var(--brand)]" style="width: {{ $course->online_progress['percent'] }}%"></div>
+                        </div>
                         @if($course->online_progress['eligible_in_person'])
                             <p class="mt-1 text-sm font-medium text-emerald-700">
                                 <i class="fas fa-check-circle"></i> Eligible for in-person testing
                             </p>
                         @endif
                     </div>
-                    <a href="{{ route('student.online-course.index', $course) }}"
-                       class="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
-                        <i class="fas fa-play text-xs"></i> Continue Course
-                    </a>
+                    @if(! empty($course->online_progress['continue_module_id']))
+                        <a href="{{ route('student.online-course.module', [$course, $course->online_progress['continue_module_id']]) }}"
+                           class="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
+                            <i class="fas fa-play text-xs"></i> Continue
+                        </a>
+                    @else
+                        <a href="{{ route('student.online-course.index', $course) }}"
+                           class="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
+                            <i class="fas fa-play text-xs"></i> Continue Course
+                        </a>
+                    @endif
                 </div>
             </div>
         @endforeach

@@ -34,13 +34,14 @@ class OnlineCoursesController extends Controller
             ->orderBy('title')
             ->get()
             ->map(function (Service $service) use ($student) {
-                $modules = $this->blendedCourse->getModulesForService($service);
-                $progress = $this->blendedCourse->getProgress($student, $service);
-                $completed = $progress->where('is_completed', true)->count();
+                $summary = $this->blendedCourse->progressSummary($student, $service);
+                $continueModule = $this->blendedCourse->firstContinueModule($student, $service);
                 $service->online_progress = [
-                    'completed' => $completed,
-                    'total' => $modules->count(),
+                    'completed' => $summary['completed'],
+                    'total' => $summary['total'],
+                    'percent' => $summary['percent'],
                     'eligible_in_person' => $this->blendedCourse->isEligibleForInPersonTesting($student, $service),
+                    'continue_module_id' => $continueModule?->id,
                 ];
 
                 return $service;

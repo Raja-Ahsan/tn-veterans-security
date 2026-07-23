@@ -41,7 +41,7 @@
         </h1>
         <p class="mt-2 text-4xl font-black {{ $passed ? 'text-emerald-700' : 'text-red-700' }}">{{ $score }}%</p>
         <p class="mt-2 text-sm {{ $passed ? 'text-emerald-800' : 'text-red-800' }}">
-            Passing score is 90%.
+            Passing score is {{ $passingScore ?? $courseModule->passingScore() }}%.
             @if($timedOut)
                 Time ran out — your answered questions were submitted automatically.
             @endif

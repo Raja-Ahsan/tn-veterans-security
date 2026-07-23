@@ -18,6 +18,11 @@
     $needsReenrollment = $needsReenrollment ?? false;
     $supportEmail = $supportEmail ?? null;
     $supportPhone = $supportPhone ?? null;
+    $passingScore = $passingScore ?? $courseModule->passingScore();
+    $maxAttempts = $maxAttempts ?? $courseModule->maxAttempts();
+    $attemptsUsed = (int) ($moduleProgress?->attempts ?? 0);
+    $attemptsRemaining = max(0, $maxAttempts - $attemptsUsed);
+    $materials = $materials ?? $courseModule->materialFiles();
 @endphp
 
 <div class="mb-5">
@@ -34,7 +39,7 @@
             <i class="fas fa-check-circle"></i> Passed with {{ $moduleProgress->best_score }}%
         </p>
     @elseif($quizCount > 0)
-        <p class="mt-2 text-sm text-gray-500">Review the material below, then take the timed quiz. Passing score: 90%.</p>
+        <p class="mt-2 text-sm text-gray-500">Review the material below, then take the timed quiz. Passing score: {{ $passingScore }}%.</p>
     @endif
 </div>
 
@@ -78,12 +83,29 @@
         </div>
     @endif
 
+    @if(count($materials) > 0)
+        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+            <h2 class="mb-3 text-lg font-bold text-gray-900">Downloadable materials</h2>
+            <ul class="space-y-2">
+                @foreach($materials as $file)
+                    <li>
+                        <a href="{{ $file['url'] }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline">
+                            <i class="fas fa-file-download"></i>
+                            {{ $file['original_name'] }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if($hasContent)
         <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 class="mb-3 text-lg font-bold text-gray-900">Lesson content</h2>
             <div class="prose max-w-none text-gray-700">{!! nl2br(e($courseModule->content)) !!}</div>
         </div>
-    @elseif(! $embedUrl && ! $hasExternalVideo && $quizCount > 0)
+    @elseif(! $embedUrl && ! $hasExternalVideo && $quizCount > 0 && count($materials) === 0)
         <div class="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-6 text-sm text-gray-600 shadow-sm">
             No written lesson content was added for this module. You can still take the quiz below.
         </div>
@@ -209,11 +231,11 @@
                 @endphp
                 Your best score was
                 <strong>{{ $displayScore ?? '—' }}%</strong>
-                (90% required).
+                ({{ $passingScore }}% required).
                 @if($latestScore !== null && (int) $latestScore !== (int) $displayScore)
                     Latest attempt: <strong>{{ $latestScore }}%</strong>.
                 @endif
-                Free retake is not allowed, and correct answers are not shown.
+                All {{ $maxAttempts }} {{ Str::plural('attempt', $maxAttempts) }} used. Correct answers are not shown.
             </p>
             <p class="mt-3 text-sm text-amber-900">
                 To try again, contact admin to <strong>re-enroll / reset this module</strong> after they update the questions and answers.
@@ -242,8 +264,12 @@
                 <p class="text-sm text-gray-500">
                     {{ $quizCount }} {{ Str::plural('question', $quizCount) }}
                     · {{ $quizMinutes }} {{ Str::plural('minute', $quizMinutes) }} time limit
-                    · 90% required to pass
-                    · one attempt · one question at a time (no going back)
+                    · {{ $passingScore }}% required to pass
+                    · {{ $maxAttempts }} {{ Str::plural('attempt', $maxAttempts) }}
+                    @if($attemptsUsed > 0)
+                        ({{ $attemptsRemaining }} remaining)
+                    @endif
+                    · one question at a time (no going back)
                 </p>
             </div>
 

@@ -108,6 +108,44 @@
             <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
         @enderror
     </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div>
+            <label for="passing_score" class="block text-sm font-bold text-gray-700 mb-1.5">Passing score (%) <span class="text-red-500">*</span></label>
+            <input type="number" id="passing_score" name="passing_score" min="1" max="100"
+                   value="{{ old('passing_score', $courseModule->passing_score ?? 90) }}" required
+                   class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+        </div>
+        <div>
+            <label for="max_attempts" class="block text-sm font-bold text-gray-700 mb-1.5">Max quiz attempts <span class="text-red-500">*</span></label>
+            <input type="number" id="max_attempts" name="max_attempts" min="1" max="20"
+                   value="{{ old('max_attempts', $courseModule->max_attempts ?? 1) }}" required
+                   class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+        </div>
+    </div>
+    <p class="text-xs text-gray-500 -mt-2">After max attempts are used without passing, admin must reset the student to allow another try.</p>
+
+    <div>
+        <label for="materials_files" class="block text-sm font-bold text-gray-700 mb-1.5">Materials / PDFs <span class="font-normal text-gray-400">(optional)</span></label>
+        @if(! empty($courseModule?->materials))
+            <ul class="mb-2 space-y-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                @foreach($courseModule->materialFiles() as $file)
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-paperclip text-gray-400"></i>
+                        <a href="{{ $file['url'] }}" target="_blank" class="font-medium text-blue-700 hover:underline">{{ $file['original_name'] }}</a>
+                    </li>
+                @endforeach
+            </ul>
+            <label class="mb-2 inline-flex items-center gap-2 text-sm text-red-700">
+                <input type="checkbox" name="remove_materials" value="1" class="rounded border-gray-400 text-red-600 focus:ring-red-500">
+                Remove all existing materials
+            </label>
+        @endif
+        <input type="file" id="materials_files" name="materials_files[]" multiple
+               accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg"
+               class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-green-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-green-700 hover:file:bg-green-100">
+        <p class="mt-1 text-xs text-gray-500">Upload up to 5 files (PDF/Office/images), max 10MB each. New uploads are added to existing files.</p>
+    </div>
 </div>
 
 {{-- Quiz --}}

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class CourseModule extends Model
 {
@@ -17,6 +18,9 @@ class CourseModule extends Model
         'order',
         'is_active',
         'quiz_time_limit_minutes',
+        'passing_score',
+        'max_attempts',
+        'materials',
     ];
 
     protected function casts(): array
@@ -25,6 +29,9 @@ class CourseModule extends Model
             'is_active' => 'boolean',
             'order' => 'integer',
             'quiz_time_limit_minutes' => 'integer',
+            'passing_score' => 'integer',
+            'max_attempts' => 'integer',
+            'materials' => 'array',
         ];
     }
 
@@ -41,6 +48,46 @@ class CourseModule extends Model
     public function progressRecords(): HasMany
     {
         return $this->hasMany(StudentModuleProgress::class);
+    }
+
+    public function passingScore(): int
+    {
+        $score = (int) ($this->passing_score ?? 0);
+
+        return $score > 0 ? min($score, 100) : 90;
+    }
+
+    public function maxAttempts(): int
+    {
+        $attempts = (int) ($this->max_attempts ?? 0);
+
+        return $attempts > 0 ? min($attempts, 20) : 1;
+    }
+
+    /**
+     * @return list<array{path: string, original_name: string, url: string}>
+     */
+    public function materialFiles(): array
+    {
+        $materials = $this->materials ?? [];
+        $files = [];
+
+        foreach ($materials as $material) {
+            $path = is_array($material) ? ($material['path'] ?? null) : null;
+            if (! filled($path) || ! Storage::disk('public')->exists($path)) {
+                continue;
+            }
+
+            $files[] = [
+                'path' => $path,
+                'original_name' => is_array($material)
+                    ? (string) ($material['original_name'] ?? basename($path))
+                    : basename($path),
+                'url' => Storage::disk('public')->url($path),
+            ];
+        }
+
+        return $files;
     }
 
     /**

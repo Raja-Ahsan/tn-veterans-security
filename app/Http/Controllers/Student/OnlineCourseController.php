@@ -27,8 +27,12 @@ class OnlineCourseController extends Controller
         }
 
         $student = Auth::guard('student')->user();
+        $this->assertPaidAccess($service, $student);
+
         $modules = $this->blendedCourse->getModulesForService($service);
         $progress = $this->blendedCourse->getProgress($student, $service);
+        $progressSummary = $this->blendedCourse->progressSummary($student, $service);
+        $continueModule = $this->blendedCourse->firstContinueModule($student, $service);
         $eligible = $this->blendedCourse->isEligibleForInPersonTesting($student, $service);
         $certificate = $eligible
             ? $this->certificateService->issueForOnlineCourseCompletion($student, $service)
@@ -38,6 +42,8 @@ class OnlineCourseController extends Controller
             'service',
             'modules',
             'progress',
+            'progressSummary',
+            'continueModule',
             'eligible',
             'certificate'
         ));
@@ -50,12 +56,13 @@ class OnlineCourseController extends Controller
         }
 
         $student = Auth::guard('student')->user();
+        $this->assertPaidAccess($service, $student);
         $modules = $this->blendedCourse->getModulesForService($service);
         $progress = $this->blendedCourse->getProgress($student, $service);
 
         if (! $this->blendedCourse->canAccessModule($student, $courseModule, $progress, $modules)) {
             return redirect()->route('student.online-course.index', $service)
-                ->with('error', 'Complete the previous module with 90% or higher before continuing.');
+                ->with('error', 'Complete the previous module before continuing.');
         }
 
         $courseModule->load('quizQuestions');
@@ -82,6 +89,10 @@ class OnlineCourseController extends Controller
         }
 
         $quizMinutes = $this->blendedCourse->quizTimeLimitMinutes($courseModule);
+        $passingScore = $courseModule->passingScore();
+        $maxAttempts = $courseModule->maxAttempts();
+        $attemptsUsed = (int) ($moduleProgress?->attempts ?? 0);
+        $materials = $courseModule->materialFiles();
         $supportEmail = \App\Models\SiteSetting::query()->value('email');
         $supportPhone = \App\Models\SiteSetting::query()->value('phone');
 
@@ -96,6 +107,10 @@ class OnlineCourseController extends Controller
             'quizMinutes',
             'canAttemptQuiz',
             'needsReenrollment',
+            'passingScore',
+            'maxAttempts',
+            'attemptsUsed',
+            'materials',
             'supportEmail',
             'supportPhone'
         ));
@@ -302,6 +317,7 @@ class OnlineCourseController extends Controller
             : null;
         $supportEmail = \App\Models\SiteSetting::query()->value('email');
         $supportPhone = \App\Models\SiteSetting::query()->value('phone');
+        $passingScore = $courseModule->passingScore();
 
         return view('student.online-course.quiz-result', compact(
             'service',
@@ -315,7 +331,8 @@ class OnlineCourseController extends Controller
             'eligible',
             'certificate',
             'supportEmail',
-            'supportPhone'
+            'supportPhone',
+            'passingScore'
         ));
     }
 
@@ -327,6 +344,13 @@ class OnlineCourseController extends Controller
         return redirect()->route('student.online-course.quiz.start', [$service, $courseModule]);
     }
 
+    private function assertPaidAccess(Service $service, $student): void
+    {
+        if (! $this->blendedCourse->studentHasPaidAccess($student, $service)) {
+            abort(403, 'Pay the course deposit to unlock online modules.');
+        }
+    }
+
     private function assertModuleAccess(Service $service, CourseModule $courseModule): void
     {
         if ($courseModule->service_id !== $service->id || ! $service->has_online_parts) {
@@ -334,6 +358,7 @@ class OnlineCourseController extends Controller
         }
 
         $student = Auth::guard('student')->user();
+        $this->assertPaidAccess($service, $student);
         $modules = $this->blendedCourse->getModulesForService($service);
         $progress = $this->blendedCourse->getProgress($student, $service);
 

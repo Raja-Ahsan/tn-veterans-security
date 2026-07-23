@@ -186,6 +186,92 @@ class TimedModuleQuizFlowTest extends TestCase
         $this->assertTrue((bool) $session->attempt?->passed);
     }
 
+    public function test_unpaid_deposit_blocks_online_course_access(): void
+    {
+        Mail::fake();
+
+        [$student, $service, $module1] = $this->seedBlendedCourse();
+
+        ServiceBooking::query()
+            ->where('student_id', $student->id)
+            ->where('service_id', $service->id)
+            ->update(['payment_status' => 'pending']);
+
+        $this->actingAs($student, 'student')
+            ->get(route('student.online-course.index', $service))
+            ->assertForbidden();
+
+        $this->actingAs($student, 'student')
+            ->get(route('student.online-course.module', [$service, $module1]))
+            ->assertForbidden();
+    }
+
+    public function test_module_passing_score_and_max_attempts_are_honored(): void
+    {
+        Mail::fake();
+
+        [$student, $service, $module1] = $this->seedBlendedCourse();
+
+        $module1->update([
+            'passing_score' => 50,
+            'max_attempts' => 2,
+        ]);
+
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.start', [$service, $module1]));
+
+        $questions = $module1->quizQuestions()->orderBy('order')->get();
+
+        // Score 50%: correct then wrong
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.answer', [$service, $module1]), [
+                'answer' => $questions[0]->correctAnswers()[0],
+            ]);
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.answer', [$service, $module1]), [
+                'answer' => 'Wrong',
+            ]);
+
+        $progress = StudentModuleProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $module1->id)
+            ->first();
+
+        $this->assertTrue((bool) $progress?->is_completed);
+        $this->assertSame(50, (int) $progress->best_score);
+
+        $module1->update([
+            'passing_score' => 100,
+            'max_attempts' => 2,
+            'is_active' => true,
+        ]);
+
+        // Reset completion for second attempt scenario on another module setup:
+        // Use a fresh module attempt path by resetting progress and re-running fail then retry.
+        StudentModuleProgress::query()->whereKey($progress->id)->delete();
+        ModuleQuizSession::query()->where('course_module_id', $module1->id)->delete();
+
+        $module1->update(['passing_score' => 100, 'max_attempts' => 2]);
+
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.start', [$service, $module1]));
+        foreach ($questions as $question) {
+            $this->actingAs($student, 'student')
+                ->post(route('student.online-course.quiz.answer', [$service, $module1]), [
+                    'answer' => 'Wrong',
+                ]);
+        }
+
+        $this->actingAs($student, 'student')
+            ->get(route('student.online-course.module', [$service, $module1]))
+            ->assertOk()
+            ->assertSee('Start timed quiz');
+
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.start', [$service, $module1]))
+            ->assertRedirect(route('student.online-course.quiz.take', [$service, $module1]));
+    }
+
     /**
      * @return array{0: Student, 1: Service, 2: CourseModule, 3?: CourseModule}
      */

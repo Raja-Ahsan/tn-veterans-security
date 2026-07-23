@@ -7,6 +7,7 @@ use App\Models\CourseModule;
 use App\Models\ModuleQuizQuestion;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -40,6 +41,9 @@ class CourseModuleController extends Controller
             'order' => $requestedOrder > 0 ? $requestedOrder : $nextOrder,
             'is_active' => $request->boolean('is_active'),
             'quiz_time_limit_minutes' => $validated['quiz_time_limit_minutes'] ?? 15,
+            'passing_score' => $validated['passing_score'] ?? 90,
+            'max_attempts' => $validated['max_attempts'] ?? 1,
+            'materials' => $this->storeMaterials($request, []),
         ]);
 
         $this->syncQuestions($module, $validated['questions'] ?? []);
@@ -61,6 +65,13 @@ class CourseModuleController extends Controller
 
         $validated = $this->validateModuleRequest($request);
 
+        $materials = $courseModule->materials ?? [];
+        if ($request->boolean('remove_materials')) {
+            $this->deleteMaterialFiles($materials);
+            $materials = [];
+        }
+        $materials = $this->storeMaterials($request, $materials);
+
         $courseModule->update([
             'title' => $validated['title'],
             'content' => $validated['content'] ?? null,
@@ -68,6 +79,9 @@ class CourseModuleController extends Controller
             'order' => $validated['order'] ?? $courseModule->order,
             'is_active' => $request->boolean('is_active'),
             'quiz_time_limit_minutes' => $validated['quiz_time_limit_minutes'] ?? 15,
+            'passing_score' => $validated['passing_score'] ?? 90,
+            'max_attempts' => $validated['max_attempts'] ?? 1,
+            'materials' => $materials,
         ]);
 
         $courseModule->quizQuestions()->delete();
@@ -79,6 +93,7 @@ class CourseModuleController extends Controller
 
     public function destroy(Service $service, CourseModule $courseModule)
     {
+        $this->deleteMaterialFiles($courseModule->materials ?? []);
         $courseModule->delete();
 
         return redirect()->route('admin.classes.course-modules.index', $service)
@@ -242,6 +257,11 @@ class CourseModuleController extends Controller
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
             'quiz_time_limit_minutes' => 'required|integer|min:1|max:180',
+            'passing_score' => 'required|integer|min:1|max:100',
+            'max_attempts' => 'required|integer|min:1|max:20',
+            'materials_files' => 'nullable|array|max:5',
+            'materials_files.*' => 'file|mimes:pdf,doc,docx,ppt,pptx,png,jpg,jpeg|max:10240',
+            'remove_materials' => 'sometimes|boolean',
             'questions' => 'nullable|array',
             'questions.*.question' => 'required|string|max:1000',
             'questions.*.options' => 'required|array|min:2',
@@ -280,10 +300,50 @@ class CourseModuleController extends Controller
             'title' => 'module title',
             'video_url' => 'video URL',
             'quiz_time_limit_minutes' => 'quiz time limit',
+            'passing_score' => 'passing score',
+            'max_attempts' => 'max attempts',
             'questions.*.question' => 'question text',
             'questions.*.options' => 'options',
             'questions.*.correct_answer' => 'correct answer',
         ];
+    }
+
+    /**
+     * @param  list<array{path?: string, original_name?: string}>  $existing
+     * @return list<array{path: string, original_name: string}>
+     */
+    private function storeMaterials(Request $request, array $existing): array
+    {
+        if (! $request->hasFile('materials_files')) {
+            return array_values($existing);
+        }
+
+        foreach ($request->file('materials_files') as $file) {
+            if (! $file) {
+                continue;
+            }
+
+            $path = $file->store('course-materials', 'public');
+            $existing[] = [
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+            ];
+        }
+
+        return array_values($existing);
+    }
+
+    /**
+     * @param  list<array{path?: string}>  $materials
+     */
+    private function deleteMaterialFiles(array $materials): void
+    {
+        foreach ($materials as $material) {
+            $path = $material['path'] ?? null;
+            if (filled($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
     }
 
     /**

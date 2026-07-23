@@ -405,6 +405,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/classes/{service}/blended-progress/{student}/modules/{courseModule}/override', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'overrideModule'])->name('classes.blended-progress.override');
         Route::post('/classes/{service}/blended-progress/{student}/modules/{courseModule}/reset', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'resetModule'])->name('classes.blended-progress.reset');
         Route::post('/classes/{service}/blended-progress/{student}/in-person-test', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'storeInPersonTest'])->name('classes.blended-progress.in-person-test');
+        Route::get('/classes/{service}/blended-progress/{student}/modules/{courseModule}/attempts/{attempt}', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'attemptReview'])->name('classes.blended-progress.attempt');
+        Route::get('/certificates', [App\Http\Controllers\Admin\CertificateController::class, 'index'])->name('certificates.index');
+        Route::get('/certificates/{certificate}', [App\Http\Controllers\Admin\CertificateController::class, 'show'])->name('certificates.show');
+        Route::get('/certificates/{certificate}/print', [App\Http\Controllers\Admin\CertificateController::class, 'print'])->name('certificates.print');
+        Route::delete('/certificates/{certificate}', [App\Http\Controllers\Admin\CertificateController::class, 'destroy'])->name('certificates.destroy');
         Route::resource('class-schedules', App\Http\Controllers\Admin\ClassScheduleController::class)->names('class-schedules');
         Route::post('/class-schedules/{classSchedule}/travel-notify', [App\Http\Controllers\Admin\TravelClassController::class, 'notify'])->name('class-schedules.travel-notify');
         Route::post('/class-schedules/{classSchedule}/travel-cancel', [App\Http\Controllers\Admin\TravelClassController::class, 'cancel'])->name('class-schedules.travel-cancel');

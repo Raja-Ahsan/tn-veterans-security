@@ -76,6 +76,9 @@
                     <a href="{{ route('admin.payments.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.payments.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-money-bill-wave mr-3"></i> Payments
                     </a>
+                    <a href="{{ route('admin.certificates.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.certificates.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-certificate mr-3"></i> Certificates
+                    </a>
                     <a href="{{ route('admin.settings.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.settings.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-cog mr-3"></i> Site Settings
                     </a>

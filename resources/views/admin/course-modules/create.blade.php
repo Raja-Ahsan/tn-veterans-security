@@ -18,7 +18,7 @@
     </a>
 </div>
 
-<form method="POST" action="{{ route('admin.classes.course-modules.store', $service) }}" class="w-full space-y-6 pb-8">
+<form method="POST" action="{{ route('admin.classes.course-modules.store', $service) }}" enctype="multipart/form-data" class="w-full space-y-6 pb-8">
     @csrf
     @include('admin.course-modules._form', ['courseModule' => null])
 

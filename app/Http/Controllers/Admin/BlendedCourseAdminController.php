@@ -38,6 +38,7 @@ class BlendedCourseAdminController extends Controller
 
         $progressByStudent = [];
         $testResults = [];
+        $latestAttempts = [];
 
         foreach ($bookings as $booking) {
             $student = $booking->student;
@@ -51,6 +52,14 @@ class BlendedCourseAdminController extends Controller
                 ->where('service_id', $service->id)
                 ->latest()
                 ->first();
+
+            foreach ($modules as $module) {
+                $latestAttempts[$student->id][$module->id] = ModuleQuizAttempt::query()
+                    ->where('student_id', $student->id)
+                    ->where('course_module_id', $module->id)
+                    ->orderByDesc('id')
+                    ->first();
+            }
         }
 
         return view('admin.blended-course.progress', compact(
@@ -58,7 +67,8 @@ class BlendedCourseAdminController extends Controller
             'modules',
             'bookings',
             'progressByStudent',
-            'testResults'
+            'testResults',
+            'latestAttempts'
         ));
     }
 
@@ -124,6 +134,31 @@ class BlendedCourseAdminController extends Controller
         ]);
 
         return back()->with('success', 'In-person test result saved.');
+    }
+
+    public function attemptReview(Service $service, Student $student, CourseModule $courseModule, ModuleQuizAttempt $attempt): View
+    {
+        abort_unless($courseModule->service_id === $service->id, 404);
+        abort_unless(
+            $attempt->student_id === $student->id && $attempt->course_module_id === $courseModule->id,
+            404
+        );
+
+        $review = $this->blendedCourse->buildQuizReview($courseModule, $attempt->answers ?? [], true);
+        $attempts = ModuleQuizAttempt::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $courseModule->id)
+            ->orderByDesc('id')
+            ->get();
+
+        return view('admin.blended-course.attempt-review', compact(
+            'service',
+            'student',
+            'courseModule',
+            'attempt',
+            'review',
+            'attempts'
+        ));
     }
 
     public function reorderModules(Request $request, Service $service): RedirectResponse

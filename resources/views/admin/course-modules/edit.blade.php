@@ -18,7 +18,7 @@
     </a>
 </div>
 
-<form method="POST" action="{{ route('admin.classes.course-modules.update', [$service, $courseModule]) }}" class="w-full space-y-6 pb-8">
+<form method="POST" action="{{ route('admin.classes.course-modules.update', [$service, $courseModule]) }}" enctype="multipart/form-data" class="w-full space-y-6 pb-8">
     @csrf
     @method('PUT')
     @include('admin.course-modules._form', ['courseModule' => $courseModule])
