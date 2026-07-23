@@ -59,4 +59,23 @@ class AdminInAppNotificationsTest extends TestCase
                 && $notification->title === 'New student registered';
         });
     }
+
+    public function test_admin_notification_poll_returns_json(): void
+    {
+        $admin = User::factory()->create();
+
+        AdminNotifier::broadcast(
+            'New booking — payment pending',
+            'A student booked Handgun Carry Permit.',
+            'calendar',
+            route('admin.bookings.index'),
+            'booking'
+        );
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.notifications.poll'))
+            ->assertOk()
+            ->assertJsonPath('unread_count', 1)
+            ->assertJsonPath('notifications.0.title', 'New booking — payment pending');
+    }
 }

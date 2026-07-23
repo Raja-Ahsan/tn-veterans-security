@@ -73,6 +73,30 @@ class StudentNotificationsTest extends TestCase
         $this->assertSame(0, $student->fresh()->notifications()->count());
     }
 
+    public function test_student_notification_poll_returns_json(): void
+    {
+        $student = Student::query()->create([
+            'name' => 'Poll Student',
+            'email' => 'poll.student@example.com',
+            'password' => 'password123',
+        ]);
+
+        StudentNotifier::push(
+            $student,
+            'Class update: Class rescheduled',
+            'New time is 5 PM',
+            'info',
+            route('student.bookings'),
+            'class_update'
+        );
+
+        $this->actingAs($student, 'student')
+            ->getJson(route('student.notifications.poll'))
+            ->assertOk()
+            ->assertJsonPath('unread_count', 1)
+            ->assertJsonPath('notifications.0.title', 'Class update: Class rescheduled');
+    }
+
     public function test_registration_creates_in_app_notification(): void
     {
         Notification::fake();

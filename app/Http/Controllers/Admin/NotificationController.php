@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\NotificationFeed;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +18,18 @@ class NotificationController extends Controller
         $notifications = $admin->unreadNotifications()->latest()->paginate(20);
 
         return view('admin.notifications.index', compact('notifications'));
+    }
+
+    public function poll(): JsonResponse
+    {
+        $admin = Auth::user();
+        $notifications = $admin->unreadNotifications()->latest()->limit(8)->get();
+
+        return response()->json(NotificationFeed::payload(
+            $notifications,
+            $admin->unreadNotifications()->count(),
+            'admin.notifications.read'
+        ));
     }
 
     public function markAsRead(Request $request, string $id): RedirectResponse

@@ -259,53 +259,47 @@
                 }
             });
         })();
-
-        (function () {
-            const root = document.getElementById('admin-notification-root');
-            const toggle = document.getElementById('admin-notification-toggle');
-            const panel = document.getElementById('admin-notification-panel');
-            const closeBtn = document.getElementById('admin-notification-close');
-
-            if (!root || !toggle || !panel) {
-                return;
+    </script>
+    <script src="{{ asset('js/notification-live.js') }}"></script>
+    <script>
+        initLiveNotifications({
+            rootId: 'admin-notification-root',
+            toggleId: 'admin-notification-toggle',
+            panelId: 'admin-notification-panel',
+            closeId: 'admin-notification-close',
+            listId: 'admin-notification-list',
+            footerId: 'admin-notification-footer',
+            badgeId: 'admin-notification-badge',
+            pollUrl: @json(route('admin.notifications.poll')),
+            viewAllUrl: @json(route('admin.notifications.index')),
+            readAllUrl: @json(route('admin.notifications.read-all')),
+            emptyTitle: "You're all caught up",
+            emptySubtitle: 'No new admin alerts',
+            accentIconWrap: 'bg-green-50 text-green-700',
+            clearBtnClass: 'bg-green-600 hover:bg-green-700',
+            intervalMs: 8000,
+            categoryStyles: {
+                registration: 'text-green-700',
+                booking: 'text-sky-700',
+                enrollment: 'text-green-700',
+                quiz: 'text-violet-700',
+                blended: 'text-cyan-700',
+                contact: 'text-amber-700',
+                payment: 'text-emerald-700',
+                general: 'text-gray-700'
+            },
+            iconMap: {
+                bell: 'fa-bell',
+                user: 'fa-user-plus',
+                calendar: 'fa-calendar-check',
+                'credit-card': 'fa-credit-card',
+                book: 'fa-book-open',
+                check: 'fa-circle-check',
+                graduation: 'fa-graduation-cap',
+                envelope: 'fa-envelope',
+                info: 'fa-circle-info'
             }
-
-            function openPanel() {
-                panel.classList.remove('hidden');
-                toggle.setAttribute('aria-expanded', 'true');
-            }
-
-            function closePanel() {
-                panel.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-
-            toggle.addEventListener('click', function (e) {
-                e.stopPropagation();
-                if (panel.classList.contains('hidden')) {
-                    openPanel();
-                } else {
-                    closePanel();
-                }
-            });
-
-            closeBtn?.addEventListener('click', function (e) {
-                e.stopPropagation();
-                closePanel();
-            });
-
-            document.addEventListener('click', function (e) {
-                if (!root.contains(e.target)) {
-                    closePanel();
-                }
-            });
-
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    closePanel();
-                }
-            });
-        })();
+        });
     </script>
 </body>
 </html>

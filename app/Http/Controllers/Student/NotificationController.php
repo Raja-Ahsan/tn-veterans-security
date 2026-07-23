@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Support\NotificationFeed;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +19,18 @@ class NotificationController extends Controller
         $notifications = $student->unreadNotifications()->latest()->paginate(20);
 
         return view('student.notifications.index', compact('notifications'));
+    }
+
+    public function poll(): JsonResponse
+    {
+        $student = Auth::guard('student')->user();
+        $notifications = $student->unreadNotifications()->latest()->limit(8)->get();
+
+        return response()->json(NotificationFeed::payload(
+            $notifications,
+            $student->unreadNotifications()->count(),
+            'student.notifications.read'
+        ));
     }
 
     public function markAsRead(Request $request, string $id): RedirectResponse

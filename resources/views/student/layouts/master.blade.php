@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Student Dashboard') - TN Veterans Security</title>
 
     @if($siteSettings && $siteSettings->favicon)
@@ -142,9 +143,10 @@
                         </a>
                         <a href="{{ route('student.notifications.index') }}" class="student-nav-link {{ request()->routeIs('student.notifications*') ? 'is-active' : '' }}">
                             <i class="fas fa-bell"></i> Notifications
-                            @if(($unreadNotificationCount ?? 0) > 0)
-                                <span class="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $unreadNotificationCount > 9 ? '9+' : $unreadNotificationCount }}</span>
-                            @endif
+                            <span
+                                id="student-sidebar-notification-badge"
+                                class="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white {{ ($unreadNotificationCount ?? 0) > 0 ? '' : 'hidden' }}"
+                            >{{ ($unreadNotificationCount ?? 0) > 9 ? '9+' : ($unreadNotificationCount ?? 0) }}</span>
                         </a>
                         <a href="{{ route('student.bookings') }}" class="student-nav-link {{ request()->routeIs('student.bookings*') ? 'is-active' : '' }}">
                             <i class="fas fa-calendar-check"></i> My Bookings
@@ -352,57 +354,48 @@
             }
             setTimeout(dismissStudentFlash, 5000);
         })();
-
-        (function () {
-            const root = document.getElementById('student-notification-root');
-            const toggle = document.getElementById('student-notification-toggle');
-            const panel = document.getElementById('student-notification-panel');
-            const closeBtn = document.getElementById('student-notification-close');
-
-            if (!root || !toggle || !panel) {
-                return;
+    </script>
+    <script src="{{ asset('js/notification-live.js') }}"></script>
+    <script>
+        initLiveNotifications({
+            rootId: 'student-notification-root',
+            toggleId: 'student-notification-toggle',
+            panelId: 'student-notification-panel',
+            closeId: 'student-notification-close',
+            listId: 'student-notification-list',
+            footerId: 'student-notification-footer',
+            badgeId: 'student-notification-badge',
+            sidebarBadgeId: 'student-sidebar-notification-badge',
+            pollUrl: @json(route('student.notifications.poll')),
+            viewAllUrl: @json(route('student.notifications.index')),
+            readAllUrl: @json(route('student.notifications.read-all')),
+            emptyTitle: "You're all caught up",
+            emptySubtitle: 'No new notifications',
+            accentIconWrap: 'bg-emerald-50 text-[var(--brand)]',
+            clearBtnClass: 'bg-[var(--sidebar)] hover:bg-[#243044]',
+            intervalMs: 8000,
+            categoryStyles: {
+                welcome: 'text-emerald-600',
+                booking: 'text-sky-600',
+                enrollment: 'text-[var(--brand)]',
+                class_update: 'text-amber-600',
+                reminder: 'text-violet-600',
+                status: 'text-slate-600',
+                blended: 'text-cyan-600',
+                general: 'text-gray-700'
+            },
+            iconMap: {
+                bell: 'fa-bell',
+                user: 'fa-user-check',
+                calendar: 'fa-calendar-check',
+                'credit-card': 'fa-credit-card',
+                book: 'fa-book-open',
+                info: 'fa-circle-info',
+                check: 'fa-circle-check',
+                clock: 'fa-clock',
+                graduation: 'fa-graduation-cap'
             }
-
-            function openPanel() {
-                panel.classList.remove('hidden');
-                toggle.setAttribute('aria-expanded', 'true');
-            }
-
-            function closePanel() {
-                panel.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-
-            function togglePanel() {
-                if (panel.classList.contains('hidden')) {
-                    openPanel();
-                } else {
-                    closePanel();
-                }
-            }
-
-            toggle.addEventListener('click', function (e) {
-                e.stopPropagation();
-                togglePanel();
-            });
-
-            closeBtn?.addEventListener('click', function (e) {
-                e.stopPropagation();
-                closePanel();
-            });
-
-            document.addEventListener('click', function (e) {
-                if (!root.contains(e.target)) {
-                    closePanel();
-                }
-            });
-
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    closePanel();
-                }
-            });
-        })();
+        });
     </script>
 </body>
 </html>

@@ -367,6 +367,7 @@ Route::prefix('student')->name('student.')->group(function () {
     Route::middleware([\App\Http\Middleware\AuthenticateStudent::class])->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/poll', [App\Http\Controllers\Student\NotificationController::class, 'poll'])->name('notifications.poll');
         Route::post('/notifications/read-all', [App\Http\Controllers\Student\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
         Route::post('/notifications/{id}/read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::get('/profile', [App\Http\Controllers\Student\ProfileController::class, 'show'])->name('profile');
@@ -456,6 +457,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         })->where('path', '.*');
 
         Route::get('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/poll', [App\Http\Controllers\Admin\NotificationController::class, 'poll'])->name('notifications.poll');
         Route::post('/notifications/read-all', [App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
         Route::post('/notifications/{id}/read', [App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.read');
 
