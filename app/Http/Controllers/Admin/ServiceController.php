@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClassSchedule;
+use App\Models\Instructor;
+use App\Models\Location;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -51,8 +53,10 @@ class ServiceController extends Controller
     public function create()
     {
         $allServices = Service::where('is_active', true)->orderBy('order')->orderBy('title')->get();
+        $locations = Location::query()->where('is_active', true)->orderBy('order')->orderBy('name')->get();
+        $instructors = Instructor::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('admin.classes.create', compact('allServices'));
+        return view('admin.classes.create', compact('allServices', 'locations', 'instructors'));
     }
 
     /**
@@ -75,7 +79,10 @@ class ServiceController extends Controller
             'is_active' => 'boolean',
             // Category fields (multiple)
             'categories' => 'nullable|array',
-            'categories.*' => 'string|in:'.implode(',', array_keys(config('service_categories', []))),
+            'categories.*' => 'string|in:'.implode(',', array_values(array_unique(array_merge(
+                \App\Models\ServiceCategory::assignableSlugs(),
+                array_keys(config('service_categories', []))
+            )))),
             'subcategory' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'requires_dallas_law' => 'boolean',
@@ -128,6 +135,7 @@ class ServiceController extends Controller
         unset($validated['linked_services']);
 
         $validated['categories'] = array_values(array_filter($request->input('categories', [])));
+        $validated['categories'] = array_slice($validated['categories'], 0, 1);
         $validated['sub_titles'] = array_values(array_filter(array_map('trim', $request->input('sub_titles', []))));
 
         $service = Service::create($validated);
@@ -169,8 +177,10 @@ class ServiceController extends Controller
             $q->orderBy('class_date')->orderBy('start_time');
         }]);
         $allServices = Service::where('is_active', true)->where('id', '!=', $service->id)->orderBy('order')->orderBy('title')->get();
+        $locations = Location::query()->where('is_active', true)->orderBy('order')->orderBy('name')->get();
+        $instructors = Instructor::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('admin.classes.edit', compact('service', 'allServices'));
+        return view('admin.classes.edit', compact('service', 'allServices', 'locations', 'instructors'));
     }
 
     /**
@@ -193,7 +203,10 @@ class ServiceController extends Controller
             'is_active' => 'boolean',
             // Category fields (multiple)
             'categories' => 'nullable|array',
-            'categories.*' => 'string|in:'.implode(',', array_keys(config('service_categories', []))),
+            'categories.*' => 'string|in:'.implode(',', array_values(array_unique(array_merge(
+                \App\Models\ServiceCategory::assignableSlugs(),
+                array_keys(config('service_categories', []))
+            )))),
             'subcategory' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'requires_dallas_law' => 'boolean',
@@ -247,6 +260,7 @@ class ServiceController extends Controller
         unset($validated['linked_services']);
 
         $validated['categories'] = array_values(array_filter($request->input('categories', [])));
+        $validated['categories'] = array_slice($validated['categories'], 0, 1);
         $validated['sub_titles'] = array_values(array_filter(array_map('trim', $request->input('sub_titles', []))));
 
         $service->update($validated);
@@ -338,8 +352,13 @@ class ServiceController extends Controller
         $seenSlots = [];
 
         foreach ($rows as $i => $row) {
-            $location = $row['location'] ?? null;
-            $location = $location === '' ? null : $location;
+            $locationId = filled($row['location_id'] ?? null) ? (int) $row['location_id'] : null;
+            $locationModel = $locationId ? Location::query()->find($locationId) : null;
+            $location = $locationModel?->name;
+            if ($location === null) {
+                $location = $row['location'] ?? null;
+                $location = $location === '' ? null : $location;
+            }
             $fingerprint = ClassSchedule::slotFingerprint(
                 $service->id,
                 $row['class_date'],
@@ -398,8 +417,23 @@ class ServiceController extends Controller
             $startTime = Carbon::createFromFormat('Y-m-d H:i', $row['class_date'].' '.$row['start_time']);
             $endTime = $startTime->copy()->addHours($durationHours);
 
-            $location = $row['location'] ?? null;
-            $location = $location === '' ? null : $location;
+            $locationId = filled($row['location_id'] ?? null) ? (int) $row['location_id'] : null;
+            $instructorId = filled($row['instructor_id'] ?? null) ? (int) $row['instructor_id'] : null;
+
+            $locationModel = $locationId ? Location::query()->find($locationId) : null;
+            $instructorModel = $instructorId ? Instructor::query()->find($instructorId) : null;
+
+            $location = $locationModel?->name;
+            if ($location === null) {
+                $location = $row['location'] ?? null;
+                $location = $location === '' ? null : $location;
+            }
+
+            $instructor = $instructorModel?->name;
+            if ($instructor === null) {
+                $instructor = $row['instructor'] ?? null;
+                $instructor = $instructor === '' ? null : $instructor;
+            }
 
             $payload = [
                 'class_date' => $row['class_date'],
@@ -409,8 +443,10 @@ class ServiceController extends Controller
                 'max_students' => $maxStudents,
                 'min_students' => $minStudents,
                 'room' => $row['room'] ?? null,
+                'location_id' => $locationModel?->id,
                 'location' => $location,
-                'instructor' => $row['instructor'] ?? null,
+                'instructor_id' => $instructorModel?->id,
+                'instructor' => $instructor,
                 'can_overlap' => ! empty($row['can_overlap']),
                 'notes' => $row['notes'] ?? null,
             ];

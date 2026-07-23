@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\Mail;
 class BlendedCourseCompletionService
 {
     public function __construct(
-        private SmsService $smsService,
-        private CertificateService $certificateService
+        private SmsService $smsService
     ) {}
 
     public function notifyIfCourseCompleted(Student $student, Service $service, BlendedCourseService $blendedCourse, CourseModule $completedModule): void
@@ -27,8 +26,6 @@ class BlendedCourseCompletionService
         if (! $blendedCourse->isEligibleForInPersonTesting($student, $service)) {
             return;
         }
-
-        $this->certificateService->issueForOnlineCourseCompletion($student, $service);
 
         $modules = $blendedCourse->getModulesForService($service);
         $lastModule = $modules->last();

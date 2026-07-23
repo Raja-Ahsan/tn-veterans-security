@@ -7,3 +7,5 @@
 </div>
 
 @include('layouts.web.partials.footer')
+
+@stack('scripts')

@@ -18,7 +18,7 @@
             <h3 class="text-xl font-bold mb-4">Schedule Information</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-500">Service (Class)</label>
+                    <label class="block text-sm font-medium text-gray-500">Class</label>
                     <p class="text-lg font-semibold text-gray-900">{{ $classSchedule->service->title }}</p>
                 </div>
                 <div>

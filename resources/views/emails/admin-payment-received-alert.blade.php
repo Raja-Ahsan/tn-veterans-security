@@ -11,7 +11,7 @@
     <ul>
         <li><strong>Booking ID:</strong> #{{ $booking->id }}</li>
         <li><strong>Student:</strong> {{ $booking->student->name }} ({{ $booking->student->email }})</li>
-        <li><strong>Service:</strong> {{ $booking->service->title }}</li>
+        <li><strong>Class:</strong> {{ $booking->service->title }}</li>
         <li><strong>Paid Amount:</strong> ${{ number_format((float) $payment->amount, 2) }}</li>
         <li><strong>Payment Method:</strong> {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</li>
         <li><strong>Payment Gateway:</strong> {{ $payment->payment_gateway ?? 'N/A' }}</li>

@@ -39,7 +39,7 @@
                 <h3 class="mb-3 font-semibold text-gray-800">Booking Summary</h3>
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Service:</span>
+                        <span class="text-gray-600">Class:</span>
                         <span class="font-semibold text-gray-900">{{ $booking->service->title }}</span>
                     </div>
                     @if($booking->classSchedule)

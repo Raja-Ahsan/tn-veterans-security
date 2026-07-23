@@ -19,7 +19,7 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Date</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -90,9 +90,9 @@
     <div class="max-w-md mx-auto">
         <i class="fas fa-calendar-times text-6xl text-gray-400 mb-4"></i>
         <h3 class="text-2xl font-bold text-gray-800 mb-2">No Bookings Found</h3>
-        <p class="text-gray-600 mb-6">You haven't booked any services yet. Start by exploring our training services.</p>
-        <a href="{{ route('services') }}" class="inline-block text-white font-bold py-3 px-6 rounded transition-colors shadow-md" style="background-color: #3AA62C;" onmouseover="this.style.backgroundColor='#175B0E'" onmouseout="this.style.backgroundColor='#3AA62C'">
-            Browse Services
+        <p class="text-gray-600 mb-6">You haven't booked any classes yet. Start by exploring our training classes.</p>
+        <a href="{{ route('training-classes') }}" class="inline-block text-white font-bold py-3 px-6 rounded transition-colors shadow-md" style="background-color: #3AA62C;" onmouseover="this.style.backgroundColor='#175B0E'" onmouseout="this.style.backgroundColor='#3AA62C'">
+            Browse Classes
         </a>
     </div>
 </div>

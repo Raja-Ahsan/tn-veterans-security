@@ -87,7 +87,7 @@
 
 <!-- Secondary Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-    <!-- Services -->
+    <!-- Classes -->
     <a href="{{ route('admin.classes.index') }}" class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500 block hover:bg-gray-50 transition-colors">
         <div class="flex items-center justify-between">
             <div>
@@ -182,9 +182,9 @@
     </div>
 </div>
 
-<!-- Revenue by Service Chart -->
+<!-- Revenue by Class Chart -->
 <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-    <h3 class="text-xl font-bold text-gray-800 mb-4">Top 5 Services by Revenue</h3>
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Top 5 Classes by Revenue</h3>
     <canvas id="revenueByServiceChart" height="80"></canvas>
 </div>
 
@@ -266,7 +266,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                     </tr>
@@ -512,7 +512,7 @@ new Chart(bookingsStatusCtx, {
     }
 });
 
-// Revenue by Service Chart
+// Revenue by Class Chart
 const revenueByServiceCtx = document.getElementById('revenueByServiceChart').getContext('2d');
 new Chart(revenueByServiceCtx, {
     type: 'bar',

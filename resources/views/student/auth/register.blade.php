@@ -244,7 +244,7 @@
             <div class="auth-card p-8 lg:p-10">
                 <div class="auth-header">
                     <h1>Create Account</h1>
-                    <p>Join TN Veterans Security to book training services</p>
+                    <p>Join TN Veterans Security to book training classes</p>
                 </div>
 
                 @if($errors->any())

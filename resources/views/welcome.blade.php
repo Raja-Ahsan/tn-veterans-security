@@ -287,7 +287,7 @@
                         <div onclick="document.getElementById('unarmed-modal').classList.remove('hidden')" 
                              class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
                         @else
-                        <a href="{{ $service->title === 'Enhanced Armed Guard Security' ? route('handgun.subcategories') : route('service.details', $service->id) }}" 
+                        <a href="{{ $service->title === 'Enhanced Armed Guard Security' ? route('handgun.subcategories') : route('training-classes.show', $service->id) }}" 
                            class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
                         @endif
                             <div class="training-card-img-div">
@@ -333,10 +333,10 @@
                     <div class="p-6 lg:p-8 pt-12">
                         <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">Choose Your Path</h3>
                         <div class="space-y-4">
-                            <a href="{{ route('services', ['category' => 'dallas_law']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                            <a href="{{ route('training-classes', ['category' => 'dallas_law']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
                                 <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you are working where Alcohol is distributed you must have Dallas Law.</p>
                             </a>
-                            <a href="{{ route('services', ['category' => 'asp_less_than_lethal']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                            <a href="{{ route('training-classes', ['category' => 'asp_less_than_lethal']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
                                 <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you want to carry anything such as OC Spray, Baton, Restraints, or Taser you must have Less Than Lethal Training.</p>
                             </a>
                         </div>
@@ -344,9 +344,9 @@
                 </div>
             </div>
 
-            <!-- View All Services Button -->
+            <!-- View All Classes Button -->
             <div class="mt-12 text-center">
-                <a href="{{ route('all-services') }}" id="view-all-services-btn" class="btn primary-button" style="display: {{ count($allServices) > 9 ? 'inline-block' : 'none' }};">
+                <a href="{{ route('all-classes') }}" id="view-all-classes-btn" class="btn primary-button" style="display: {{ count($allServices) > 9 ? 'inline-block' : 'none' }};">
                     View Training and Classes
                 </a>
             </div>
@@ -362,7 +362,7 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
                         @foreach($featuredServices as $index => $service)
-                            <a href="{{ route('service.details', $service->id) }}" class="training-card block cursor-pointer hover:opacity-90 transition-opacity" data-aos="zoom-in" data-aos-delay="{{ ($index + 1) * 100 }}">
+                            <a href="{{ route('training-classes.show', $service->id) }}" class="training-card block cursor-pointer hover:opacity-90 transition-opacity" data-aos="zoom-in" data-aos-delay="{{ ($index + 1) * 100 }}">
                                 <div class="training-card-img-div">
                                     @if($service->image)
                                         <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="training-card-img">
@@ -381,7 +381,7 @@
             <!-- <div class="mt-16 text-center"
                  data-aos="fade-up"
                  data-aos-delay="400">
-                <a href="{{ route('services') }}" class="btn primary-button inline-block !text-[16px]">
+                <a href="{{ route('training-classes') }}" class="btn primary-button inline-block !text-[16px]">
                     View All Training Programs
                 </a>
             </div> -->
@@ -776,7 +776,7 @@
                                 <p class="mb-3">If you plan to work around alcohol, you <strong class="text-[var(--primary-color)]">must</strong> take Dallas Law training.</p>
                                 <p>Dallas Law training is required for security officers who will be working in establishments that serve or sell alcohol. This specialized training covers the legal requirements and protocols for security work in alcohol-related environments.</p>
                                 <p class="mt-3">
-                                    <a href="{{ route('services', ['category' => 'security_training', 'subcategory' => 'dallas_law']) }}" class="text-[var(--primary-color)] font-semibold hover:underline">
+                                    <a href="{{ route('training-classes', ['category' => 'security_training', 'subcategory' => 'dallas_law']) }}" class="text-[var(--primary-color)] font-semibold hover:underline">
                                         View Dallas Law Training Courses →
                                     </a>
                                 </p>
@@ -796,7 +796,7 @@
                                 <p class="mb-3">If you will work at a school, church, or daycare, you <strong class="text-[var(--primary-color)]">must</strong> take Active Shooter Training.</p>
                                 <p>Active Shooter Training is mandatory for security officers working in educational institutions, places of worship, or childcare facilities. This critical training prepares you to respond effectively in emergency situations.</p>
                                 <p class="mt-3">
-                                    <a href="{{ route('services', ['category' => 'security_training', 'subcategory' => 'active_shooter']) }}" class="text-[var(--primary-color)] font-semibold hover:underline">
+                                    <a href="{{ route('training-classes', ['category' => 'security_training', 'subcategory' => 'active_shooter']) }}" class="text-[var(--primary-color)] font-semibold hover:underline">
                                         View Active Shooter Training Courses →
                                     </a>
                                 </p>
@@ -943,7 +943,7 @@
 
                     const grid = document.getElementById('services-grid');
                     const items = grid.querySelectorAll('.service-item');
-                    const viewAllBtn = document.getElementById('view-all-services-btn');
+                    const viewAllBtn = document.getElementById('view-all-classes-btn');
 
                     if (filter === 'all') {
                         items.forEach((item, index) => {

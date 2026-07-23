@@ -4,14 +4,62 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassSchedule;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ClassCalendarController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
-        $month = $this->resolveMonth($request->query('month'));
+        $monthKeys = ClassSchedule::query()
+            ->whereHas('service', fn ($query) => $query->where('is_active', true))
+            ->whereIn('status', ['scheduled', 'full'])
+            ->orderBy('class_date')
+            ->pluck('class_date')
+            ->map(fn ($date) => Carbon::parse($date)->format('Y-m'))
+            ->unique()
+            ->sort()
+            ->values();
+
+        $monthOptions = $monthKeys
+            ->mapWithKeys(fn (string $monthKey) => [
+                $monthKey => Carbon::createFromFormat('Y-m', $monthKey)->format('F Y'),
+            ])
+            ->all();
+
+        $requestedMonth = $request->query('month');
+        $month = $this->resolveMonth(is_string($requestedMonth) ? $requestedMonth : null);
+        $currentMonthKey = $month->format('Y-m');
+
+        // Default landing: if this month has no classes, open the nearest month that does.
+        if (! $request->filled('month') && $monthKeys->isNotEmpty() && ! $monthKeys->contains($currentMonthKey)) {
+            $upcoming = $monthKeys->first(fn (string $key) => $key >= now()->format('Y-m'));
+
+            return redirect()->route('class-calendar', [
+                'month' => $upcoming ?? $monthKeys->last(),
+            ]);
+        }
+
+        // Only allow months that have scheduled classes in the dropdown navigation.
+        if ($monthKeys->isNotEmpty() && ! $monthKeys->contains($currentMonthKey)) {
+            $upcoming = $monthKeys->first(fn (string $key) => $key >= $currentMonthKey);
+
+            return redirect()->route('class-calendar', [
+                'month' => $upcoming ?? $monthKeys->last(),
+            ]);
+        }
+
+        if ($monthOptions === []) {
+            $monthOptions[$currentMonthKey] = $month->format('F Y');
+        }
+
+        $keys = array_keys($monthOptions);
+        $currentIndex = array_search($currentMonthKey, $keys, true);
+        $hasPrevMonth = $currentIndex !== false && $currentIndex > 0;
+        $hasNextMonth = $currentIndex !== false && $currentIndex < count($keys) - 1;
+        $prevMonth = $hasPrevMonth ? $keys[$currentIndex - 1] : $currentMonthKey;
+        $nextMonth = $hasNextMonth ? $keys[$currentIndex + 1] : $currentMonthKey;
 
         $monthStart = $month->copy()->startOfMonth();
         $monthEnd = $month->copy()->endOfMonth();
@@ -63,9 +111,12 @@ class ClassCalendarController extends Controller
         return view('class-calendar', [
             'calendarWeeks' => $calendarWeeks,
             'calendarTitle' => $month->format('F Y'),
-            'currentMonth' => $month->format('Y-m'),
-            'prevMonth' => $month->copy()->subMonth()->format('Y-m'),
-            'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
+            'currentMonth' => $currentMonthKey,
+            'prevMonth' => $prevMonth,
+            'nextMonth' => $nextMonth,
+            'hasPrevMonth' => $hasPrevMonth,
+            'hasNextMonth' => $hasNextMonth,
+            'monthOptions' => $monthOptions,
             'schedules' => $schedules,
             'availableLocations' => $availableLocations,
             'upcomingCount' => ClassSchedule::query()

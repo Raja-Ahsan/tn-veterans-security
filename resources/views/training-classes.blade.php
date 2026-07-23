@@ -32,134 +32,37 @@
         <!-- Services Detailed Section -->
         <section class="py-16 lg:py-24 bg-gradient-to-b from-white to-[#F8F8F8]">
             <div class="container mx-auto px-4 lg:px-10">
-                
-                <!-- Category Tabs -->
-                @if(isset($categories) && $categories->count() > 0)
-                    <!-- <div class="mb-8 flex flex-wrap gap-4 justify-center" data-aos="fade-up">
-                        <a href="{{ route('services') }}" 
-                           class="px-6 py-3 rounded-full font-semibold transition-all {{ !$category ? 'bg-[var(--primary-color)] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                            All Services
-                        </a>
-                        @foreach($categories as $cat)
-                            @php
-                                $categoryLabels = [
-                                    'security_training' => 'Security Training',
-                                    'nra' => 'NRA',
-                                    'red_cross' => 'Red Cross',
-                                    'handgun_carry' => 'Handgun Carry',
-                                    'services' => 'Services'
-                                ];
-                                $catLabel = $categoryLabels[$cat] ?? ucfirst(str_replace('_', ' ', $cat));
-                            @endphp
-                            <a href="{{ route('services', ['category' => $cat]) }}" 
-                               class="px-6 py-3 rounded-full font-semibold transition-all {{ $category === $cat ? 'bg-[var(--primary-color)] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                                {{ $catLabel }}
-                            </a>
-                        @endforeach
-                    </div> -->
-                @endif
 
-                <!-- Active Filter Display -->
-                <!-- @if($category)
-                    <div class="mb-6 text-center" data-aos="fade-up" data-aos-delay="100">
-                        <p class="text-gray-600">
-                            Showing: <span class="font-bold text-[var(--primary-color)]">{{ ucfirst(str_replace('_', ' ', $category)) }}</span>
-                            @if($subcategory)
-                                > <span class="font-bold">{{ $subcategory }}</span>
-                            @endif
-                        </p>
-                    </div>
-                @endif -->
-                @if($services->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-                        @foreach($services as $index => $service)
-                            @if($service->title === 'Unarmed  Security')
-                            <div class="group block cursor-pointer" onclick="document.getElementById('unarmed-modal').classList.remove('hidden')">
-                            @else
-                            <a href="{{ $service->title === 'Enhanced Armed Guard Security' ? route('handgun.subcategories') : route('service.details', $service->id) }}" class="group block">
-                            @endif
-                                <div class="service-detail-card bg-white rounded-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
-                                    <!-- Image Section -->
-                                    <div class="relative h-[280px] overflow-hidden">
-                                        <img src="{{ $service->display_image_url }}"
-                                                 alt="{{ $service->title }}" 
-                                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                                        <!-- Overlay Gradient -->
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        <!-- Hover Badge -->
-                                        <div class="absolute top-4 right-4 bg-[var(--primary-color)] text-white px-4 py-2 rounded-full text-sm font-bold opacity-0 group-hover:opacity-100 transform translate-y-[-10px] group-hover:translate-y-0 transition-all duration-300">
-                                            Learn More
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Content Section -->
-                                    <div class="p-6 lg:p-8 flex-1 flex flex-col">
-                                        <!-- Title -->
-                                        <h3 class="text-[22px] lg:text-[26px] font-bold text-[var(--text-color)] mb-4 uppercase group-hover:text-[var(--primary-color)] transition-colors" style="font-family: var(--font-display);">
-                                            {{ $service->title }}
-                                        </h3>
-                                        
-                                        <!-- Description -->
-                                        @if($service->short_description)
-                                            <p class="text-[#666] text-[15px] lg:text-[16px] leading-relaxed mb-4 flex-1 line-clamp-3">
-                                                {{ $service->short_description }}
-                                            </p>
-                                        @elseif($service->description)
-                                            <p class="text-[#666] text-[15px] lg:text-[16px] leading-relaxed mb-4 flex-1 line-clamp-3">
-                                                {{ Str::limit(strip_tags($service->description), 150) }}
-                                            </p>
-                                        @endif
-
-                                        <!-- Location & Requirements -->
-                                        <div class="mb-4 space-y-2">
-                                            @if($service->location)
-                                                <div class="flex items-center gap-2 text-sm text-gray-600">
-                                                    <i class="fas fa-map-marker-alt text-[var(--primary-color)]"></i>
-                                                    <span>{{ $service->location }}</span>
-                                                </div>
-                                            @endif
-                                            @if($service->requires_dallas_law || $service->requires_active_shooter)
-                                                <div class="flex flex-wrap gap-2">
-                                                    @if($service->requires_dallas_law)
-                                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Dallas Law Required</span>
-                                                    @endif
-                                                    @if($service->requires_active_shooter)
-                                                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Active Shooter Required</span>
-                                                    @endif
-                                                </div>
-                                            @endif
-                                        </div>
-                                        
-                                        <!-- Read More Link -->
-                                        <div class="flex items-center gap-2 text-[var(--primary-color)] font-semibold mt-auto pt-4 border-t border-gray-100 group-hover:border-[var(--primary-color)]/30 transition-colors">
-                                            <span class="text-[15px] uppercase tracking-wide">View Details</span>
-                                            <i class="fas fa-arrow-right transform group-hover:translate-x-2 transition-transform"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            @if($service->title === 'Unarmed  Security')
-                            </div>
-                            @else
-                            </a>
-                            @endif
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-20">
-                        <div class="max-w-md mx-auto">
-                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <i class="fas fa-briefcase text-4xl text-gray-400"></i>
-                            </div>
-                            <h3 class="text-[28px] font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">
-                                No Services Available
-                            </h3>
-                            <p class="text-gray-600 text-lg mb-8">Please check back later for our training services.</p>
-                            <a href="{{ route('contact') }}" class="btn primary-button inline-block">
-                                Contact Us
-                            </a>
+                <div class="mb-10" data-aos="fade-up">
+                    <div class="mx-auto max-w-2xl">
+                        <label for="training-services-search" class="mb-2 block text-center text-sm font-semibold uppercase tracking-wide text-gray-500">
+                            Search classes
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input
+                                type="search"
+                                id="training-services-search"
+                                name="q"
+                                value="{{ request('q') }}"
+                                placeholder="Search by class name…"
+                                autocomplete="off"
+                                class="w-full rounded-xl border border-gray-200 bg-white py-3.5 pl-11 pr-12 text-[15px] text-gray-800 shadow-sm outline-none transition focus:border-[var(--primary-color)] focus:ring-2 focus:ring-[var(--primary-color)]/20"
+                            >
+                            <button type="button"
+                                    id="training-services-search-clear"
+                                    class="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-full px-2 py-1 text-sm text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                                    aria-label="Clear search">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
+                        <p id="training-services-search-status" class="mt-2 text-center text-sm text-gray-500" aria-live="polite"></p>
                     </div>
-                @endif
+                </div>
+
+                <div id="training-services-results">
+                    @include('training-classes.partials.cards', ['services' => $services])
+                </div>
 
                 <!-- Unarmed  Security Modal -->
                 <div id="unarmed-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/50" onclick="if(event.target===this) document.getElementById('unarmed-modal').classList.add('hidden')">
@@ -170,10 +73,10 @@
                         <div class="p-6 lg:p-8 pt-12">
                             <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">Choose Your Path</h3>
                             <div class="space-y-4">
-                                <a href="{{ route('services', ['category' => 'dallas_law']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                                <a href="{{ route('training-classes', ['category' => 'dallas_law']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
                                     <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you are working where Alcohol is distributed you must have Dallas Law.</p>
                                 </a>
-                                <a href="{{ route('services', ['category' => 'asp_less_than_lethal']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                                <a href="{{ route('training-classes', ['category' => 'asp_less_than_lethal']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
                                     <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you want to carry anything such as OC Spray, Baton, Restraints, or Taser you must have Less Than Lethal Training.</p>
                                 </a>
                             </div>
@@ -295,3 +198,83 @@
 
     </main>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    var input = document.getElementById('training-services-search');
+    var clearBtn = document.getElementById('training-services-search-clear');
+    var results = document.getElementById('training-services-results');
+    var status = document.getElementById('training-services-search-status');
+    if (! input || ! results) return;
+
+    var searchUrl = @json(route('training-classes.search'));
+    var category = @json($category);
+    var subcategory = @json($subcategory);
+    var timer = null;
+    var controller = null;
+
+    function toggleClear() {
+        if (! clearBtn) return;
+        clearBtn.classList.toggle('hidden', input.value.trim() === '');
+    }
+
+    function setStatus(text) {
+        if (status) status.textContent = text || '';
+    }
+
+    function runSearch() {
+        var q = input.value.trim();
+        toggleClear();
+
+        if (controller) {
+            controller.abort();
+        }
+        controller = new AbortController();
+
+        setStatus(q ? 'Searching…' : '');
+
+        var params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (category) params.set('category', category);
+        if (subcategory) params.set('subcategory', subcategory);
+
+        fetch(searchUrl + '?' + params.toString(), {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            signal: controller.signal
+        })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                results.innerHTML = data.html || '';
+                if (! q) {
+                    setStatus('');
+                } else if (data.count === 0) {
+                    setStatus('No classes match “' + q + '”.');
+                } else {
+                    setStatus(data.count + (data.count === 1 ? ' class' : ' classes') + ' found');
+                }
+            })
+            .catch(function (err) {
+                if (err.name === 'AbortError') return;
+                setStatus('Search failed. Please try again.');
+            });
+    }
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(runSearch, 300);
+    });
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            toggleClear();
+            runSearch();
+            input.focus();
+        });
+    }
+
+    toggleClear();
+})();
+</script>
+@endpush

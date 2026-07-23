@@ -4,8 +4,8 @@
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('service.details', $service->id) }}" class="text-blue-600 hover:underline inline-flex items-center gap-2 mb-4">
-        <i class="fas fa-arrow-left"></i> Back to Service Details
+    <a href="{{ route('training-classes.show', $service->id) }}" class="text-blue-600 hover:underline inline-flex items-center gap-2 mb-4">
+        <i class="fas fa-arrow-left"></i> Back to Class Details
     </a>
 </div>
 
@@ -154,8 +154,8 @@
         <i class="fas fa-calendar-times text-5xl text-gray-400 mb-4"></i>
         <h3 class="text-xl font-bold text-gray-800 mb-2">No Available Classes</h3>
         <p class="text-gray-600 mb-6">There are no open seats at this time. You may join a waitlist below if classes are full.</p>
-        <a href="{{ route('service.details', $service->id) }}" class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded">
-            Back to Service Details
+        <a href="{{ route('training-classes.show', $service->id) }}" class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded">
+            Back to Class Details
         </a>
     </div>
 @endif

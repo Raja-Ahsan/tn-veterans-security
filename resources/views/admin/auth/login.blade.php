@@ -116,7 +116,7 @@
         </div>
 
         <p class="mt-6 text-center">
-            <a href="{{ route('services') }}" class="text-sm text-slate-300 transition hover:text-white">
+            <a href="{{ route('training-classes') }}" class="text-sm text-slate-300 transition hover:text-white">
                 ← Back to website
             </a>
         </p>

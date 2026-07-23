@@ -71,12 +71,12 @@
             </div>
         </div>
 
-        <!-- Service & Schedule Information -->
+        <!-- Class & Schedule Information -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-xl font-bold mb-4">Service & Schedule</h3>
+            <h3 class="text-xl font-bold mb-4">Class & Schedule</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-500">Service</label>
+                    <label class="block text-sm font-medium text-gray-500">Class</label>
                     <p class="text-lg font-semibold text-gray-900">{{ $booking->service->title }}</p>
                 </div>
                 @if($booking->classSchedule)

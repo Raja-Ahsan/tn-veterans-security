@@ -11,7 +11,7 @@
     <ul>
         <li><strong>Booking ID:</strong> #{{ $booking->id }}</li>
         <li><strong>Student:</strong> {{ $booking->student->name }} ({{ $booking->student->email }})</li>
-        <li><strong>Service:</strong> {{ $booking->service->title }}</li>
+        <li><strong>Class:</strong> {{ $booking->service->title }}</li>
         <li><strong>Date:</strong> {{ optional($booking->booking_date)->format('M d, Y') ?? 'TBD' }}</li>
         <li><strong>Students:</strong> {{ $booking->number_of_students }}</li>
         <li><strong>Deposit Due:</strong> ${{ number_format((float) $booking->deposit_amount, 2) }}</li>

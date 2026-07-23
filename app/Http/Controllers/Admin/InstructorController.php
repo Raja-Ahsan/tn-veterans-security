@@ -10,7 +10,7 @@ class InstructorController extends Controller
 {
     public function index()
     {
-        $instructors = Instructor::orderBy('order')->orderBy('name')->get();
+        $instructors = Instructor::orderBy('name')->get();
 
         return view('admin.instructors.index', compact('instructors'));
     }
@@ -27,7 +27,6 @@ class InstructorController extends Controller
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
             'bio' => 'nullable|string',
-            'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
 
@@ -51,7 +50,6 @@ class InstructorController extends Controller
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
             'bio' => 'nullable|string',
-            'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
 

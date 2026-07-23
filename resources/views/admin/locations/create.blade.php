@@ -4,11 +4,30 @@
 @section('page-title', 'Add Location')
 
 @section('content')
-<div class="max-w-2xl bg-white rounded-lg shadow p-6">
-    <form method="POST" action="{{ route('admin.locations.store') }}" class="space-y-4">
+<div class="mb-5">
+    <a href="{{ route('admin.locations.index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700">
+        <i class="fas fa-arrow-left text-xs"></i> Back to locations
+    </a>
+</div>
+
+<div class="mx-auto max-w-3xl overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 sm:px-6">
+        <h3 class="text-lg font-bold text-gray-900">Location details</h3>
+        <p class="mt-0.5 text-sm text-gray-500">Only name is required. Address helps students find the class site.</p>
+    </div>
+    <form method="POST" action="{{ route('admin.locations.store') }}" class="space-y-6 p-5 sm:p-6">
         @csrf
         @include('admin.locations._form')
-        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg">Save Location</button>
+        <div class="flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5">
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700">
+                <i class="fas fa-save"></i> Save Location
+            </button>
+            <a href="{{ route('admin.locations.index') }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                Cancel
+            </a>
+        </div>
     </form>
 </div>
 @endsection

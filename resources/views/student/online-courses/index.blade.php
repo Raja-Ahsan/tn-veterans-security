@@ -89,7 +89,7 @@
             Book a blended class, pay the deposit, then your modules and quizzes will appear here.
         </p>
         <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <a href="{{ route('services') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
+            <a href="{{ route('training-classes') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
                 Browse Classes
             </a>
             <a href="{{ route('student.bookings') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">

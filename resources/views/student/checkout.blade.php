@@ -4,8 +4,8 @@
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('service.details', $service->id) }}" class="text-blue-600 hover:underline inline-flex items-center gap-2 mb-4">
-        <i class="fas fa-arrow-left"></i> Back to Service
+    <a href="{{ route('training-classes.show', $service->id) }}" class="text-blue-600 hover:underline inline-flex items-center gap-2 mb-4">
+        <i class="fas fa-arrow-left"></i> Back to Class
     </a>
 </div>
 
@@ -112,7 +112,7 @@
             </div>
 
             @if($isLoggedIn)
-                <form method="POST" action="{{ route('student.services.checkout.process', $service->id) }}" id="checkout-form">
+                <form method="POST" action="{{ route('student.classes.checkout.process', $service->id) }}" id="checkout-form">
                     @csrf
                     {{-- UPDATE: Required policy acknowledgment checkbox - user must check before completing payment --}}
                     <label class="flex items-start gap-3 mb-4 cursor-pointer">

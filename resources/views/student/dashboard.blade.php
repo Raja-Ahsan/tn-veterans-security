@@ -24,7 +24,7 @@
             </p>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('services') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]">
+            <a href="{{ route('training-classes') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]">
                 <i class="fas fa-search text-xs"></i>
                 Browse Classes
             </a>
@@ -199,7 +199,7 @@
         <table class="min-w-full">
             <thead>
                 <tr class="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
-                    <th class="pb-3 pr-4">Service</th>
+                    <th class="pb-3 pr-4">Class</th>
                     <th class="pb-3 pr-4">Date</th>
                     <th class="pb-3 pr-4">Status</th>
                     <th class="pb-3 text-right">Action</th>
@@ -242,7 +242,7 @@
         You have not enrolled in any classes. Browse available training and reserve your seat with a deposit.
     </p>
     <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <a href="{{ route('services') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]">
+        <a href="{{ route('training-classes') }}" class="inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]">
             <i class="fas fa-search text-xs"></i>
             Browse Training Classes
         </a>

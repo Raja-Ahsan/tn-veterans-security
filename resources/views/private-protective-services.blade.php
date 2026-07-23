@@ -131,7 +131,7 @@
                     <a href="{{ route('contact') }}" class="btn primary-button inline-block">
                         Get In Touch
                     </a>
-                    <a href="{{ route('services') }}" class="btn secondary-button inline-block">
+                    <a href="{{ route('training-classes') }}" class="btn secondary-button inline-block">
                         View Training Programs
                     </a>
                 </div>

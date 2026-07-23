@@ -23,7 +23,7 @@
             <div class="container mx-auto px-4 lg:px-10">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-                    <a href="{{ $services->first() ? route('service.details', $services->first()->id) : '#' }}" class="group block">
+                    <a href="{{ $services->first() ? route('training-classes.show', $services->first()->id) : '#' }}" class="group block">
                         <div class="service-detail-card bg-white rounded-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="100">
                             <div class="relative h-[280px] overflow-hidden">
                                 <img src="{{ asset('images/training-img-1.png') }}" 
@@ -54,7 +54,7 @@
                             </div>
                         </div>
                     </a>
-                    <a href="{{ $services->last() ? route('service.details', $services->last()->id) : '#' }}" class="group block">
+                    <a href="{{ $services->last() ? route('training-classes.show', $services->last()->id) : '#' }}" class="group block">
                         <div class="service-detail-card bg-white rounded-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="200">
                             <div class="relative h-[280px] overflow-hidden">
                                 <img src="{{ asset('images/training-img-2.png') }}" 

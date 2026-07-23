@@ -13,7 +13,7 @@
     <p><strong>Booking Details</strong></p>
     <ul>
         <li><strong>Booking ID:</strong> #{{ $booking->id }}</li>
-        <li><strong>Service:</strong> {{ $booking->service->title }}</li>
+        <li><strong>Class:</strong> {{ $booking->service->title }}</li>
         <li><strong>Date:</strong> {{ optional($booking->booking_date)->format('M d, Y') ?? 'TBD' }}</li>
         <li><strong>Time:</strong> {{ $booking->booking_time ? \Carbon\Carbon::parse($booking->booking_time)->format('h:i A') : 'TBD' }}</li>
         <li><strong>Students:</strong> {{ $booking->number_of_students }}</li>

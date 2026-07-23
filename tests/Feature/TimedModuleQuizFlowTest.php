@@ -139,7 +139,7 @@ class TimedModuleQuizFlowTest extends TestCase
         $this->assertArrayHasKey((string) $q1->id, $session->answers ?? []);
     }
 
-    public function test_passing_all_modules_issues_certificate(): void
+    public function test_passing_all_modules_does_not_issue_certificate(): void
     {
         Mail::fake();
 
@@ -153,8 +153,8 @@ class TimedModuleQuizFlowTest extends TestCase
             ->where('service_id', $service->id)
             ->first();
 
-        $this->assertNotNull($certificate);
-        $this->assertNotEmpty($certificate->certificate_number);
+        $this->assertNull($certificate);
+        $this->assertTrue(app(\App\Services\BlendedCourseService::class)->isEligibleForInPersonTesting($student, $service));
     }
 
     public function test_multi_select_question_requires_exact_match(): void

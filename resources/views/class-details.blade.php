@@ -508,8 +508,8 @@
         {{-- Breadcrumb / back (below banner) --}}
           {{-- <div class="border-b border-gray-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
                 <div class="sd-container mx-auto py-3 sm:py-3.5">
-                    <a href="{{ route('services') }}" class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-500 hover:text-[var(--primary-color)] transition-colors">
-                        <i class="fas fa-arrow-left"></i> All training services
+                    <a href="{{ route('training-classes') }}" class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-500 hover:text-[var(--primary-color)] transition-colors">
+                        <i class="fas fa-arrow-left"></i> All training classes
                     </a>
                 </div>
             </div>   --}}
@@ -764,7 +764,7 @@
                                     @php
                                         $bookingSchedulesList = $bookingSchedules ?? collect();
                                     @endphp
-                                    <form action="{{ route('service.booking.inquiry', $service) }}" method="POST"
+                                    <form action="{{ route('training-classes.booking-inquiry', $service) }}" method="POST"
                                         class="mt-2 pt-4 border-t border-gray-200 space-y-4"
                                         id="service-booking-form"
                                         data-has-sessions="{{ $bookingSchedulesList->isNotEmpty() ? '1' : '0' }}">
@@ -972,7 +972,7 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 xl:gap-8">
                         @foreach ($relatedServices as $index => $rel)
-                            <a href="{{ route('service.details', $rel->id) }}"
+                            <a href="{{ route('training-classes.show', $rel->id) }}"
                                 class="sd-rel-card group block w-full">
                                 <div class="sd-rel-img">
                                     <img src="{{ $rel->display_image_url }}" alt="{{ $rel->title }}">
@@ -1013,7 +1013,7 @@
                     </div>
 
                     <div class="mt-8 sm:mt-10 lg:mt-12 text-center">
-                        <a href="{{ route('services') }}"
+                        <a href="{{ route('training-classes') }}"
                             class="inline-flex items-center gap-2 text-[var(--primary-color)] font-semibold hover:underline text-xs sm:text-sm py-2">
                             <i class="fas fa-arrow-left"></i> View all services
                         </a>

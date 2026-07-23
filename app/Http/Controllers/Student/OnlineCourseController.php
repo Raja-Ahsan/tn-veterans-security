@@ -8,7 +8,6 @@ use App\Models\ModuleQuizSession;
 use App\Models\Service;
 use App\Services\BlendedCourseCompletionService;
 use App\Services\BlendedCourseService;
-use App\Services\CertificateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,8 +15,7 @@ class OnlineCourseController extends Controller
 {
     public function __construct(
         private BlendedCourseService $blendedCourse,
-        private BlendedCourseCompletionService $completionService,
-        private CertificateService $certificateService
+        private BlendedCourseCompletionService $completionService
     ) {}
 
     public function index(Service $service)
@@ -34,9 +32,7 @@ class OnlineCourseController extends Controller
         $progressSummary = $this->blendedCourse->progressSummary($student, $service);
         $continueModule = $this->blendedCourse->firstContinueModule($student, $service);
         $eligible = $this->blendedCourse->isEligibleForInPersonTesting($student, $service);
-        $certificate = $eligible
-            ? $this->certificateService->issueForOnlineCourseCompletion($student, $service)
-            : null;
+        $certificate = null;
 
         return view('student.online-course.index', compact(
             'service',
@@ -312,9 +308,7 @@ class OnlineCourseController extends Controller
         $progress = $this->blendedCourse->getProgress($student, $service);
         $modules = $this->blendedCourse->getModulesForService($service);
         $eligible = $this->blendedCourse->isEligibleForInPersonTesting($student, $service);
-        $certificate = $eligible
-            ? $this->certificateService->issueForOnlineCourseCompletion($student, $service)
-            : null;
+        $certificate = null;
         $supportEmail = \App\Models\SiteSetting::query()->value('email');
         $supportPhone = \App\Models\SiteSetting::query()->value('phone');
         $passingScore = $courseModule->passingScore();
@@ -370,6 +364,5 @@ class OnlineCourseController extends Controller
     private function afterQuizCompleted($student, Service $service, CourseModule $courseModule): void
     {
         $this->completionService->notifyIfCourseCompleted($student, $service, $this->blendedCourse, $courseModule);
-        $this->certificateService->issueForOnlineCourseCompletion($student, $service);
     }
 }

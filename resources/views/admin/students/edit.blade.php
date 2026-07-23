@@ -113,7 +113,7 @@
                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">2</span>
                 <div>
                     <h4 class="text-base font-bold text-gray-900">Security registration</h4>
-                    <p class="text-sm text-gray-500">Optional. Turn on only if the student has a security registration.</p>
+                    <p class="text-sm text-gray-500">Ask if they have ever had a security registration number.</p>
                 </div>
             </div>
 
@@ -123,8 +123,8 @@
                        @checked(old('has_security_registration', $student->has_security_registration))
                        class="mt-0.5 rounded border-gray-400 text-green-600 focus:ring-green-500">
                 <div>
-                    <span class="text-sm font-semibold text-gray-900">Has security registration number</span>
-                    <p class="mt-0.5 text-xs text-gray-500">When checked, registration # and expiration become required.</p>
+                    <span class="text-sm font-semibold text-gray-900">Do you have or have you ever had a Security Registration Number?</span>
+                    <p class="mt-0.5 text-xs text-gray-500">When checked, registration number and expiration date are required.</p>
                 </div>
             </label>
 

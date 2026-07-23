@@ -33,9 +33,9 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Main Content -->
     <div class="lg:col-span-2 space-y-6">
-        <!-- Service Information Card -->
+        <!-- Class Information Card -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Service Information</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Class Information</h2>
             <div class="flex gap-6">
                 @if($booking->service->image)
                 <div class="flex-shrink-0">
@@ -316,14 +316,14 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Quick Actions</h2>
             <div class="space-y-3">
-                <a href="{{ route('services') }}" 
+                <a href="{{ route('training-classes') }}" 
                    class="block w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-center transition-colors">
-                    <i class="fas fa-search mr-2"></i> Browse Services
+                    <i class="fas fa-search mr-2"></i> Browse Classes
                 </a>
                 @if($booking->service)
-                    <a href="{{ route('service.details', $booking->service->id) }}" 
+                    <a href="{{ route('training-classes.show', $booking->service->id) }}" 
                        class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center transition-colors">
-                        <i class="fas fa-info-circle mr-2"></i> View Service Details
+                        <i class="fas fa-info-circle mr-2"></i> View Class Details
                     </a>
                 @endif
             </div>

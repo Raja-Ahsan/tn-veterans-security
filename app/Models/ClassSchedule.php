@@ -189,6 +189,10 @@ class ClassSchedule extends Model
      */
     public function getAvailableSpots(): int
     {
+        if ($this->admin_override_capacity) {
+            return PHP_INT_MAX;
+        }
+
         return max(0, $this->max_students - $this->current_students);
     }
 
@@ -205,6 +209,10 @@ class ClassSchedule extends Model
      */
     public function isFull(): bool
     {
+        if ($this->admin_override_capacity) {
+            return false;
+        }
+
         return $this->current_students >= $this->max_students;
     }
 

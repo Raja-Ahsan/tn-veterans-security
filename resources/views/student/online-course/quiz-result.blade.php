@@ -60,23 +60,16 @@
                 </a>
             @endif
 
-            @if($certificate)
-                <a href="{{ route('student.certificates.show', $certificate) }}"
-                   class="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-white px-5 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">
-                    <i class="fas fa-certificate"></i> View certificate
-                </a>
-            @endif
-
             <a href="{{ route('student.online-course.index', $service) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                 All modules
             </a>
         </div>
 
-        @if($eligible && $certificate)
+        @if($eligible)
             <p class="mt-4 text-sm font-medium text-emerald-800">
                 <i class="fas fa-check-circle mr-1"></i>
-                All modules passed — your certificate is ready.
+                All online modules passed — you are eligible for in-person testing. Blended courses do not issue certificates.
             </p>
         @elseif($passed && ! $nextModule)
             <p class="mt-4 text-sm font-medium text-emerald-800">

@@ -72,21 +72,24 @@ Route::get('/terms-and-conditions', function () {
     return view('legal.terms-and-conditions');
 })->name('legal.terms-and-conditions');
 
-Route::get('/all-services', function () {
+Route::get('/all-classes', function () {
     $allServices = PublicTrainingServiceQuery::apply(
         \App\Models\Service::where('is_active', true)
     )
         ->orderBy('order')
         ->get();
 
-    return view('all-services', compact('allServices'));
-})->name('all-services');
+    return view('all-classes', compact('allServices'));
+})->name('all-classes');
+
+Route::permanentRedirect('/all-services', '/all-classes');
 
 Route::get('/class-calendar', [ClassCalendarController::class, 'index'])->name('class-calendar');
 
-Route::get('/training-services', function () {
+Route::get('/training-classes', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
+    $q = trim((string) request()->query('q', ''));
 
     $query = PublicTrainingServiceQuery::apply(
         \App\Models\Service::where('is_active', true)
@@ -98,6 +101,10 @@ Route::get('/training-services', function () {
 
     if ($subcategory) {
         $query->where('subcategory', $subcategory);
+    }
+
+    if ($q !== '') {
+        $query->where('title', 'like', '%'.$q.'%');
     }
 
     $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
@@ -113,8 +120,41 @@ Route::get('/training-services', function () {
         ->unique()
         ->values();
 
-    return view('services', compact('services', 'categories', 'category', 'subcategory'));
-})->name('services');
+    return view('training-classes', compact('services', 'categories', 'category', 'subcategory'));
+})->name('training-classes');
+
+Route::get('/training-classes/search', function () {
+    $category = request()->query('category');
+    $subcategory = request()->query('subcategory');
+    $q = trim((string) request()->query('q', ''));
+
+    $query = PublicTrainingServiceQuery::apply(
+        \App\Models\Service::where('is_active', true)
+    );
+
+    if ($category) {
+        $query->whereJsonContains('categories', $category);
+    }
+
+    if ($subcategory) {
+        $query->where('subcategory', $subcategory);
+    }
+
+    if ($q !== '') {
+        $query->where('title', 'like', '%'.$q.'%');
+    }
+
+    $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
+
+    return response()->json([
+        'count' => $services->count(),
+        'html' => view('training-classes.partials.cards', compact('services'))->render(),
+    ]);
+})->name('training-classes.search');
+
+// Legacy URL redirects
+Route::permanentRedirect('/training-services', '/training-classes');
+Route::permanentRedirect('/training-services/search', '/training-classes/search');
 
 Route::get('/affiliated-services', function () {
     return view('affiliated-services');
@@ -125,7 +165,7 @@ Route::get('/nra-services', function () {
 })->name('nra-services');
 // Services by Page
 
-Route::get('/training-services/enhanced-armed-guard-security-subcategories', function () {
+Route::get('/training-classes/enhanced-armed-guard-security-subcategories', function () {
     $rifleService = \App\Models\Service::where('is_active', true)->find(34);
     $shotgunService = \App\Models\Service::where('is_active', true)->find(35);
     $services = collect([$rifleService, $shotgunService])->filter();
@@ -133,10 +173,14 @@ Route::get('/training-services/enhanced-armed-guard-security-subcategories', fun
     return view('enhanced-armed-guard-subcategories', compact('services'));
 })->name('handgun.subcategories');
 
-Route::get('/training-services/{id}', [ServicePageController::class, 'showById'])->name('service.details');
-Route::get('/service/{slug}', [ServicePageController::class, 'showBySlug'])->name('service.by.slug')->where('slug', '[a-z0-9\-]+');
+Route::get('/training-classes/{id}', [ServicePageController::class, 'showById'])->name('training-classes.show');
+Route::get('/class/{slug}', [ServicePageController::class, 'showBySlug'])->name('class.show')->where('slug', '[a-z0-9\-]+');
 
-Route::post('/training-services/{service}/booking-inquiry', function (\App\Models\Service $service, \Illuminate\Http\Request $request) {
+Route::permanentRedirect('/training-services/enhanced-armed-guard-security-subcategories', '/training-classes/enhanced-armed-guard-security-subcategories');
+Route::permanentRedirect('/training-services/{id}', '/training-classes/{id}');
+Route::permanentRedirect('/service/{slug}', '/class/{slug}');
+
+Route::post('/training-classes/{service}/booking-inquiry', function (\App\Models\Service $service, \Illuminate\Http\Request $request) {
     $bookableCount = ClassSchedule::where('service_id', $service->id)
         ->where('status', 'scheduled')
         ->where('class_date', '>=', now()->toDateString())
@@ -229,9 +273,9 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
         ? 'Account created. Review your booking and proceed to payment.'
         : 'Review your booking and complete payment.';
 
-    return redirect()->route('student.services.checkout', $service->id)
+    return redirect()->route('student.classes.checkout', $service->id)
         ->with('success', $message);
-})->name('service.booking.inquiry')->middleware('throttle:10,1');
+})->name('training-classes.booking-inquiry')->middleware('throttle:10,1');
 
 Route::get('/security-training', function () {
     return view('security-training');
@@ -300,6 +344,12 @@ Route::permanentRedirect('/customer/{path?}', '/student/{path?}')->where('path',
 
 // Student Routes
 Route::prefix('student')->name('student.')->group(function () {
+    // Legacy path redirects
+    Route::permanentRedirect('/services/{serviceId}/available-classes', '/student/classes/{serviceId}/available-classes');
+    Route::permanentRedirect('/services/{serviceId}/checkout', '/student/classes/{serviceId}/checkout');
+    Route::permanentRedirect('/services/{serviceId}/book', '/student/classes/{serviceId}/book');
+    Route::permanentRedirect('/services/{serviceId}/book/{scheduleId}', '/student/classes/{serviceId}/book/{scheduleId}');
+
     // Auth Routes (Public)
     Route::get('/login', [App\Http\Controllers\Student\AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [App\Http\Controllers\Student\AuthController::class, 'login'])->middleware('throttle:10,1');
@@ -308,10 +358,10 @@ Route::prefix('student')->name('student.')->group(function () {
     Route::post('/logout', [App\Http\Controllers\Student\AuthController::class, 'logout'])->name('logout');
 
     // Public Routes - View available classes (no login required)
-    Route::get('/services/{serviceId}/available-classes', [App\Http\Controllers\Student\BookingController::class, 'showAvailableClasses'])->name('available-classes');
+    Route::get('/classes/{serviceId}/available-classes', [App\Http\Controllers\Student\BookingController::class, 'showAvailableClasses'])->name('available-classes');
 
     // Checkout (public – shows summary; login required to complete payment)
-    Route::get('/services/{serviceId}/checkout', [App\Http\Controllers\Student\BookingController::class, 'showCheckout'])->name('services.checkout');
+    Route::get('/classes/{serviceId}/checkout', [App\Http\Controllers\Student\BookingController::class, 'showCheckout'])->name('classes.checkout');
 
     // Protected Student Routes
     Route::middleware([\App\Http\Middleware\AuthenticateStudent::class])->group(function () {
@@ -335,13 +385,13 @@ Route::prefix('student')->name('student.')->group(function () {
         // Booking Routes
         Route::get('/bookings', [App\Http\Controllers\Student\BookingController::class, 'index'])->name('bookings');
         Route::get('/bookings/{id}', [App\Http\Controllers\Student\BookingController::class, 'show'])->name('bookings.show');
-        Route::get('/services/{serviceId}/book', [App\Http\Controllers\Student\BookingController::class, 'create'])->name('booking.create');
-        Route::get('/services/{serviceId}/book/{scheduleId}', [App\Http\Controllers\Student\BookingController::class, 'create'])->name('booking.create.schedule');
+        Route::get('/classes/{serviceId}/book', [App\Http\Controllers\Student\BookingController::class, 'create'])->name('booking.create');
+        Route::get('/classes/{serviceId}/book/{scheduleId}', [App\Http\Controllers\Student\BookingController::class, 'create'])->name('booking.create.schedule');
         Route::post('/bookings', [App\Http\Controllers\Student\BookingController::class, 'store'])->name('booking.store');
 
         // Checkout – create booking from inquiry and go to payment
 
-        Route::post('/services/{serviceId}/checkout', [App\Http\Controllers\Student\BookingController::class, 'processCheckout'])->name('services.checkout.process');
+        Route::post('/classes/{serviceId}/checkout', [App\Http\Controllers\Student\BookingController::class, 'processCheckout'])->name('classes.checkout.process');
 
         // Payment Routes
         Route::get('/bookings/{bookingId}/payment', [App\Http\Controllers\Student\BookingController::class, 'showPayment'])->name('booking.payment');
@@ -385,6 +435,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('instructors', App\Http\Controllers\Admin\InstructorController::class)->except(['show']);
         Route::resource('locations', App\Http\Controllers\Admin\LocationController::class)->except(['show']);
+        Route::post('/categories/quick-store', [App\Http\Controllers\Admin\ServiceCategoryController::class, 'quickStore'])
+            ->name('categories.quick-store');
+        Route::resource('categories', App\Http\Controllers\Admin\ServiceCategoryController::class)
+            ->except(['show'])
+            ->parameters(['categories' => 'serviceCategory']);
+
+        Route::redirect('/service-categories', '/admin/categories', 301);
+        Route::redirect('/service-categories/create', '/admin/categories/create', 301);
+        Route::get('/service-categories/{serviceCategory}/{path?}', function (string $serviceCategory, ?string $path = null) {
+            $target = '/admin/categories/'.$serviceCategory;
+            if ($path) {
+                $target .= '/'.$path;
+            }
+
+            return redirect($target, 301);
+        })->where('path', '.*');
 
         Route::get('/communication-logs', [App\Http\Controllers\Admin\CommunicationLogController::class, 'index'])->name('communication-logs.index');
         Route::get('/communication-logs/{communicationLog}', [App\Http\Controllers\Admin\CommunicationLogController::class, 'show'])->name('communication-logs.show');

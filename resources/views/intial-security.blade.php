@@ -49,7 +49,7 @@
                 @if(isset($services) && $services->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
                         @foreach($services as $index => $service)
-                            <a href="{{ route('service.details', $service->id) }}" class="group block">
+                            <a href="{{ route('training-classes.show', $service->id) }}" class="group block">
                                 <div class="service-detail-card bg-white rounded-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
                                     <div class="relative h-[280px] overflow-hidden">
                                         @if($service->image)
@@ -106,7 +106,7 @@
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-start md:justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="400">
                         <a href="{{ route('contact') }}" class="btn primary-button !text-center">Contact Us</a>
-                        <a href="{{ route('services') }}" class="btn secondary-button !text-center">View All Services</a>
+                        <a href="{{ route('training-classes') }}" class="btn secondary-button !text-center">View All Classes</a>
                     </div>
                 </div>
             </div>

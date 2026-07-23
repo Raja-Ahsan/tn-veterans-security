@@ -96,7 +96,7 @@ class BookingController extends Controller
         $service = Service::where('is_active', true)->findOrFail($serviceId);
         $inquiry = session('booking_inquiry_'.$service->id);
         if (! $inquiry) {
-            return redirect()->route('service.details', $service->id)
+            return redirect()->route('training-classes.show', $service->id)
                 ->with('error', 'Please complete the booking form first.');
         }
         $numStudents = (int) ($inquiry['number_of_students'] ?? 1);
@@ -108,7 +108,7 @@ class BookingController extends Controller
         $amountDue = $depositAmount;
         $isLoggedIn = Auth::guard('student')->check();
         if (! $isLoggedIn) {
-            session()->put('url.intended', route('student.services.checkout', $service->id));
+            session()->put('url.intended', route('student.classes.checkout', $service->id));
         }
 
         $selectedSchedule = null;
@@ -145,14 +145,14 @@ class BookingController extends Controller
         $service = Service::where('is_active', true)->findOrFail($serviceId);
         $inquiry = session('booking_inquiry_'.$service->id);
         if (! $inquiry) {
-            return redirect()->route('service.details', $service->id)
+            return redirect()->route('training-classes.show', $service->id)
                 ->with('error', 'Session expired. Please complete the booking form again.');
         }
         $numStudents = max(1, (int) ($inquiry['number_of_students'] ?? 1));
         $preferredLocation = $inquiry['location'] ?? null;
 
         if (! $this->pricing->meetsTravelMinimum($service, $numStudents)) {
-            return redirect()->route('student.services.checkout', $service->id)
+            return redirect()->route('student.classes.checkout', $service->id)
                 ->with('error', "This travel class requires at least {$service->travel_minimum_students} student(s).");
         }
 
@@ -225,12 +225,12 @@ class BookingController extends Controller
         } catch (\RuntimeException $e) {
             DB::rollBack();
 
-            return redirect()->route('student.services.checkout', $service->id)
+            return redirect()->route('student.classes.checkout', $service->id)
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->route('student.services.checkout', $service->id)
+            return redirect()->route('student.classes.checkout', $service->id)
                 ->with('error', 'An error occurred. Please try again.');
         }
     }

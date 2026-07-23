@@ -8,7 +8,7 @@ use App\Models\Service;
 class ServicePageController extends Controller
 {
     /**
-     * Show service detail by ID (e.g. /training-services/42).
+     * Show service detail by ID (e.g. /training-classes/42).
      */
     public function showById($id)
     {
@@ -70,7 +70,7 @@ class ServicePageController extends Controller
             ->sort()
             ->values();
 
-        return view('service-details', compact(
+        return view('class-details', compact(
             'service',
             'relatedServices',
             'linkedServices',

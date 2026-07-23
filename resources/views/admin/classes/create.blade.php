@@ -163,58 +163,27 @@
 
         <!-- Category Section -->
         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            @include('admin.classes.partials.section-header', ['step' => '2', 'title' => 'Category & Organization', 'hint' => 'Optional. Use categories for listing pages, or a direct slug for a standalone page.'])
-            <p class="text-sm text-gray-600 mb-3">If you leave all categories unchecked and set a <strong>Direct page slug</strong> above, this class appears only at <strong>/service/{slug}</strong>.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div class="md:col-span-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Categories (optional)</label>
-                    <!-- Selected tags (shown at top) -->
-                    <div id="selected-categories-display" class="min-h-[52px] mb-3 p-3 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex flex-wrap gap-2 items-center">
-                        <span id="no-selection-hint" class="text-sm text-gray-400">No categories selected — choose below</span>
-                    </div>
-                    <!-- Checkbox list -->
-                    <p class="text-xs text-gray-600 font-medium mb-2">Select categories</p>
-                    <div class="max-h-36 overflow-y-auto border rounded-lg p-3 bg-white space-y-1.5">
-                        @foreach(config('service_categories', []) as $slug => $label)
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-green-50 p-2 rounded transition-colors category-checkbox-label" data-slug="{{ $slug }}" data-label="{{ $label }}">
-                                <input type="checkbox"
-                                       name="categories[]"
-                                       value="{{ $slug }}"
-                                       {{ in_array($slug, old('categories', [])) ? 'checked' : '' }}
-                                       class="rounded border-gray-400 text-green-600 focus:ring-green-500 category-checkbox">
-                                <span class="text-sm text-gray-800">{{ $label }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                    @error('categories')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+            @include('admin.classes.partials.section-header', ['step' => '2', 'title' => 'Category & Organization', 'hint' => 'Optional. Use a category for listing pages, or a direct slug for a standalone page.'])
+            <p class="mb-4 text-sm text-gray-600">If you leave category empty and set a <strong>Direct page slug</strong> above, this class appears only at <strong>/service/{slug}</strong>.</p>
+            <div class="mb-4 space-y-4">
+                @include('admin.classes.partials.category-fields', [
+                    'selectedCategories' => old('categories', []),
+                    'subcategoryValue' => old('subcategory'),
+                ])
 
                 <div>
-                    <label for="subcategory" class="block text-gray-700 text-sm font-bold mb-2">Subcategory</label>
-                    <input type="text" 
-                           id="subcategory" 
-                           name="subcategory" 
-                           value="{{ old('subcategory') }}"
-                           placeholder="e.g., Armed Security, ASP, Force Science"
-                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    @error('subcategory')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="location" class="block text-gray-700 text-sm font-bold mb-2">Location</label>
-                    <select id="location" 
-                            name="location" 
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="">No Specific Location</option>
-                        <option value="Location A" {{ old('location') === 'Location A' ? 'selected' : '' }}>Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</option>
-                        <option value="Location B" {{ old('location') === 'Location B' ? 'selected' : '' }}>Guns and Leather 2216 US-41, Greenbrier, Tn 37073</option>
+                    <label for="location" class="mb-1.5 block text-sm font-bold text-gray-700">Location</label>
+                    <select id="location"
+                            name="location"
+                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                        @include('admin.classes.partials.location-options', [
+                            'locations' => $locations ?? collect(),
+                            'selectedLocation' => old('location'),
+                        ])
                     </select>
+                    <p class="mt-1 text-xs text-gray-500">Managed under Admin → Locations. Used as the default for this class.</p>
                     @error('location')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -345,10 +314,12 @@
                             </div>
                             <div>
                                 <label class="block text-gray-700 text-xs font-bold mb-1">Location</label>
-                                <select name="schedules[{{ $idx }}][location]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
-                                    <option value="" {{ ($sch['location'] ?? '') === '' ? 'selected' : '' }}>No Specific Location</option>
-                                    <option value="Location A" {{ ($sch['location'] ?? '') === 'Location A' ? 'selected' : '' }}>Location A (Nashville)</option>
-                                    <option value="Location B" {{ ($sch['location'] ?? '') === 'Location B' ? 'selected' : '' }}>Location B (Greenbrier)</option>
+                                <select name="schedules[{{ $idx }}][location_id]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                                    @include('admin.classes.partials.schedule-location-options', [
+                                        'locations' => $locations ?? collect(),
+                                        'schedule' => (object) $sch,
+                                        'namePrefix' => 'schedules.'.$idx,
+                                    ])
                                 </select>
                             </div>
                         </div>
@@ -370,8 +341,13 @@
                             </div>
                             <div>
                                 <label class="block text-gray-700 text-xs font-bold mb-1">Instructor</label>
-                                <input type="text" name="schedules[{{ $idx }}][instructor]" value="{{ $sch['instructor'] ?? '' }}" maxlength="255"
-                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                                <select name="schedules[{{ $idx }}][instructor_id]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                                    @include('admin.classes.partials.schedule-instructor-options', [
+                                        'instructors' => $instructors ?? collect(),
+                                        'schedule' => (object) $sch,
+                                        'namePrefix' => 'schedules.'.$idx,
+                                    ])
+                                </select>
                             </div>
                         </div>
                         <div>
@@ -394,7 +370,7 @@
             @enderror
         </div>{{-- end section 4 --}}
 
-        <!-- Linked Services (Related Trainings) -->
+        <!-- Linked Classes (Related Trainings) -->
         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             @include('admin.classes.partials.section-header', ['step' => '5', 'title' => 'Related Trainings', 'hint' => 'Optional. Other classes to suggest on this class’s public page.'])
             <p class="text-sm text-gray-600 mb-3">Select trainings to show as related (e.g. Unarmed → Less Lethal, Dallas Law).</p>
@@ -485,30 +461,7 @@
             requirementsInput.value = requirementsQuill.root.innerHTML;
         });
 
-        // Category selection UI: update selected tags display
-        function updateSelectedCategories() {
-            var container = document.getElementById('selected-categories-display');
-            var hint = document.getElementById('no-selection-hint');
-            var checkboxes = document.querySelectorAll('.category-checkbox:checked');
-            var existingTags = container.querySelectorAll('.selected-tag');
-            existingTags.forEach(function(t) { t.remove(); });
-            if (checkboxes.length === 0) {
-                hint.style.display = 'inline';
-            } else {
-                hint.style.display = 'none';
-                checkboxes.forEach(function(cb) {
-                    var label = document.querySelector('.category-checkbox-label[data-slug="' + cb.value + '"]');
-                    var chip = document.createElement('span');
-                    chip.className = 'selected-tag inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white';
-                    chip.textContent = label ? label.getAttribute('data-label') : cb.value;
-                    container.appendChild(chip);
-                });
-            }
-        }
-        document.querySelectorAll('.category-checkbox').forEach(function(cb) {
-            cb.addEventListener('change', updateSelectedCategories);
-        });
-        updateSelectedCategories();
+        // Category selection UI removed — single select dropdown in category-fields partial.
 
         // Sub titles: add / remove rows
         var subTitlesContainer = document.getElementById('sub-titles-container');
@@ -556,6 +509,12 @@
         }
 
         var addScheduleBtn = document.getElementById('add-schedule-row');
+        var locationOptionsHtml = @json(
+            collect($locations ?? [])->map(fn ($loc) => '<option value="'.$loc->id.'">'.e($loc->display_name).'</option>')->prepend('<option value="">No Specific Location</option>')->implode('')
+        );
+        var instructorOptionsHtml = @json(
+            collect($instructors ?? [])->map(fn ($ins) => '<option value="'.$ins->id.'">'.e($ins->name).'</option>')->prepend('<option value="">Select instructor</option>')->implode('')
+        );
         if (addScheduleBtn && scheduleContainer) {
             addScheduleBtn.addEventListener('click', function() {
                 var i = scheduleIndex++;
@@ -573,10 +532,7 @@
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Duration (hours) *</label>' +
                     '<input type="number" name="schedules[' + i + '][duration_hours]" value="8" min="1" max="48" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Location</label>' +
-                    '<select name="schedules[' + i + '][location]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">' +
-                    '<option value="">No Specific Location</option>' +
-                    '<option value="Location A">Location A (Nashville)</option>' +
-                    '<option value="Location B">Location B (Greenbrier)</option></select></div></div>' +
+                    '<select name="schedules[' + i + '][location_id]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">' + locationOptionsHtml + '</select></div></div>' +
                     '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">' +
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Max students *</label>' +
                     '<input type="number" name="schedules[' + i + '][max_students]" value="10" min="1" max="100" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
@@ -585,7 +541,7 @@
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Room</label>' +
                     '<input type="text" name="schedules[' + i + '][room]" maxlength="255" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Instructor</label>' +
-                    '<input type="text" name="schedules[' + i + '][instructor]" maxlength="255" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div></div>' +
+                    '<select name="schedules[' + i + '][instructor_id]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">' + instructorOptionsHtml + '</select></div></div>' +
                     '<div><label class="block text-gray-700 text-xs font-bold mb-1">Notes</label>' +
                     '<input type="text" name="schedules[' + i + '][notes]" maxlength="2000" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
                     '<label class="inline-flex items-center gap-2 text-sm text-gray-700">' +

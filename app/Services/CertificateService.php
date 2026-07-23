@@ -17,9 +17,9 @@ class CertificateService
     {
         $booking->loadMissing(['service', 'student']);
 
-        // Blended courses issue certificates after all online modules are passed (not on booking complete alone).
+        // Blended courses do not issue certificates (in-person hands-on only).
         if ($booking->service->has_online_parts) {
-            return $this->issueForOnlineCourseCompletion($booking->student, $booking->service, $issuer, $booking);
+            return null;
         }
 
         if (CourseCertificate::query()->where('service_booking_id', $booking->id)->exists()) {
@@ -36,42 +36,17 @@ class CertificateService
         ]);
     }
 
+    /**
+     * Blended courses do not issue certificates after online modules.
+     * Kept for call-site compatibility; always returns null for online/blended courses.
+     */
     public function issueForOnlineCourseCompletion(
         Student $student,
         Service $service,
         ?User $issuer = null,
         ?ServiceBooking $booking = null
     ): ?CourseCertificate {
-        if (! $service->has_online_parts) {
-            return null;
-        }
-
-        if (! $this->blendedCourse->isEligibleForInPersonTesting($student, $service)) {
-            return null;
-        }
-
-        $booking ??= $this->blendedCourse->paidBookingForService($student, $service);
-        if (! $booking) {
-            return null;
-        }
-
-        $existing = CourseCertificate::query()
-            ->where('student_id', $student->id)
-            ->where('service_id', $service->id)
-            ->first();
-
-        if ($existing) {
-            return $existing;
-        }
-
-        return CourseCertificate::create([
-            'student_id' => $student->id,
-            'service_id' => $service->id,
-            'service_booking_id' => $booking->id,
-            'certificate_number' => $this->generateNumber(),
-            'issued_at' => now(),
-            'issued_by' => $issuer?->id,
-        ]);
+        return null;
     }
 
     private function generateNumber(): string

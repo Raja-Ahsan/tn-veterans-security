@@ -51,7 +51,7 @@
                              data-subcategory="{{ $service->subcategory }}"
                              data-aos="fade-up" 
                              data-aos-delay="{{ ($loop->index % 6) * 100 }}">
-                            <a href="{{ route('service.details', $service->id) }}" 
+                            <a href="{{ route('training-classes.show', $service->id) }}" 
                                class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
                                 <div class="training-card-img-div">
                                     @if($service->image)

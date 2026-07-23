@@ -39,12 +39,7 @@
     @if($eligible)
         <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
             <i class="fas fa-check-circle mr-1"></i>
-            You completed all modules and are eligible for in-person testing.
-            @if(! empty($certificate))
-                <a href="{{ route('student.certificates.show', $certificate) }}" class="ml-1 font-bold underline hover:no-underline">
-                    View your certificate
-                </a>
-            @endif
+            You completed all online modules and are eligible for in-person testing. No certificate is issued for blended courses.
         </div>
     @endif
 </div>

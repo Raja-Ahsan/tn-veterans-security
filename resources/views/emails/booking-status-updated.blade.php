@@ -13,7 +13,7 @@
     <p><strong>Booking Details</strong></p>
     <ul>
         <li><strong>Booking ID:</strong> #{{ $booking->id }}</li>
-        <li><strong>Service:</strong> {{ $booking->service->title }}</li>
+        <li><strong>Class:</strong> {{ $booking->service->title }}</li>
         <li><strong>Previous Status:</strong> {{ ucfirst($oldStatus) }}</li>
         <li><strong>Current Status:</strong> {{ ucfirst($newStatus) }}</li>
         <li><strong>Date:</strong> {{ optional($booking->booking_date)->format('M d, Y') ?? 'TBD' }}</li>

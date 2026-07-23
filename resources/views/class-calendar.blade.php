@@ -3,7 +3,7 @@
 @section('content')
     <main class="overflow-hidden">
 
-        <section class="inner-hero">
+        {{-- <section class="inner-hero">
             <div class="inner-hero-overlay"></div>
             <div class="container mx-auto px-4 lg:px-10 relative z-10">
                 <div class="max-w-[1000px] py-8">
@@ -15,9 +15,9 @@
                     </p>
                 </div>
             </div>
-        </section>
+        </section> --}}
 
-        <section class="py-16 lg:py-24 bg-gradient-to-b from-white to-[#F8F8F8]">
+        <section class="py-16 lg:py-24 mt-20 bg-gradient-to-b from-white to-[#F8F8F8]">
             <div class="container mx-auto px-4 lg:px-10">
 
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8" data-aos="fade-up">
@@ -30,21 +30,40 @@
                     </div>
 
                     <div class="flex items-center gap-2 flex-wrap">
-                        <a href="{{ route('class-calendar', ['month' => $prevMonth]) }}"
-                           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:border-[var(--primary-color)] hover:text-[var(--primary-color)] transition-colors">
-                            <i class="fas fa-chevron-left"></i> Previous
-                        </a>
+                        @if($hasPrevMonth)
+                            <a href="{{ route('class-calendar', ['month' => $prevMonth]) }}"
+                               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:border-[var(--primary-color)] hover:text-[var(--primary-color)] transition-colors">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        @else
+                            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-gray-400 font-semibold cursor-not-allowed"
+                                  aria-disabled="true">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </span>
+                        @endif
                         <a href="{{ route('class-calendar') }}"
                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:border-[var(--primary-color)] hover:text-[var(--primary-color)] transition-colors">
                             Today
                         </a>
-                        <span class="px-4 py-2 rounded-lg bg-[var(--primary-color)] text-white font-bold min-w-[10rem] text-center">
-                            {{ $calendarTitle }}
-                        </span>
-                        <a href="{{ route('class-calendar', ['month' => $nextMonth]) }}"
-                           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:border-[var(--primary-color)] hover:text-[var(--primary-color)] transition-colors">
-                            Next <i class="fas fa-chevron-right"></i>
-                        </a>
+                        <select id="calendar-month-select"
+                                aria-label="Select month"
+                                style="appearance: auto; -webkit-appearance: menulist; color: #111827; background-color: #ffffff; border: 2px solid var(--primary-color); border-radius: 0.5rem; font-weight: 700; min-width: 10rem; padding: 0.5rem 0.75rem; cursor: pointer;"
+                                onchange="window.location.href='{{ route('class-calendar') }}?month=' + this.value;">
+                            @foreach($monthOptions as $value => $label)
+                                <option value="{{ $value }}" @selected($value === $currentMonth)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @if($hasNextMonth)
+                            <a href="{{ route('class-calendar', ['month' => $nextMonth]) }}"
+                               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:border-[var(--primary-color)] hover:text-[var(--primary-color)] transition-colors">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        @else
+                            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-gray-400 font-semibold cursor-not-allowed"
+                                  aria-disabled="true">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </span>
+                        @endif
                     </div>
                 </div>
 
@@ -135,11 +154,18 @@
                                             <h4 class="text-xl font-bold text-[var(--text-color)]">
                                                 {{ $schedule->service->title }}
                                             </h4>
+                                            @if($schedule->service?->is_travel_based)
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-100 text-amber-800">Travel class</span>
+                                            @endif
                                             @if($isFull)
                                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-700">Full</span>
                                             @else
                                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-100 text-emerald-700">
-                                                    {{ $schedule->getAvailableSpots() }} spots left
+                                                    @if($schedule->admin_override_capacity)
+                                                        Open (admin override)
+                                                    @else
+                                                        {{ $schedule->getAvailableSpots() }} spots left
+                                                    @endif
                                                 </span>
                                             @endif
                                         </div>
@@ -163,7 +189,7 @@
                                     </div>
 
                                     <div class="flex flex-col sm:flex-row gap-3 shrink-0">
-                                        <a href="{{ route('service.details', $schedule->service_id) }}"
+                                        <a href="{{ route('training-classes.show', $schedule->service_id) }}"
                                            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:border-[var(--primary-color)] hover:text-[var(--primary-color)] transition-colors">
                                             View class
                                         </a>
@@ -221,7 +247,7 @@
                         Browse all training programs or pick a date from the calendar above.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-start md:justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="400">
-                        <a href="{{ route('services') }}" class="btn primary-button !text-center">All training programs</a>
+                        <a href="{{ route('training-classes') }}" class="btn primary-button !text-center">All training programs</a>
                         <a href="{{ route('contact') }}" class="btn secondary-button !text-center">Contact us</a>
                     </div>
                 </div>

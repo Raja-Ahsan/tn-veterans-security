@@ -4,24 +4,16 @@
 @section('page-title', 'Communication Logs')
 
 @section('content')
-<div class="mb-6 rounded-xl border border-emerald-100 bg-emerald-50/70 px-5 py-4">
+<div class="mb-5 rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3.5 sm:px-5">
     <div class="flex gap-3">
-        <span class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-            <i class="fas fa-bullhorn"></i>
+        <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+            <i class="fas fa-bullhorn text-sm"></i>
         </span>
-        <div>
-            <h3 class="font-semibold text-gray-900">What is this?</h3>
-            <p class="mt-1 text-sm leading-relaxed text-gray-600">
-                Every time you notify enrolled (or waitlisted) students from a <strong>Class Schedule</strong> —
-                for cancel, reschedule, move, time change, or instructor change — the system saves a log here.
-                You can review who was contacted, by email/SMS, and whether delivery succeeded.
-            </p>
-            <p class="mt-2 text-sm text-gray-600">
-                <strong>How to use:</strong>
-                Class Schedules → open a schedule →
-                <span class="font-medium text-emerald-800">Notify Enrolled Students</span>
-                (or Notify Waitlist) → send.
-                Then return here to audit the message.
+        <div class="min-w-0 text-sm leading-relaxed text-gray-600">
+            <p>
+                Logs are created when you notify students from a
+                <a href="{{ route('admin.class-schedules.index') }}" class="font-semibold text-emerald-800 hover:underline">Class Schedule</a>
+                (cancel, reschedule, move, time/instructor change, or general notice).
             </p>
         </div>
     </div>
@@ -47,7 +39,7 @@
                         <td class="whitespace-nowrap px-5 py-3.5 text-sm text-gray-600">
                             {{ $log->created_at->format('M d, Y g:i A') }}
                         </td>
-                        <td class="px-5 py-3.5 text-sm font-medium text-gray-900">
+                        <td class="max-w-[16rem] truncate px-5 py-3.5 text-sm font-medium text-gray-900" title="{{ $log->classSchedule?->service?->title }}">
                             {{ $log->classSchedule?->service?->title ?? '—' }}
                         </td>
                         <td class="px-5 py-3.5">
@@ -55,8 +47,11 @@
                                 {{ ucfirst(str_replace('_', ' ', $log->notification_type)) }}
                             </span>
                         </td>
-                        <td class="px-5 py-3.5 text-sm font-medium uppercase text-gray-600">
-                            {{ $log->delivery_method }}
+                        <td class="px-5 py-3.5">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase text-gray-600">
+                                <i class="fas {{ strtoupper((string) $log->delivery_method) === 'SMS' ? 'fa-sms' : 'fa-envelope' }} text-[10px] text-gray-400"></i>
+                                {{ $log->delivery_method }}
+                            </span>
                         </td>
                         <td class="px-5 py-3.5 text-sm">
                             <span class="font-semibold text-emerald-700">{{ $log->sent_count }}</span>
@@ -64,8 +59,10 @@
                             <span class="font-semibold {{ $log->failed_count > 0 ? 'text-red-600' : 'text-gray-500' }}">{{ $log->failed_count }}</span>
                         </td>
                         <td class="px-5 py-3.5 text-right">
-                            <a href="{{ route('admin.communication-logs.show', $log) }}" class="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
+                            <a href="{{ route('admin.communication-logs.show', $log) }}"
+                               class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 hover:text-emerald-900">
                                 View
+                                <i class="fas fa-chevron-right text-[10px]"></i>
                             </a>
                         </td>
                     </tr>

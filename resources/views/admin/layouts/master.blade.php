@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Panel') - TN Veterans Security</title>
 
     <!-- Favicon -->
@@ -72,6 +73,9 @@
                     </a>
                     <a href="{{ route('admin.locations.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.locations.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-map-marker-alt mr-3"></i> Locations
+                    </a>
+                    <a href="{{ route('admin.categories.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.categories.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-tags mr-3"></i> Categories
                     </a>
                     <a href="{{ route('admin.payments.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.payments.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-money-bill-wave mr-3"></i> Payments

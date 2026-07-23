@@ -22,7 +22,6 @@
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-6">Instructor</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-6">Contact</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Order</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
                     <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-6">Actions</th>
                 </tr>
@@ -49,7 +48,6 @@
                                 <p class="text-xs text-gray-500">{{ $instructor->phone ?: 'No phone' }}</p>
                             </div>
                         </td>
-                        <td class="px-4 py-4 text-gray-700">{{ $instructor->order }}</td>
                         <td class="px-4 py-4">
                             @if($instructor->is_active)
                                 <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">Active</span>
@@ -77,7 +75,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
+                        <td colspan="4" class="px-6 py-12 text-center">
                             <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
                                 <i class="fas fa-chalkboard-teacher text-xl"></i>
                             </div>

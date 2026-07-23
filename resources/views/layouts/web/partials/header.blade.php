@@ -1,17 +1,28 @@
 <!-- Premium Header Section -->
 @php
-    $trainingCategories = [
-        ['name' => 'NRA', 'url' => route('services', ['category' => 'nra']), 'match' => ['type' => 'services', 'category' => 'nra']],
-        ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross']), 'match' => ['type' => 'services', 'category' => 'red_cross']],
-        ['name' => 'Enhanced Handgun Carry Permit', 'url' => route('service.by.slug', 'enhanced-handgun-carry-permit'), 'match' => ['type' => 'slug', 'slug' => 'enhanced-handgun-carry-permit']],
-        ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter'), 'match' => ['type' => 'slug', 'slug' => 'active-shooter']],
-        ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation'), 'match' => ['type' => 'slug', 'slug' => 'forced-science-de-escalation']],
-        ['name' => 'Handle With Care', 'url' => route('service.by.slug', 'handle-with-care'), 'match' => ['type' => 'slug', 'slug' => 'handle-with-care']],
-    ];
+    $trainingCategories = \App\Models\ServiceCategory::navItems('training');
+    if ($trainingCategories->isEmpty()) {
+        $trainingCategories = collect([
+            ['name' => 'NRA', 'url' => route('training-classes', ['category' => 'nra']), 'match' => ['type' => 'training-classes', 'category' => 'nra']],
+            ['name' => 'Red Cross', 'url' => route('training-classes', ['category' => 'red_cross']), 'match' => ['type' => 'training-classes', 'category' => 'red_cross']],
+            ['name' => 'Enhanced Handgun Carry Permit', 'url' => route('class.show', 'enhanced-handgun-carry-permit'), 'match' => ['type' => 'slug', 'slug' => 'enhanced-handgun-carry-permit']],
+            ['name' => 'Active Shooter 8 Hours', 'url' => route('class.show', 'active-shooter'), 'match' => ['type' => 'slug', 'slug' => 'active-shooter']],
+            ['name' => 'Force Science (De-Escalation)', 'url' => route('class.show', 'forced-science-de-escalation'), 'match' => ['type' => 'slug', 'slug' => 'forced-science-de-escalation']],
+            ['name' => 'Handle With Care', 'url' => route('class.show', 'handle-with-care'), 'match' => ['type' => 'slug', 'slug' => 'handle-with-care']],
+        ]);
+    }
+
+    $securityCategories = \App\Models\ServiceCategory::navItems('security');
+    if ($securityCategories->isEmpty()) {
+        $securityCategories = collect([
+            ['name' => 'Initial Registration', 'url' => route('intial-security'), 'match' => ['type' => 'route', 'route' => 'intial-security']],
+            ['name' => 'Renewal Registration', 'url' => route('renewals'), 'match' => ['type' => 'route', 'route' => 'renewals']],
+        ]);
+    }
     $path = request()->path();
     $isDallasLawPage = request()->routeIs('dallas-law')
-        || (request()->routeIs('service.by.slug') && (string) request()->route('slug') === 'dallas-law');
-    $isAsp4HrPage = request()->routeIs('service.by.slug') && (string) request()->route('slug') === 'asp-4-hr';
+        || (request()->routeIs('class.show') && (string) request()->route('slug') === 'dallas-law');
+    $isAsp4HrPage = request()->routeIs('class.show') && (string) request()->route('slug') === 'asp-4-hr';
     $isAffiliatedServicesPage = request()->routeIs('affiliated-services')
         || $path === 'affiliated-services'
         || str_ends_with($path, '/affiliated-services');
@@ -21,7 +32,8 @@
     $isAffiliatedPage = $isAffiliatedServicesPage || $isNraServicesPage;
     $activeNavSection = match (true) {
         $isAffiliatedPage => 'affiliated',
-        (        request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
+        (        request()->routeIs(['training-classes', 'training-classes.show', 'class.show', 'handgun.subcategories'])
+            || str_starts_with($path, 'training-classes')
             || str_starts_with($path, 'training-services')) && ! $isDallasLawPage && ! $isAsp4HrPage => 'training',
         request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage || $isAsp4HrPage => 'security',
         request()->routeIs('about') => 'about',
@@ -33,7 +45,8 @@
         'home' => $path === '' || $path === '/',
         'about' => request()->routeIs('about'),
         'class_calendar' => request()->routeIs('class-calendar'),
-        'training' => (request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
+        'training' => (request()->routeIs(['training-classes', 'training-classes.show', 'class.show', 'handgun.subcategories'])
+            || str_starts_with($path, 'training-classes')
             || str_starts_with($path, 'training-services')) && ! $isDallasLawPage && ! $isAsp4HrPage,
         'affiliated' => $isAffiliatedPage,
         'security' => request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage || $isAsp4HrPage,
@@ -44,7 +57,7 @@
         'dashboard' => (request()->routeIs('student.*')
             && ! request()->routeIs(['student.login', 'student.register']))
             || (request()->routeIs('admin.*') && ! request()->routeIs('admin.login')),
-        'services_all' => request()->routeIs('services') && ! request()->filled('category') && ! request()->filled('subcategory'),
+        'classes_all' => request()->routeIs('training-classes') && ! request()->filled('category') && ! request()->filled('subcategory'),
     ];
     $servicesAffiliates = [
         ['name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'external' => true], 
@@ -181,7 +194,7 @@
 
                 <!-- Training Services with Mega Menu -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('services') }}" data-nav-section="training" class="destop-nav-link flex items-center gap-1 py-8 {{ $navActive['training'] ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('training-classes') }}" data-nav-section="training" class="destop-nav-link flex items-center gap-1 py-8 {{ $navActive['training'] ? 'nav-link-active' : '' }}">
                         Training & Classes
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -194,9 +207,11 @@
                                 @php
                                     $catItemActive = false;
                                     if (($cat['match']['type'] ?? '') === 'services') {
-                                        $catItemActive = request()->routeIs('services') && request('category') === ($cat['match']['category'] ?? null);
+                                        $catItemActive = request()->routeIs('training-classes') && request('category') === ($cat['match']['category'] ?? null);
                                     } elseif (($cat['match']['type'] ?? '') === 'slug') {
-                                        $catItemActive = request()->routeIs('service.by.slug') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
+                                        $catItemActive = request()->routeIs('class.show') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
+                                    } elseif (($cat['match']['type'] ?? '') === 'route') {
+                                        $catItemActive = request()->routeIs($cat['match']['route'] ?? '');
                                     }
                                 @endphp
                                 <a href="{{ $cat['url'] }}" class="category-item {{ $catItemActive ? 'category-item-active' : '' }}">
@@ -257,8 +272,14 @@
                     </a>
                     <div class="dropdown-simple">
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
-                            <a href="{{ route('intial-security') }}" class="category-item {{ request()->routeIs('intial-security') ? 'category-item-active' : '' }}">Initial Registration</a>
-                            <a href="{{ route('renewals') }}" class="category-item {{ request()->routeIs('renewals') ? 'category-item-active' : '' }}">Renewal Registration</a>
+                            @foreach($securityCategories as $cat)
+                                @php
+                                    $secItemActive = ($cat['match']['type'] ?? '') === 'route'
+                                        ? request()->routeIs($cat['match']['route'] ?? '')
+                                        : false;
+                                @endphp
+                                <a href="{{ $cat['url'] }}" class="category-item {{ $secItemActive ? 'category-item-active' : '' }}">{{ $cat['name'] }}</a>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -316,9 +337,11 @@
                             @php
                                 $mCatItemActive = false;
                                 if (($cat['match']['type'] ?? '') === 'services') {
-                                    $mCatItemActive = request()->routeIs('services') && request('category') === ($cat['match']['category'] ?? null);
+                                    $mCatItemActive = request()->routeIs('training-classes') && request('category') === ($cat['match']['category'] ?? null);
                                 } elseif (($cat['match']['type'] ?? '') === 'slug') {
-                                    $mCatItemActive = request()->routeIs('service.by.slug') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
+                                    $mCatItemActive = request()->routeIs('class.show') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
+                                } elseif (($cat['match']['type'] ?? '') === 'route') {
+                                    $mCatItemActive = request()->routeIs($cat['match']['route'] ?? '');
                                 }
                             @endphp
                             <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $mCatItemActive ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">
@@ -367,8 +390,14 @@
                 </button>
                 <div id="mobileSecurityTrainingMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
-                        <a href="{{ route('intial-security') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('intial-security') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Initial Registration</a>
-                        <a href="{{ route('renewals') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('renewals') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Renewal Registration</a>
+                        @foreach($securityCategories as $cat)
+                            @php
+                                $mSecActive = ($cat['match']['type'] ?? '') === 'route'
+                                    ? request()->routeIs($cat['match']['route'] ?? '')
+                                    : false;
+                            @endphp
+                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $mSecActive ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">{{ $cat['name'] }}</a>
+                        @endforeach
                     </div>
                 </div>
             </div>

@@ -61,24 +61,16 @@
         @enderror
     </div>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-            <label for="instructor_order" class="mb-1.5 block text-sm font-bold text-gray-700">Display order</label>
-            <input type="number" id="instructor_order" name="order" value="{{ old('order', $instructor->order ?? 0) }}" min="0"
-                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
-            <p class="mt-1 text-xs text-gray-500">Lower numbers appear first in schedule dropdowns.</p>
-        </div>
-        <div>
-            <label class="mb-1.5 block text-sm font-bold text-gray-700">Status</label>
-            <input type="hidden" name="is_active" value="0">
-            <label for="instructor_is_active"
-                   class="flex h-[42px] cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 transition-colors hover:border-green-300 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
-                <input type="checkbox" id="instructor_is_active" name="is_active" value="1"
-                       {{ (string) old('is_active', ($instructor->is_active ?? true) ? '1' : '0') === '1' ? 'checked' : '' }}
-                       class="rounded border-gray-400 text-green-600 focus:ring-green-500">
-                <span class="text-sm font-semibold text-gray-900">Active</span>
-            </label>
-            <p class="mt-1 text-xs text-gray-500">Uncheck to hide from new class schedules.</p>
-        </div>
+    <div>
+        <label class="mb-1.5 block text-sm font-bold text-gray-700">Status</label>
+        <input type="hidden" name="is_active" value="0">
+        <label for="instructor_is_active"
+               class="flex h-[42px] cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 transition-colors hover:border-green-300 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+            <input type="checkbox" id="instructor_is_active" name="is_active" value="1"
+                   {{ (string) old('is_active', ($instructor->is_active ?? true) ? '1' : '0') === '1' ? 'checked' : '' }}
+                   class="rounded border-gray-400 text-green-600 focus:ring-green-500">
+            <span class="text-sm font-semibold text-gray-900">Active</span>
+        </label>
+        <p class="mt-1 text-xs text-gray-500">Uncheck to hide from new class schedules.</p>
     </div>
 </div>
