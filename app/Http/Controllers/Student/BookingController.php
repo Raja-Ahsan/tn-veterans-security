@@ -66,6 +66,11 @@ class BookingController extends Controller
     public function showAvailableClasses($serviceId)
     {
         $service = Service::where('is_active', true)->findOrFail($serviceId);
+        $existingEnrollment = null;
+        $student = Auth::guard('student')->user();
+        if ($student) {
+            $existingEnrollment = ServiceBooking::findOpenEnrollment($student->id, $service->id);
+        }
 
         // Get available class schedules
         $schedules = ClassSchedule::where('service_id', $service->id)
@@ -87,7 +92,7 @@ class BookingController extends Controller
             ->orderBy('class_date', 'asc')
             ->get();
 
-        return view('student.available-classes', compact('service', 'schedules', 'fullSchedules'));
+        return view('student.available-classes', compact('service', 'schedules', 'fullSchedules', 'existingEnrollment'));
     }
 
     /**
@@ -101,7 +106,19 @@ class BookingController extends Controller
             return redirect()->route('training-classes.show', $service->id)
                 ->with('error', 'Please complete the booking form first.');
         }
-        $numStudents = (int) ($inquiry['number_of_students'] ?? 1);
+
+        $student = Auth::guard('student')->user();
+        if ($student) {
+            $existingEnrollment = ServiceBooking::findOpenEnrollment($student->id, $service->id);
+            if ($existingEnrollment) {
+                session()->forget('booking_inquiry_'.$service->id);
+
+                return redirect()->route('student.bookings.show', $existingEnrollment)
+                    ->with('info', ServiceBooking::alreadyEnrolledMessage());
+            }
+        }
+
+        $numStudents = 1;
         $pricing = $this->pricing->calculate($service, $numStudents);
         $totalAmount = $pricing['totalAmount'];
         $depositAmount = $pricing['depositAmount'];
@@ -126,7 +143,6 @@ class BookingController extends Controller
             'amountDue',
             'totalAmount',
             'depositAmount',
-            'numStudents',
             'isLoggedIn',
             'selectedSchedule',
             'travelFees',
@@ -150,13 +166,8 @@ class BookingController extends Controller
             return redirect()->route('training-classes.show', $service->id)
                 ->with('error', 'Session expired. Please complete the booking form again.');
         }
-        $numStudents = max(1, (int) ($inquiry['number_of_students'] ?? 1));
+        $numStudents = 1;
         $preferredLocation = $inquiry['location'] ?? null;
-
-        if (! $this->pricing->meetsTravelMinimum($service, $numStudents)) {
-            return redirect()->route('student.classes.checkout', $service->id)
-                ->with('error', "This travel class requires at least {$service->travel_minimum_students} student(s).");
-        }
 
         $pricing = $this->pricing->calculate($service, $numStudents);
         $totalAmount = $pricing['totalAmount'];
@@ -181,10 +192,15 @@ class BookingController extends Controller
                 if ($numStudents > $schedule->getAvailableSpots()) {
                     throw new \RuntimeException('Not enough seats left for this session.');
                 }
+            }
 
-                if (($service->class_type ?? 'group') === 'group' && $numStudents < $schedule->min_students) {
-                    throw new \RuntimeException("This session requires at least {$schedule->min_students} student(s).");
-                }
+            $existingEnrollment = ServiceBooking::findOpenEnrollment($student->id, $service->id, true);
+            if ($existingEnrollment) {
+                DB::rollBack();
+                session()->forget('booking_inquiry_'.$service->id);
+
+                return redirect()->route('student.bookings.show', $existingEnrollment)
+                    ->with('info', ServiceBooking::alreadyEnrolledMessage());
             }
 
             $bookingDate = $schedule
@@ -210,7 +226,7 @@ class BookingController extends Controller
                 'status' => 'pending',
                 'booking_type' => $service->class_type ?? 'group',
                 'number_of_students' => $numStudents,
-                'group_name' => $inquiry['name'] ?? null,
+                'group_name' => null,
                 'notes' => null,
                 'total_amount' => $totalAmount,
                 'deposit_amount' => $depositAmount,
@@ -244,6 +260,12 @@ class BookingController extends Controller
     {
         $service = Service::where('is_active', true)->findOrFail($serviceId);
         $student = Auth::guard('student')->user();
+
+        $existingEnrollment = ServiceBooking::findOpenEnrollment($student->id, $service->id);
+        if ($existingEnrollment) {
+            return redirect()->route('student.bookings.show', $existingEnrollment)
+                ->with('info', ServiceBooking::alreadyEnrolledMessage());
+        }
 
         $schedule = null;
         if ($scheduleId) {
@@ -364,8 +386,6 @@ class BookingController extends Controller
         $validated = $request->validate([
             'service_id' => 'required|exists:services,id',
             'class_schedule_id' => 'required|exists:class_schedules,id',
-            'number_of_students' => 'required|integer|min:1|max:100',
-            'group_name' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -382,23 +402,23 @@ class BookingController extends Controller
                 throw new \RuntimeException('This class is full. Please pick another session.');
             }
 
-            $numStudents = (int) $validated['number_of_students'];
+            $numStudents = 1;
             if ($numStudents > $schedule->getAvailableSpots()) {
                 throw new \RuntimeException('Only '.$schedule->getAvailableSpots().' seat(s) available.');
             }
 
-            if (($service->class_type ?? 'group') === 'group' && $numStudents < $schedule->min_students) {
-                throw new \RuntimeException("Minimum {$schedule->min_students} student(s) required for this class.");
+            $existingEnrollment = ServiceBooking::findOpenEnrollment($student->id, $service->id, true);
+            if ($existingEnrollment) {
+                DB::rollBack();
+
+                return redirect()->route('student.bookings.show', $existingEnrollment)
+                    ->with('info', ServiceBooking::alreadyEnrolledMessage());
             }
 
             $pricing = $this->pricing->calculate($service, $numStudents);
             $totalAmount = $pricing['totalAmount'];
             $depositAmount = $pricing['depositAmount'];
             $remainingAmount = $pricing['remainingAmount'];
-
-            if (! $this->pricing->meetsTravelMinimum($service, $numStudents)) {
-                throw new \RuntimeException("This travel class requires at least {$service->travel_minimum_students} student(s).");
-            }
 
             $booking = ServiceBooking::create([
                 'student_id' => $student->id,
@@ -410,7 +430,7 @@ class BookingController extends Controller
                 'status' => 'pending',
                 'booking_type' => $service->class_type ?? 'group',
                 'number_of_students' => $numStudents,
-                'group_name' => $validated['group_name'] ?? null,
+                'group_name' => null,
                 'notes' => $validated['notes'] ?? null,
                 'total_amount' => $totalAmount,
                 'deposit_amount' => $depositAmount,

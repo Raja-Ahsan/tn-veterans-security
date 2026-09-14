@@ -17,6 +17,11 @@
         </div>
         <div>
             <h3 class="text-xl font-semibold text-gray-900">{{ $student->name }}</h3>
+            @if($student->first_name || $student->last_name)
+                <p class="mt-0.5 text-xs text-gray-400">
+                    {{ $student->first_name }}{{ filled($student->middle_name) ? ' '.$student->middle_name : '' }} {{ $student->last_name }}
+                </p>
+            @endif
             <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
                 <span class="inline-flex items-center gap-1"><i class="fas fa-envelope text-gray-400"></i> {{ $student->email }}</span>
                 @if($student->phone)
@@ -80,6 +85,10 @@
                 <div class="rounded-md border border-gray-100 bg-gray-50 p-3">
                     <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Phone</p>
                     <p class="mt-1 text-sm font-medium {{ $student->phone ? 'text-gray-900' : 'text-gray-400' }}">{{ $student->phone ?: 'Not provided' }}</p>
+                </div>
+                <div class="rounded-md border border-gray-100 bg-gray-50 p-3">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">SSN</p>
+                    <p class="mt-1 text-sm font-medium text-gray-900">{{ $student->maskedSsn() }}</p>
                 </div>
                 <div class="rounded-md border border-gray-100 bg-gray-50 p-3 sm:col-span-2">
                     <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Address</p>

@@ -46,10 +46,6 @@
                     <span class="font-semibold text-gray-900">{{ $inquiry['phone'] }}</span>
                 </div>
                 @endif
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Number of students:</span>
-                    <span class="font-semibold text-gray-900">{{ $numStudents }}</span>
-                </div>
                 @if(!empty($selectedSchedule))
                 <div class="flex justify-between items-start gap-4">
                     <span class="text-gray-600 shrink-0">Class session:</span>
@@ -94,7 +90,7 @@
                 <div class="text-sm text-gray-600 mb-1">Amount due</div>
                 <div class="text-2xl font-bold text-gray-900">${{ number_format($amountDue, 2) }}</div>
                 @if($depositAmount > 0 && $depositAmount < $totalAmount)
-                <div class="text-xs text-gray-500 mt-1">Deposit ({{ $numStudents }} student{{ $numStudents > 1 ? 's' : '' }}) · Total ${{ number_format($totalAmount, 2) }}</div>
+                <div class="text-xs text-gray-500 mt-1">Deposit · Total ${{ number_format($totalAmount, 2) }}</div>
                 @endif
             </div>
 

@@ -23,4 +23,32 @@ class PublicTrainingServiceQuery
                 });
         });
     }
+
+    /**
+     * Active public classes, optionally filtered by category, search, and delivery format.
+     *
+     * @return Builder<Service>
+     */
+    public static function listing(?string $category = null, ?string $subcategory = null, string $q = '', ?string $delivery = null): Builder
+    {
+        $query = self::apply(Service::query()->where('is_active', true));
+
+        if ($category) {
+            $query->whereJsonContains('categories', $category);
+        }
+
+        if ($subcategory) {
+            $query->where('subcategory', $subcategory);
+        }
+
+        if ($q !== '') {
+            $query->where('title', 'like', '%'.$q.'%');
+        }
+
+        if (Service::isValidDeliveryFormat($delivery)) {
+            $query->ofDelivery($delivery);
+        }
+
+        return $query->orderBy('order')->orderBy('created_at', 'desc');
+    }
 }

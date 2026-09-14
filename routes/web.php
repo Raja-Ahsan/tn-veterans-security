@@ -90,26 +90,13 @@ Route::get('/training-classes', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
     $q = trim((string) request()->query('q', ''));
-
-    $query = PublicTrainingServiceQuery::apply(
-        \App\Models\Service::where('is_active', true)
-    );
-
-    if ($category) {
-        $query->whereJsonContains('categories', $category);
+    $delivery = request()->query('delivery');
+    if (! \App\Models\Service::isValidDeliveryFormat($delivery)) {
+        $delivery = null;
     }
 
-    if ($subcategory) {
-        $query->where('subcategory', $subcategory);
-    }
+    $services = PublicTrainingServiceQuery::listing($category, $subcategory, $q, $delivery)->get();
 
-    if ($q !== '') {
-        $query->where('title', 'like', '%'.$q.'%');
-    }
-
-    $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
-
-    // Get all unique categories from services (excluding security training & renewals)
     $categories = PublicTrainingServiceQuery::apply(
         \App\Models\Service::where('is_active', true)
     )
@@ -120,31 +107,19 @@ Route::get('/training-classes', function () {
         ->unique()
         ->values();
 
-    return view('training-classes', compact('services', 'categories', 'category', 'subcategory'));
+    return view('training-classes', compact('services', 'categories', 'category', 'subcategory', 'delivery'));
 })->name('training-classes');
 
 Route::get('/training-classes/search', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
     $q = trim((string) request()->query('q', ''));
-
-    $query = PublicTrainingServiceQuery::apply(
-        \App\Models\Service::where('is_active', true)
-    );
-
-    if ($category) {
-        $query->whereJsonContains('categories', $category);
+    $delivery = request()->query('delivery');
+    if (! \App\Models\Service::isValidDeliveryFormat($delivery)) {
+        $delivery = null;
     }
 
-    if ($subcategory) {
-        $query->where('subcategory', $subcategory);
-    }
-
-    if ($q !== '') {
-        $query->where('title', 'like', '%'.$q.'%');
-    }
-
-    $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
+    $services = PublicTrainingServiceQuery::listing($category, $subcategory, $q, $delivery)->get();
 
     return response()->json([
         'count' => $services->count(),
@@ -191,7 +166,6 @@ Route::post('/training-classes/{service}/booking-inquiry', function (\App\Models
         'name' => 'required|string|max:255',
         'email' => 'required|email',
         'phone' => 'nullable|string|max:50',
-        'number_of_students' => 'nullable|integer|min:1|max:100',
         'location' => 'nullable|string|max:255',
     ];
 
@@ -211,8 +185,7 @@ Route::post('/training-classes/{service}/booking-inquiry', function (\App\Models
     }
 
     $validated = $request->validate($rules);
-
-    $numStudents = max(1, (int) ($request->input('number_of_students', 1)));
+    $numStudents = 1;
 
     if (! empty($validated['class_schedule_id'])) {
         $sched = ClassSchedule::where('id', $validated['class_schedule_id'])
@@ -221,13 +194,7 @@ Route::post('/training-classes/{service}/booking-inquiry', function (\App\Models
 
         if ($numStudents > $sched->getAvailableSpots()) {
             throw ValidationException::withMessages([
-                'number_of_students' => ['Only '.$sched->getAvailableSpots().' seat(s) available for this session.'],
-            ]);
-        }
-
-        if (($service->class_type ?? 'group') === 'group' && $numStudents < $sched->min_students) {
-            throw ValidationException::withMessages([
-                'number_of_students' => ['This session requires at least '.$sched->min_students.' student(s).'],
+                'class_schedule_id' => ['This session has no open seats.'],
             ]);
         }
 
@@ -243,6 +210,24 @@ Route::post('/training-classes/{service}/booking-inquiry', function (\App\Models
     }
 
     $validated['number_of_students'] = $numStudents;
+
+    $student = \Illuminate\Support\Facades\Auth::guard('student')->user()
+        ?? \App\Models\Student::query()->where('email', $validated['email'])->first();
+
+    if ($student) {
+        $existingEnrollment = \App\Models\ServiceBooking::findOpenEnrollment($student->id, $service->id);
+        if ($existingEnrollment) {
+            if (\Illuminate\Support\Facades\Auth::guard('student')->check()) {
+                return redirect()->route('student.bookings.show', $existingEnrollment)
+                    ->with('info', \App\Models\ServiceBooking::alreadyEnrolledMessage());
+            }
+
+            throw ValidationException::withMessages([
+                'email' => ['This student account already has a booking for this class. Log in to view it. Each student can enroll in one session per class.'],
+            ]);
+        }
+    }
+
     session()->put('booking_inquiry_'.$service->id, $validated);
 
     // Create student account if guest, so they don't need to sign up separately
@@ -356,6 +341,10 @@ Route::prefix('student')->name('student.')->group(function () {
     Route::get('/register', [App\Http\Controllers\Student\AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [App\Http\Controllers\Student\AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::post('/logout', [App\Http\Controllers\Student\AuthController::class, 'logout'])->name('logout');
+    Route::get('/forgot-password', [App\Http\Controllers\Student\PasswordResetController::class, 'showRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [App\Http\Controllers\Student\PasswordResetController::class, 'sendResetLink'])->middleware('throttle:10,1')->name('password.email');
+    Route::get('/reset-password/{token}', [App\Http\Controllers\Student\PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [App\Http\Controllers\Student\PasswordResetController::class, 'reset'])->middleware('throttle:10,1')->name('password.update');
 
     // Public Routes - View available classes (no login required)
     Route::get('/classes/{serviceId}/available-classes', [App\Http\Controllers\Student\BookingController::class, 'showAvailableClasses'])->name('available-classes');
@@ -380,6 +369,7 @@ Route::prefix('student')->name('student.')->group(function () {
 
         Route::get('/courses/{service}/online', [App\Http\Controllers\Student\OnlineCourseController::class, 'index'])->name('online-course.index');
         Route::get('/courses/{service}/online/modules/{courseModule}', [App\Http\Controllers\Student\OnlineCourseController::class, 'show'])->name('online-course.module');
+        Route::post('/courses/{service}/online/modules/{courseModule}/videos/{courseModuleVideo}/watched', [App\Http\Controllers\Student\OnlineCourseController::class, 'markWatched'])->name('online-course.video.watched');
         Route::post('/courses/{service}/online/modules/{courseModule}/quiz', [App\Http\Controllers\Student\OnlineCourseController::class, 'submitQuiz'])->name('online-course.quiz');
         Route::post('/courses/{service}/online/modules/{courseModule}/quiz/start', [App\Http\Controllers\Student\OnlineCourseController::class, 'startQuiz'])->name('online-course.quiz.start');
         Route::get('/courses/{service}/online/modules/{courseModule}/quiz/take', [App\Http\Controllers\Student\OnlineCourseController::class, 'takeQuiz'])->name('online-course.quiz.take');
@@ -472,16 +462,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/class-schedules/{classSchedule}/notify', [App\Http\Controllers\Admin\ClassNotificationController::class, 'store'])->name('class-schedules.notify');
         Route::post('/class-schedules/{classSchedule}/notify-waitlist', [App\Http\Controllers\Admin\ClassNotificationController::class, 'notifyWaitlist'])->name('class-schedules.notify-waitlist');
 
+        Route::get('/quiz-modules', [App\Http\Controllers\Admin\QuizModuleController::class, 'index'])->name('quiz-modules.index');
         Route::resource('classes', App\Http\Controllers\Admin\ServiceController::class)
             ->names('classes')
             ->parameters(['classes' => 'service']);
         Route::get('/classes/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'index'])->name('classes.course-modules.index');
         Route::get('/classes/{service}/course-modules/create', [App\Http\Controllers\Admin\CourseModuleController::class, 'create'])->name('classes.course-modules.create');
         Route::post('/classes/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'store'])->name('classes.course-modules.store');
+        Route::post('/classes/{service}/course-modules/reorder', [App\Http\Controllers\Admin\CourseModuleController::class, 'reorder'])->name('classes.course-modules.reorder');
         Route::get('/classes/{service}/course-modules/{courseModule}/edit', [App\Http\Controllers\Admin\CourseModuleController::class, 'edit'])->name('classes.course-modules.edit');
         Route::put('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'update'])->name('classes.course-modules.update');
         Route::delete('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'destroy'])->name('classes.course-modules.destroy');
-        Route::post('/classes/{service}/course-modules/reorder', [App\Http\Controllers\Admin\CourseModuleController::class, 'reorder'])->name('classes.course-modules.reorder');
+        Route::post('/classes/{service}/course-modules/{courseModule}/videos', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'store'])->name('classes.course-modules.videos.store');
+        Route::get('/classes/{service}/course-modules/{courseModule}/videos/create', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'create'])->name('classes.course-modules.videos.create');
+        Route::get('/classes/{service}/course-modules/{courseModule}/videos/{courseModuleVideo}/edit', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'edit'])->name('classes.course-modules.videos.edit');
+        Route::put('/classes/{service}/course-modules/{courseModule}/videos/{courseModuleVideo}', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'update'])->name('classes.course-modules.videos.update');
+        Route::delete('/classes/{service}/course-modules/{courseModule}/videos/{courseModuleVideo}', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'destroy'])->name('classes.course-modules.videos.destroy');
         Route::get('/classes/{service}/blended-progress', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'studentProgress'])->name('classes.blended-progress');
         Route::post('/classes/{service}/blended-progress/{student}/modules/{courseModule}/override', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'overrideModule'])->name('classes.blended-progress.override');
         Route::post('/classes/{service}/blended-progress/{student}/modules/{courseModule}/reset', [App\Http\Controllers\Admin\BlendedCourseAdminController::class, 'resetModule'])->name('classes.blended-progress.reset');

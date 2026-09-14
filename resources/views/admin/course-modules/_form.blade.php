@@ -5,7 +5,12 @@
         'allow_multiple' => false,
         'correct_answer' => [],
     ];
-    $questions = old('questions', $courseModule?->quizQuestions?->map(function ($q) {
+    $hideModuleDetails = $hideModuleDetails ?? false;
+    $primaryVideo = $courseModuleVideo ?? ($hideModuleDetails ? null : $courseModule?->videos?->first());
+    $questionsSource = ($primaryVideo?->quizQuestions && $primaryVideo->quizQuestions->isNotEmpty())
+        ? $primaryVideo->quizQuestions
+        : ($hideModuleDetails ? collect() : $courseModule?->quizQuestions);
+    $questions = old('questions', $questionsSource?->map(function ($q) {
         return [
             'question' => $q->question,
             'options' => $q->options ?? ['', ''],
@@ -35,11 +40,18 @@
     <div class="flex items-start gap-3 border-b border-gray-100 pb-3">
         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-600 text-sm font-bold text-white">1</span>
         <div>
-            <h3 class="text-lg font-bold text-gray-900">Module details</h3>
-            <p class="text-sm text-gray-500">Only <strong>Title</strong> is required. Content, video, and quiz are optional.</p>
+            <h3 class="text-lg font-bold text-gray-900">{{ $hideModuleDetails ? 'Video details' : 'Module details' }}</h3>
+            <p class="text-sm text-gray-500">
+                @if($hideModuleDetails)
+                    Upload or link this video, then add its quiz. Students must finish the video before the quiz.
+                @else
+                    Title, first video, and its quiz. Add more videos after saving if this module has extra lessons.
+                @endif
+            </p>
         </div>
     </div>
 
+    @unless($hideModuleDetails)
     <div>
         <label for="module_title" class="block text-sm font-bold text-gray-700 mb-1.5">Title <span class="text-red-500">*</span></label>
         <input type="text" id="module_title" name="title" value="{{ old('title', $courseModule->title ?? '') }}" required
@@ -59,23 +71,62 @@
             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
         @enderror
     </div>
+    @endunless
 
     <div>
-        <label for="module_video" class="block text-sm font-bold text-gray-700 mb-1.5">Video URL <span class="font-normal text-gray-400">(optional)</span></label>
+        <label for="video_title" class="block text-sm font-bold text-gray-700 mb-1.5">
+            {{ $hideModuleDetails ? 'Video title' : 'First video title' }}
+            @if($hideModuleDetails) <span class="text-red-500">*</span> @else <span class="font-normal text-gray-400">(optional)</span> @endif
+        </label>
+        <input type="text" id="video_title" name="{{ $hideModuleDetails ? 'title' : 'video_title' }}"
+               value="{{ old($hideModuleDetails ? 'title' : 'video_title', $primaryVideo->title ?? ($hideModuleDetails ? '' : 'Video 1')) }}"
+               @if($hideModuleDetails) required @endif
+               placeholder="e.g. Lesson 1 — Carry laws"
+               class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+        @error('title')
+            @if($hideModuleDetails)
+                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+            @endif
+        @enderror
+    </div>
+
+    <div>
+        <label for="video_file" class="block text-sm font-bold text-gray-700 mb-1.5">Upload video <span class="font-normal text-gray-400">(optional)</span></label>
+        @if($primaryVideo?->uploadedVideoUrl())
+            <p class="mb-2 text-sm text-gray-600">
+                <i class="fas fa-file-video mr-1 text-green-600"></i>
+                Current file: <span class="font-medium">{{ $primaryVideo->original_name ?: basename($primaryVideo->video_path) }}</span>
+            </p>
+            <label class="mb-2 inline-flex items-center gap-2 text-sm text-red-700">
+                <input type="checkbox" name="remove_video_file" value="1" class="rounded border-gray-400 text-red-600 focus:ring-red-500">
+                Remove uploaded video
+            </label>
+        @endif
+        <input type="file" id="video_file" name="video_file" accept="video/mp4,video/webm,video/quicktime,video/ogg"
+               class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-green-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-green-700 hover:file:bg-green-100">
+        <p class="mt-1 text-xs text-gray-500">MP4 / WebM / MOV, max 100MB. Students must watch the full video before the quiz. Pause is allowed; skipping ahead is not.</p>
+        @error('video_file')
+            <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <div>
+        <label for="module_video" class="block text-sm font-bold text-gray-700 mb-1.5">Or video URL <span class="font-normal text-gray-400">(optional)</span></label>
         <div class="relative">
             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                 <i class="fas fa-video text-sm"></i>
             </span>
-            <input type="text" id="module_video" name="video_url" value="{{ old('video_url', $courseModule->video_url ?? '') }}"
+            <input type="text" id="module_video" name="video_url" value="{{ old('video_url', $primaryVideo->video_url ?? $courseModule->video_url ?? '') }}"
                    placeholder="https://www.youtube.com/watch?v=… or Vimeo link"
                    class="w-full rounded-md border py-2.5 pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-1 {{ $errors->has('video_url') ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500' }}">
         </div>
-        <p class="mt-1 text-xs text-gray-500">Use a YouTube or Vimeo link for in-page video. Other links open in a new tab (they won’t embed).</p>
+        <p class="mt-1 text-xs text-gray-500">Use a YouTube or Vimeo link if you are not uploading a file. Upload is preferred so skip-ahead can be blocked.</p>
         @error('video_url')
             <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
         @enderror
     </div>
 
+    @unless($hideModuleDetails)
     <div class="grid grid-cols-2 gap-3">
         <div>
             <label for="module_order" class="block text-sm font-bold text-gray-700 mb-1.5">Order</label>
@@ -146,6 +197,7 @@
                class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-green-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-green-700 hover:file:bg-green-100">
         <p class="mt-1 text-xs text-gray-500">Upload up to 5 files (PDF/Office/images), max 10MB each. New uploads are added to existing files.</p>
     </div>
+    @endunless
 </div>
 
 {{-- Quiz --}}
@@ -153,8 +205,8 @@
     <div class="flex items-start gap-3 border-b border-blue-100 pb-3">
         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">2</span>
         <div>
-            <h3 class="text-lg font-bold text-gray-900">Quiz questions <span class="text-sm font-normal text-gray-400">(optional)</span></h3>
-            <p class="text-sm text-gray-500">Drag questions by the handle to reorder (like a kanban list). Enable multi-select when more than one option is correct.</p>
+            <h3 class="text-lg font-bold text-gray-900">Quiz for this video <span class="text-sm font-normal text-gray-400">(optional)</span></h3>
+            <p class="text-sm text-gray-500">Each video has its own quiz. Students cannot start it until they finish watching.</p>
         </div>
     </div>
 
@@ -483,7 +535,20 @@
     if (form) {
         form.addEventListener('submit', function () {
             reindexQuestions();
-            container.querySelectorAll('.question-block').forEach(syncCorrectAnswers);
+            container.querySelectorAll('.question-block').forEach(function (block) {
+                var questionInput = block.querySelector('input[name*="[question]"]');
+                var questionText = questionInput ? questionInput.value.trim() : '';
+                var filledOptions = Array.prototype.slice.call(block.querySelectorAll('.option-text'))
+                    .map(function (el) { return el.value.trim(); })
+                    .filter(Boolean);
+                var incomplete = questionText === '' || filledOptions.length < 2;
+                block.querySelectorAll('input, textarea, select').forEach(function (el) {
+                    el.disabled = incomplete;
+                });
+                if (!incomplete) {
+                    syncCorrectAnswers(block);
+                }
+            });
         });
     }
 

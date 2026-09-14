@@ -85,6 +85,61 @@
 </div>
 @endif
 
+<!-- Class delivery formats -->
+@php
+    $deliveryCards = [
+        'online' => [
+            'label' => 'Online',
+            'blurb' => 'Modules & quizzes only',
+            'icon' => 'fa-laptop',
+            'border' => 'border-sky-500',
+            'iconColor' => 'text-sky-500',
+            'countColor' => 'text-sky-700',
+        ],
+        'blended' => [
+            'label' => 'Blended',
+            'blurb' => 'Online + in-person testing',
+            'icon' => 'fa-layer-group',
+            'border' => 'border-cyan-500',
+            'iconColor' => 'text-cyan-600',
+            'countColor' => 'text-cyan-700',
+        ],
+        'in-person' => [
+            'label' => 'In Person',
+            'blurb' => 'Classroom test only',
+            'icon' => 'fa-chalkboard-user',
+            'border' => 'border-emerald-500',
+            'iconColor' => 'text-emerald-600',
+            'countColor' => 'text-emerald-700',
+        ],
+    ];
+@endphp
+<div class="mb-6">
+    <div class="mb-3 flex items-end justify-between gap-3">
+        <div>
+            <h3 class="text-lg font-bold text-gray-800">Classes by delivery</h3>
+            <p class="text-sm text-gray-500">Quick counts for Online, Blended, and In Person offerings.</p>
+        </div>
+        <a href="{{ route('admin.quiz-modules.index') }}" class="text-sm font-medium text-green-600 hover:underline">Quiz Modules →</a>
+    </div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        @foreach($deliveryCards as $format => $card)
+            @php $count = (int) ($deliveryCounts[$format] ?? 0); @endphp
+            <a href="{{ route('admin.quiz-modules.index', ['delivery' => $format]) }}"
+               class="rounded-lg border-l-4 {{ $card['border'] }} bg-white p-5 shadow transition hover:bg-gray-50">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm text-gray-600">{{ $card['label'] }}</p>
+                        <p class="mt-1 text-2xl font-bold {{ $card['countColor'] }}">{{ number_format($count) }}</p>
+                        <p class="mt-1 text-xs text-gray-500">{{ $card['blurb'] }}</p>
+                    </div>
+                    <i class="fas {{ $card['icon'] }} {{ $card['iconColor'] }} text-2xl"></i>
+                </div>
+            </a>
+        @endforeach
+    </div>
+</div>
+
 <!-- Secondary Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     <!-- Classes -->

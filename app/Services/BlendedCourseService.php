@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Models\CourseModule;
+use App\Models\CourseModuleVideo;
 use App\Models\ModuleQuizAttempt;
+use App\Models\ModuleQuizQuestion;
 use App\Models\ModuleQuizSession;
 use App\Models\Service;
 use App\Models\ServiceBooking;
 use App\Models\Student;
 use App\Models\StudentModuleProgress;
+use App\Models\StudentVideoProgress;
 use Illuminate\Support\Collection;
 
 class BlendedCourseService
@@ -22,6 +25,11 @@ class BlendedCourseService
         return $service->courseModules()->where('is_active', true)->orderBy('order')->get();
     }
 
+    public function getVideosForModule(CourseModule $module): Collection
+    {
+        return $module->videos()->orderBy('order')->orderBy('id')->get();
+    }
+
     public function getProgress(Student $student, Service $service): Collection
     {
         return StudentModuleProgress::query()
@@ -29,6 +37,15 @@ class BlendedCourseService
             ->where('service_id', $service->id)
             ->get()
             ->keyBy('course_module_id');
+    }
+
+    public function getVideoProgress(Student $student, CourseModule $module): Collection
+    {
+        return StudentVideoProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $module->id)
+            ->get()
+            ->keyBy('course_module_video_id');
     }
 
     public function canAccessModule(Student $student, CourseModule $module, Collection $progress, Collection $modules): bool
@@ -49,11 +66,146 @@ class BlendedCourseService
         return $previousProgress?->is_completed === true;
     }
 
-    /**
-     * Attempts remaining / allowed for this module.
-     */
-    public function canAttemptQuiz(Student $student, CourseModule $module): bool
+    public function canAccessVideo(Student $student, CourseModule $module, CourseModuleVideo $video): bool
     {
+        $progress = $this->getProgress($student, $module->service);
+        $modules = $this->getModulesForService($module->service);
+
+        if (! $this->canAccessModule($student, $module, $progress, $modules)) {
+            return false;
+        }
+
+        if ($progress->get($module->id)?->admin_override) {
+            return true;
+        }
+
+        $videos = $this->getVideosForModule($module);
+        $index = $videos->search(fn (CourseModuleVideo $item) => $item->id === $video->id);
+        if ($index === false) {
+            return false;
+        }
+
+        if ($index === 0) {
+            return true;
+        }
+
+        $previous = $videos[$index - 1];
+
+        return $this->isVideoComplete($student, $previous);
+    }
+
+    public function isVideoComplete(Student $student, CourseModuleVideo $video): bool
+    {
+        $record = StudentVideoProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_video_id', $video->id)
+            ->first();
+
+        if ($record?->is_completed) {
+            return true;
+        }
+
+        if ($video->quizQuestions()->exists()) {
+            return false;
+        }
+
+        if ($video->requiresWatchCompletion()) {
+            return (bool) $record?->video_watched;
+        }
+
+        return false;
+    }
+
+    public function hasWatchedVideo(Student $student, CourseModuleVideo $video): bool
+    {
+        if (! $video->requiresWatchCompletion()) {
+            return true;
+        }
+
+        return (bool) StudentVideoProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_video_id', $video->id)
+            ->value('video_watched');
+    }
+
+    public function markVideoWatched(Student $student, CourseModule $module, CourseModuleVideo $video, ?int $durationSeconds = null, ?int $positionSeconds = null, bool $completed = true): StudentVideoProgress
+    {
+        $progress = StudentVideoProgress::firstOrCreate(
+            [
+                'student_id' => $student->id,
+                'course_module_video_id' => $video->id,
+            ],
+            [
+                'service_id' => $module->service_id,
+                'course_module_id' => $module->id,
+            ]
+        );
+
+        $position = max(0, (int) ($positionSeconds ?? 0));
+        if ($position > (int) ($progress->last_position_seconds ?? 0)) {
+            $progress->last_position_seconds = $position;
+        }
+
+        if ($durationSeconds && $durationSeconds > 0) {
+            $progress->duration_seconds = $durationSeconds;
+        }
+
+        if ($completed) {
+            $duration = (int) ($durationSeconds ?: $progress->duration_seconds ?: $position);
+            // Require reaching near the end (95% or within 2 seconds).
+            if ($duration > 0) {
+                $required = max(0, min($duration - 2, (int) floor($duration * 0.95)));
+                if ($position < $required && $position + 1 < $duration) {
+                    $progress->save();
+
+                    return $progress;
+                }
+            }
+
+            $progress->video_watched = true;
+            $progress->watched_at = $progress->watched_at ?? now();
+            if ($duration > 0) {
+                $progress->duration_seconds = $duration;
+                $progress->last_position_seconds = max((int) $progress->last_position_seconds, $duration);
+            }
+        }
+
+        $progress->save();
+
+        if ($completed && $progress->video_watched && ! $video->quizQuestions()->exists()) {
+            $this->markVideoCompletedWithoutQuiz($progress);
+            $this->syncModuleCompletionFromVideos($student, $module);
+        }
+
+        return $progress;
+    }
+
+    /**
+     * Attempts remaining / allowed for this module or video quiz.
+     */
+    public function canAttemptQuiz(Student $student, CourseModule $module, ?CourseModuleVideo $video = null): bool
+    {
+        if ($video) {
+            if ($video->requiresWatchCompletion() && ! $this->hasWatchedVideo($student, $video)) {
+                return false;
+            }
+
+            $progress = StudentVideoProgress::query()
+                ->where('student_id', $student->id)
+                ->where('course_module_video_id', $video->id)
+                ->first();
+
+            if (! $progress) {
+                return true;
+            }
+
+            if ($progress->is_completed) {
+                return false;
+            }
+
+            return (int) ($progress->attempts ?? 0) < $module->maxAttempts();
+        }
+
         $progress = StudentModuleProgress::query()
             ->where('student_id', $student->id)
             ->where('course_module_id', $module->id)
@@ -70,8 +222,19 @@ class BlendedCourseService
         return (int) ($progress->attempts ?? 0) < $module->maxAttempts();
     }
 
-    public function hasExhaustedQuizAttempt(Student $student, CourseModule $module): bool
+    public function hasExhaustedQuizAttempt(Student $student, CourseModule $module, ?CourseModuleVideo $video = null): bool
     {
+        if ($video) {
+            $progress = StudentVideoProgress::query()
+                ->where('student_id', $student->id)
+                ->where('course_module_video_id', $video->id)
+                ->first();
+
+            return $progress !== null
+                && ! $progress->is_completed
+                && (int) ($progress->attempts ?? 0) >= $module->maxAttempts();
+        }
+
         $progress = StudentModuleProgress::query()
             ->where('student_id', $student->id)
             ->where('course_module_id', $module->id)
@@ -145,6 +308,21 @@ class BlendedCourseService
         return $modules->last();
     }
 
+    public function firstContinueVideo(Student $student, CourseModule $module): ?CourseModuleVideo
+    {
+        foreach ($this->getVideosForModule($module) as $video) {
+            if (! $this->canAccessVideo($student, $module, $video)) {
+                continue;
+            }
+
+            if (! $this->isVideoComplete($student, $video)) {
+                return $video;
+            }
+        }
+
+        return $this->getVideosForModule($module)->last();
+    }
+
     public function studentHasPaidAccess(Student $student, Service $service): bool
     {
         return $this->paidBookingForService($student, $service) !== null;
@@ -157,16 +335,41 @@ class BlendedCourseService
         return $minutes > 0 ? $minutes : self::DEFAULT_QUIZ_MINUTES;
     }
 
-    public function startQuizSession(Student $student, Service $service, CourseModule $module): ModuleQuizSession
+    /**
+     * @return Collection<int, ModuleQuizQuestion>
+     */
+    public function questionsForQuiz(CourseModule $module, ?CourseModuleVideo $video = null): Collection
     {
-        ModuleQuizSession::query()
+        if ($video) {
+            $questions = $video->quizQuestions()->orderBy('order')->get();
+            if ($questions->isNotEmpty()) {
+                return $questions;
+            }
+        }
+
+        return $module->quizQuestions()
+            ->whereNull('course_module_video_id')
+            ->orderBy('order')
+            ->get();
+    }
+
+    public function startQuizSession(Student $student, Service $service, CourseModule $module, ?CourseModuleVideo $video = null): ModuleQuizSession
+    {
+        $query = ModuleQuizSession::query()
             ->where('student_id', $student->id)
             ->where('course_module_id', $module->id)
-            ->where('status', ModuleQuizSession::STATUS_IN_PROGRESS)
-            ->update([
-                'status' => ModuleQuizSession::STATUS_EXPIRED,
-                'submitted_at' => now(),
-            ]);
+            ->where('status', ModuleQuizSession::STATUS_IN_PROGRESS);
+
+        if ($video) {
+            $query->where('course_module_video_id', $video->id);
+        } else {
+            $query->whereNull('course_module_video_id');
+        }
+
+        $query->update([
+            'status' => ModuleQuizSession::STATUS_EXPIRED,
+            'submitted_at' => now(),
+        ]);
 
         $minutes = $this->quizTimeLimitMinutes($module);
 
@@ -174,6 +377,7 @@ class BlendedCourseService
             'student_id' => $student->id,
             'service_id' => $service->id,
             'course_module_id' => $module->id,
+            'course_module_video_id' => $video?->id,
             'current_index' => 0,
             'answers' => [],
             'started_at' => now(),
@@ -182,14 +386,18 @@ class BlendedCourseService
         ]);
     }
 
-    public function getOpenSession(Student $student, CourseModule $module): ?ModuleQuizSession
+    public function getOpenSession(Student $student, CourseModule $module, ?CourseModuleVideo $video = null): ?ModuleQuizSession
     {
-        $session = ModuleQuizSession::query()
+        $query = ModuleQuizSession::query()
             ->where('student_id', $student->id)
             ->where('course_module_id', $module->id)
-            ->where('status', ModuleQuizSession::STATUS_IN_PROGRESS)
-            ->latest('id')
-            ->first();
+            ->where('status', ModuleQuizSession::STATUS_IN_PROGRESS);
+
+        if ($video) {
+            $query->where('course_module_video_id', $video->id);
+        }
+
+        $session = $query->latest('id')->first();
 
         if (! $session || $session->isExpired()) {
             return null;
@@ -201,14 +409,18 @@ class BlendedCourseService
     /**
      * Auto-submit an in-progress session when the countdown has expired.
      */
-    public function finalizeExpiredOpenSession(Student $student, CourseModule $module): ?ModuleQuizSession
+    public function finalizeExpiredOpenSession(Student $student, CourseModule $module, ?CourseModuleVideo $video = null): ?ModuleQuizSession
     {
-        $session = ModuleQuizSession::query()
+        $query = ModuleQuizSession::query()
             ->where('student_id', $student->id)
             ->where('course_module_id', $module->id)
-            ->where('status', ModuleQuizSession::STATUS_IN_PROGRESS)
-            ->latest('id')
-            ->first();
+            ->where('status', ModuleQuizSession::STATUS_IN_PROGRESS);
+
+        if ($video) {
+            $query->where('course_module_video_id', $video->id);
+        }
+
+        $session = $query->latest('id')->first();
 
         if (! $session || ! $session->isExpired()) {
             return null;
@@ -231,7 +443,8 @@ class BlendedCourseService
             return $this->finalizeSession($student, $module, $session, true);
         }
 
-        $questions = $module->quizQuestions()->orderBy('order')->get();
+        $video = $session->courseModuleVideo;
+        $questions = $this->questionsForQuiz($module, $video);
         $current = $questions->get($session->current_index);
 
         if (! $current || $current->id !== $questionId) {
@@ -264,7 +477,8 @@ class BlendedCourseService
             return $session->fresh(['attempt']);
         }
 
-        $result = $this->submitQuiz($student, $module, $session->answers ?? []);
+        $video = $session->courseModuleVideo;
+        $result = $this->submitQuiz($student, $module, $session->answers ?? [], $video);
 
         $session->update([
             'status' => $timedOut ? ModuleQuizSession::STATUS_EXPIRED : ModuleQuizSession::STATUS_SUBMITTED,
@@ -280,9 +494,9 @@ class BlendedCourseService
      * @param  array<string, string|array<int, string>>  $answers
      * @return array{score: int, passed: bool, attempt: ModuleQuizAttempt, review: array}
      */
-    public function submitQuiz(Student $student, CourseModule $module, array $answers): array
+    public function submitQuiz(Student $student, CourseModule $module, array $answers, ?CourseModuleVideo $video = null): array
     {
-        $questions = $module->quizQuestions()->orderBy('order')->get();
+        $questions = $this->questionsForQuiz($module, $video);
         $total = $questions->count();
         $correct = 0;
 
@@ -299,56 +513,50 @@ class BlendedCourseService
         $attempt = ModuleQuizAttempt::create([
             'student_id' => $student->id,
             'course_module_id' => $module->id,
+            'course_module_video_id' => $video?->id,
             'score' => $score,
             'passed' => $passed,
             'answers' => $answers,
         ]);
 
-        $progress = StudentModuleProgress::firstOrCreate(
-            [
-                'student_id' => $student->id,
-                'course_module_id' => $module->id,
-            ],
-            ['service_id' => $module->service_id]
-        );
-
-        $progress->increment('attempts');
-        $progress->best_score = max($progress->best_score ?? 0, $score);
-
-        if ($passed) {
-            $progress->is_completed = true;
-            $progress->completed_at = now();
+        if ($video) {
+            $this->recordVideoQuizProgress($student, $module, $video, $score, $passed);
+            $this->syncModuleCompletionFromVideos($student, $module);
+        } else {
+            $this->recordModuleQuizProgress($student, $module, $score, $passed);
         }
-
-        $progress->save();
 
         return [
             'score' => $score,
             'passed' => $passed,
             'attempt' => $attempt,
-            'review' => $this->buildQuizReview($module, $answers),
+            'review' => $this->buildQuizReview($module, $answers, true, $video),
         ];
     }
 
-    public function getLatestAttempt(Student $student, CourseModule $module): ?ModuleQuizAttempt
+    public function getLatestAttempt(Student $student, CourseModule $module, ?CourseModuleVideo $video = null): ?ModuleQuizAttempt
     {
-        return ModuleQuizAttempt::query()
+        $query = ModuleQuizAttempt::query()
             ->where('student_id', $student->id)
-            ->where('course_module_id', $module->id)
-            ->orderByDesc('id')
-            ->first();
+            ->where('course_module_id', $module->id);
+
+        if ($video) {
+            $query->where('course_module_video_id', $video->id);
+        }
+
+        return $query->orderByDesc('id')->first();
     }
 
     /**
      * @param  array<string, string|array<int, string>>  $answers
      * @return list<array{question_id: int, question: string, options: array, allow_multiple: bool, selected: array, correct_answer: array, is_correct: bool}>
      */
-    public function buildQuizReview(CourseModule $module, array $answers, bool $revealCorrectAnswers = true): array
+    public function buildQuizReview(CourseModule $module, array $answers, bool $revealCorrectAnswers = true, ?CourseModuleVideo $video = null): array
     {
-        $module->loadMissing('quizQuestions');
+        $questions = $this->questionsForQuiz($module, $video);
         $review = [];
 
-        foreach ($module->quizQuestions as $question) {
+        foreach ($questions as $question) {
             $given = $answers[(string) $question->id] ?? $answers[$question->id] ?? null;
             $selected = is_array($given)
                 ? array_values(array_map('strval', array_filter($given, fn ($a) => filled($a))))
@@ -378,5 +586,153 @@ class BlendedCourseService
             ->whereIn('payment_status', ['deposit_paid', 'fully_paid'])
             ->latest('id')
             ->first();
+    }
+
+    public function resolveQuizVideo(CourseModule $module, ?int $videoId = null): ?CourseModuleVideo
+    {
+        $videos = $this->getVideosForModule($module);
+        if ($videos->isEmpty()) {
+            return null;
+        }
+
+        if ($videoId) {
+            return $videos->firstWhere('id', $videoId);
+        }
+
+        return $videos->first();
+    }
+
+    public function questionsForDisplay(CourseModule $module, ?CourseModuleVideo $video = null): Collection
+    {
+        if ($video) {
+            $questions = $video->quizQuestions()->orderBy('order')->get();
+            if ($questions->isNotEmpty()) {
+                return $questions;
+            }
+        }
+
+        $legacy = $module->quizQuestions()->whereNull('course_module_video_id')->orderBy('order')->get();
+        if ($legacy->isNotEmpty()) {
+            return $legacy;
+        }
+
+        if ($video === null) {
+            $firstVideo = $this->getVideosForModule($module)->first();
+            if ($firstVideo) {
+                return $firstVideo->quizQuestions()->orderBy('order')->get();
+            }
+        }
+
+        return collect();
+    }
+
+    private function recordVideoQuizProgress(
+        Student $student,
+        CourseModule $module,
+        CourseModuleVideo $video,
+        int $score,
+        bool $passed
+    ): void {
+        $progress = StudentVideoProgress::firstOrCreate(
+            [
+                'student_id' => $student->id,
+                'course_module_video_id' => $video->id,
+            ],
+            [
+                'service_id' => $module->service_id,
+                'course_module_id' => $module->id,
+            ]
+        );
+
+        $progress->increment('attempts');
+        $progress->best_score = max($progress->best_score ?? 0, $score);
+
+        if ($passed) {
+            $progress->is_completed = true;
+            $progress->completed_at = now();
+            $progress->video_watched = true;
+            $progress->watched_at = $progress->watched_at ?? now();
+        }
+
+        $progress->save();
+    }
+
+    private function recordModuleQuizProgress(Student $student, CourseModule $module, int $score, bool $passed): void
+    {
+        $progress = StudentModuleProgress::firstOrCreate(
+            [
+                'student_id' => $student->id,
+                'course_module_id' => $module->id,
+            ],
+            ['service_id' => $module->service_id]
+        );
+
+        $progress->increment('attempts');
+        $progress->best_score = max($progress->best_score ?? 0, $score);
+
+        if ($passed) {
+            $progress->is_completed = true;
+            $progress->completed_at = now();
+        }
+
+        $progress->save();
+    }
+
+    private function markVideoCompletedWithoutQuiz(StudentVideoProgress $progress): void
+    {
+        $progress->is_completed = true;
+        $progress->completed_at = now();
+        $progress->best_score = $progress->best_score ?? 100;
+        $progress->save();
+    }
+
+    public function syncModuleCompletionFromVideos(Student $student, CourseModule $module): void
+    {
+        $videos = $this->getVideosForModule($module);
+        if ($videos->isEmpty()) {
+            return;
+        }
+
+        $allComplete = true;
+        $scores = [];
+
+        foreach ($videos as $video) {
+            if (! $this->isVideoComplete($student, $video)) {
+                $allComplete = false;
+                break;
+            }
+
+            $record = StudentVideoProgress::query()
+                ->where('student_id', $student->id)
+                ->where('course_module_video_id', $video->id)
+                ->first();
+
+            if ($record?->best_score !== null) {
+                $scores[] = (int) $record->best_score;
+            }
+        }
+
+        $progress = StudentModuleProgress::firstOrCreate(
+            [
+                'student_id' => $student->id,
+                'course_module_id' => $module->id,
+            ],
+            ['service_id' => $module->service_id]
+        );
+
+        if ($allComplete) {
+            $progress->is_completed = true;
+            $progress->completed_at = $progress->completed_at ?? now();
+            $progress->best_score = $scores === [] ? 100 : (int) round(array_sum($scores) / count($scores));
+            $progress->save();
+
+            return;
+        }
+
+        if (! $progress->admin_override) {
+            $progress->is_completed = false;
+            $progress->completed_at = null;
+            $progress->save();
+        }
     }
 }

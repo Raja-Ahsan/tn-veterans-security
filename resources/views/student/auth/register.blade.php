@@ -240,7 +240,7 @@
 
 <section class="auth-container py-16 lg:py-24">
     <div class="container mx-auto px-4 lg:px-10">
-        <div class="mx-auto" style="width: 450px; max-width: 100%;">
+        <div class="mx-auto" style="width: 560px; max-width: 100%;">
             <div class="auth-card p-8 lg:p-10">
                 <div class="auth-header">
                     <h1>Create Account</h1>
@@ -260,19 +260,42 @@
                 <form method="POST" action="{{ route('student.register') }}">
                     @csrf
 
-                    <div class="form-group">
-                        <label for="name" class="form-label">
-                            <i class="fas fa-user mr-2"></i>Full Name
-                            <span class="required">*</span>
-                        </label>
-                        <div class="relative">
-                            <i class="fas fa-user input-icon"></i>
-                            <input type="text" 
-                                   id="name" 
-                                   name="name" 
-                                   value="{{ old('name') }}"
-                                   required 
-                                   placeholder="Enter your full name"
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div class="form-group">
+                            <label for="first_name" class="form-label">
+                                First Name
+                                <span class="required">*</span>
+                            </label>
+                            <input type="text"
+                                   id="first_name"
+                                   name="first_name"
+                                   value="{{ old('first_name') }}"
+                                   required
+                                   placeholder="First"
+                                   class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="middle_name" class="form-label">
+                                Middle Name
+                            </label>
+                            <input type="text"
+                                   id="middle_name"
+                                   name="middle_name"
+                                   value="{{ old('middle_name') }}"
+                                   placeholder="Optional"
+                                   class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name" class="form-label">
+                                Last Name
+                                <span class="required">*</span>
+                            </label>
+                            <input type="text"
+                                   id="last_name"
+                                   name="last_name"
+                                   value="{{ old('last_name') }}"
+                                   required
+                                   placeholder="Last"
                                    class="form-input">
                         </div>
                     </div>
@@ -297,15 +320,40 @@
                     <div class="form-group">
                         <label for="phone" class="form-label">
                             <i class="fas fa-phone mr-2"></i>Phone Number
+                            <span class="required">*</span>
                         </label>
                         <div class="relative">
                             <i class="fas fa-phone input-icon"></i>
-                            <input type="text" 
-                                   id="phone" 
-                                   name="phone" 
+                            <input type="tel"
+                                   id="phone"
+                                   name="phone"
                                    value="{{ old('phone') }}"
-                                   placeholder="(Optional)"
+                                   required
+                                   placeholder="e.g. 615-555-0100"
                                    class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ssn" class="form-label">
+                            <i class="fas fa-id-card mr-2"></i>Social Security Number
+                            <span class="required">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-id-card input-icon"></i>
+                            <input type="text"
+                                   id="ssn"
+                                   name="ssn"
+                                   value="{{ old('ssn') }}"
+                                   required
+                                   inputmode="numeric"
+                                   autocomplete="off"
+                                   placeholder="XXX-XX-XXXX"
+                                   class="form-input">
+                        </div>
+                        <div class="form-hint">
+                            <i class="fas fa-lock"></i>
+                            <span>Required. Stored securely and shown only as the last 4 digits.</span>
                         </div>
                     </div>
 

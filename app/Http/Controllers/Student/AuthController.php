@@ -9,7 +9,6 @@ use App\Services\AdminNotifier;
 use App\Services\StudentNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -64,10 +63,21 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:100',
+            'middle_name' => 'nullable|string|max:100',
+            'last_name' => 'required|string|max:100',
             'email' => 'required|string|email|max:255|unique:students',
             'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['required', 'string', 'max:20', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (strlen(Student::digitsOnly((string) $value)) < 10) {
+                    $fail('Enter a valid phone number with at least 10 digits.');
+                }
+            }],
+            'ssn' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! Student::isValidSsn((string) $value)) {
+                    $fail('Enter a valid 9-digit Social Security Number.');
+                }
+            }],
             'address' => 'nullable|string|max:500',
             'has_security_registration' => 'nullable|boolean',
             'security_registration_number' => [
@@ -83,16 +93,22 @@ class AuthController extends Controller
             ],
         ]);
 
-        $student = Student::create([
-            'name' => $validated['name'],
+        $student = new Student([
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'phone' => $validated['phone'] ?? null,
+            'password' => $validated['password'],
+            'phone' => $validated['phone'],
             'address' => $validated['address'] ?? null,
             'has_security_registration' => $request->boolean('has_security_registration'),
             'security_registration_number' => $request->boolean('has_security_registration') ? $validated['security_registration_number'] : null,
             'security_registration_expiration' => $request->boolean('has_security_registration') ? $validated['security_registration_expiration'] : null,
         ]);
+        $student->applyLegalName(
+            $validated['first_name'],
+            $validated['middle_name'] ?? null,
+            $validated['last_name'],
+        );
+        $student->applySsn($validated['ssn']);
+        $student->save();
 
         Auth::guard('student')->login($student);
 

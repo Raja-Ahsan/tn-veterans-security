@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassSchedule;
 use App\Models\Service;
+use App\Models\ServiceBooking;
+use Illuminate\Support\Facades\Auth;
 
 class ServicePageController extends Controller
 {
@@ -70,13 +72,20 @@ class ServicePageController extends Controller
             ->sort()
             ->values();
 
+        $existingEnrollment = null;
+        $student = Auth::guard('student')->user();
+        if ($student) {
+            $existingEnrollment = ServiceBooking::findOpenEnrollment($student->id, $service->id);
+        }
+
         return view('class-details', compact(
             'service',
             'relatedServices',
             'linkedServices',
             'bookingLocations',
             'bookingSchedules',
-            'upcomingSchedulesOverview'
+            'upcomingSchedulesOverview',
+            'existingEnrollment'
         ));
     }
 }

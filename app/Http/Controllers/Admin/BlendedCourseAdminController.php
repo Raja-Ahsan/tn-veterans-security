@@ -11,6 +11,7 @@ use App\Models\Service;
 use App\Models\ServiceBooking;
 use App\Models\Student;
 use App\Models\StudentModuleProgress;
+use App\Models\StudentVideoProgress;
 use App\Services\BlendedCourseService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,6 +91,24 @@ class BlendedCourseAdminController extends Controller
             ]
         );
 
+        foreach ($courseModule->videos as $video) {
+            StudentVideoProgress::updateOrCreate(
+                [
+                    'student_id' => $student->id,
+                    'course_module_video_id' => $video->id,
+                ],
+                [
+                    'service_id' => $service->id,
+                    'course_module_id' => $courseModule->id,
+                    'video_watched' => true,
+                    'watched_at' => now(),
+                    'is_completed' => true,
+                    'best_score' => 100,
+                    'completed_at' => now(),
+                ]
+            );
+        }
+
         return back()->with('success', 'Module marked complete (admin override).');
     }
 
@@ -98,6 +117,11 @@ class BlendedCourseAdminController extends Controller
         abort_unless($courseModule->service_id === $service->id, 404);
 
         StudentModuleProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $courseModule->id)
+            ->delete();
+
+        StudentVideoProgress::query()
             ->where('student_id', $student->id)
             ->where('course_module_id', $courseModule->id)
             ->delete();

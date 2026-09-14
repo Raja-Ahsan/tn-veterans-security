@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Service;
 use App\Models\ServiceBooking;
+use App\Support\PublicTrainingServiceQuery;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         // Middleware handles authentication, so we can safely get the user
         $student = Auth::guard('student')->user();
@@ -61,6 +64,13 @@ class DashboardController extends Controller
 
         $calendarTitle = now()->format('F Y');
 
+        $deliveryCounts = collect(Service::deliveryFormats())
+            ->mapWithKeys(fn (string $format) => [
+                $format => PublicTrainingServiceQuery::apply(
+                    Service::query()->where('is_active', true)
+                )->ofDelivery($format)->count(),
+            ]);
+
         return view('student.dashboard', compact(
             'student',
             'bookings',
@@ -68,7 +78,8 @@ class DashboardController extends Controller
             'pastBookings',
             'recentBookings',
             'calendarWeeks',
-            'calendarTitle'
+            'calendarTitle',
+            'deliveryCounts'
         ));
     }
 }

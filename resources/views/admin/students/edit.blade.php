@@ -43,20 +43,38 @@
                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-600 text-sm font-bold text-white">1</span>
                 <div>
                     <h4 class="text-base font-bold text-gray-900">Basic info</h4>
-                    <p class="text-sm text-gray-500">Name and email are required. Phone and address are optional.</p>
+                    <p class="text-sm text-gray-500">Name, phone, and SSN are required for student accounts. SSN is stored encrypted.</p>
                 </div>
             </div>
 
-            <div>
-                <label for="name" class="mb-1.5 block text-sm font-bold text-gray-700">
-                    Full name <span class="text-red-500">*</span>
-                </label>
-                <input type="text" id="name" name="name" value="{{ old('name', $student->name) }}" required
-                       placeholder="Student full name"
-                       class="w-full rounded-md border px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 {{ $errors->has('name') ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500' }}">
-                @error('name')
-                    <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
-                @enderror
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                    <label for="first_name" class="mb-1.5 block text-sm font-bold text-gray-700">
+                        First name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="first_name" name="first_name" value="{{ old('first_name', $student->first_name) }}" required
+                           class="w-full rounded-md border px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 {{ $errors->has('first_name') ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500' }}">
+                    @error('first_name')
+                        <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="middle_name" class="mb-1.5 block text-sm font-bold text-gray-700">
+                        Middle name
+                    </label>
+                    <input type="text" id="middle_name" name="middle_name" value="{{ old('middle_name', $student->middle_name) }}"
+                           class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                </div>
+                <div>
+                    <label for="last_name" class="mb-1.5 block text-sm font-bold text-gray-700">
+                        Last name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="last_name" name="last_name" value="{{ old('last_name', $student->last_name) }}" required
+                           class="w-full rounded-md border px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 {{ $errors->has('last_name') ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500' }}">
+                    @error('last_name')
+                        <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -78,13 +96,13 @@
                 </div>
                 <div>
                     <label for="phone" class="mb-1.5 block text-sm font-bold text-gray-700">
-                        Phone <span class="font-normal text-gray-400">(optional)</span>
+                        Phone <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                             <i class="fas fa-phone text-xs"></i>
                         </span>
-                        <input type="text" id="phone" name="phone" value="{{ old('phone', $student->phone) }}"
+                        <input type="text" id="phone" name="phone" value="{{ old('phone', $student->phone) }}" required
                                placeholder="e.g. 615-555-0100"
                                class="w-full rounded-md border border-gray-300 py-2.5 pl-9 pr-3 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
                     </div>
@@ -92,6 +110,17 @@
                         <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+            </div>
+
+            <div>
+                <label for="ssn" class="mb-1.5 block text-sm font-bold text-gray-700">Social Security Number</label>
+                <p class="mb-2 text-xs text-gray-500">On file: <span class="font-semibold">{{ $student->maskedSsn() }}</span>. Leave blank to keep it.</p>
+                <input type="text" id="ssn" name="ssn" value="{{ old('ssn') }}"
+                       inputmode="numeric" autocomplete="off" placeholder="XXX-XX-XXXX"
+                       class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                @error('ssn')
+                    <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>

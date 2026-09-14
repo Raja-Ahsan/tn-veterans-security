@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,6 +13,12 @@ class Service extends Model
      * Class images on disk live under public/{this path}. The `image` column stores the filename only for new rows.
      */
     public const CLASS_IMAGE_PUBLIC_PATH = 'assets/images/classes';
+
+    public const DELIVERY_ONLINE = 'online';
+
+    public const DELIVERY_BLENDED = 'blended';
+
+    public const DELIVERY_IN_PERSON = 'in-person';
 
     protected $guarded = ['id'];
 
@@ -115,6 +122,101 @@ class Service extends Model
         $cats = $this->categories ?? [];
 
         return is_array($cats) && count($cats) > 0 ? $cats[0] : null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function deliveryFormats(): array
+    {
+        return [
+            self::DELIVERY_ONLINE,
+            self::DELIVERY_BLENDED,
+            self::DELIVERY_IN_PERSON,
+        ];
+    }
+
+    public static function isValidDeliveryFormat(?string $format): bool
+    {
+        return in_array($format, self::deliveryFormats(), true);
+    }
+
+    /**
+     * How this class is delivered: fully online, blended, or in person.
+     */
+    public function deliveryFormat(): string
+    {
+        if ($this->has_online_parts) {
+            return $this->testing_in_person ? self::DELIVERY_BLENDED : self::DELIVERY_ONLINE;
+        }
+
+        return self::DELIVERY_IN_PERSON;
+    }
+
+    public function deliveryFormatLabel(): string
+    {
+        return match ($this->deliveryFormat()) {
+            self::DELIVERY_ONLINE => 'Online',
+            self::DELIVERY_BLENDED => 'Blended',
+            default => 'In Person',
+        };
+    }
+
+    /**
+     * Filter by delivery format. Online, Blended, and In Person are mutually exclusive
+     * and match deliveryFormat().
+     *
+     * @param  Builder<Service>  $query
+     * @return Builder<Service>
+     */
+    public function scopeOfDelivery(Builder $query, ?string $format): Builder
+    {
+        return $query->exactDelivery($format);
+    }
+
+    /**
+     * Mutually exclusive delivery filter matching deliveryFormat().
+     *
+     * @param  Builder<Service>  $query
+     * @return Builder<Service>
+     */
+    public function scopeExactDelivery(Builder $query, ?string $format): Builder
+    {
+        return match ($format) {
+            self::DELIVERY_ONLINE => $query->where('has_online_parts', true)->where('testing_in_person', false),
+            self::DELIVERY_BLENDED => $query->where('has_online_parts', true)->where('testing_in_person', true),
+            self::DELIVERY_IN_PERSON => $query->where('has_online_parts', false),
+            default => $query,
+        };
+    }
+
+    /**
+     * Counts per delivery format (online / blended / in-person), mutually exclusive.
+     *
+     * @return array{online: int, blended: int, in-person: int}
+     */
+    public static function deliveryCountMap(bool $activeOnly = false): array
+    {
+        $counts = [
+            self::DELIVERY_ONLINE => 0,
+            self::DELIVERY_BLENDED => 0,
+            self::DELIVERY_IN_PERSON => 0,
+        ];
+
+        foreach (self::deliveryFormats() as $format) {
+            $query = static::query()->exactDelivery($format);
+            if ($activeOnly) {
+                $query->where('is_active', true);
+            }
+            $counts[$format] = $query->count();
+        }
+
+        return $counts;
+    }
+
+    public function supportsOnlineModules(): bool
+    {
+        return (bool) $this->has_online_parts;
     }
 
     /**

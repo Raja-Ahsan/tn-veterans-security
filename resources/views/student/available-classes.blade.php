@@ -16,6 +16,15 @@
     @endif
 </div>
 
+@if($existingEnrollment ?? null)
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <p class="text-sm text-gray-800">You already have a booking for this class. Each student can enroll in one session.</p>
+        <a href="{{ route('student.bookings.show', $existingEnrollment) }}" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+            View your booking
+        </a>
+    </div>
+@endif
+
 <!-- Pricing Info Card -->
 @if($service->price || $service->deposit_amount)
 <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
@@ -134,10 +143,17 @@
                         </div>
                         
                         <div class="flex flex-col items-end gap-2">
+                            @if($existingEnrollment ?? null)
+                            <a href="{{ route('student.bookings.show', $existingEnrollment) }}"
+                               class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors inline-flex items-center gap-2">
+                                <i class="fas fa-clipboard-list"></i> View your booking
+                            </a>
+                            @else
                             <a href="{{ route('student.booking.create.schedule', ['serviceId' => $service->id, 'scheduleId' => $schedule->id]) }}" 
                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors inline-flex items-center gap-2">
                                 <i class="fas fa-calendar-plus"></i> Book This Class
                             </a>
+                            @endif
                             @if($schedule->getAvailableSpots() <= 3)
                                 <span class="text-xs text-orange-600 font-semibold">
                                     <i class="fas fa-exclamation-triangle"></i> Limited spots remaining
@@ -175,7 +191,6 @@
                     @auth('student')
                         <form method="POST" action="{{ route('student.waitlist.store', $schedule) }}" class="flex items-center gap-2">
                             @csrf
-                            <input type="hidden" name="number_of_students" value="1">
                             <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg">Join Waitlist</button>
                         </form>
                     @else

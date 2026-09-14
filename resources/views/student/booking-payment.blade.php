@@ -53,8 +53,8 @@
                         </div>
                     @endif
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Number of Students:</span>
-                        <span class="font-semibold text-gray-900">{{ $booking->number_of_students ?? 1 }}</span>
+                        <span class="text-gray-600">Booking Type:</span>
+                        <span class="font-semibold text-gray-900">{{ ucfirst(str_replace('_', ' ', $booking->booking_type ?? 'group')) }}</span>
                     </div>
                 </div>
             </div>

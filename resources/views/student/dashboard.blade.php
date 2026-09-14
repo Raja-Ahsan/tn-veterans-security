@@ -36,6 +36,58 @@
     </div>
 </div>
 
+{{-- Class formats --}}
+@php
+    $formatOptions = [
+        'online' => [
+            'label' => 'Online',
+            'blurb' => 'Complete modules and quizzes on your own schedule.',
+            'icon' => 'fa-laptop',
+            'iconWrap' => 'bg-sky-50 text-sky-600',
+            'hover' => 'hover:border-sky-300 hover:bg-sky-50/50',
+        ],
+        'blended' => [
+            'label' => 'Blended',
+            'blurb' => 'Online coursework plus in-person training and testing.',
+            'icon' => 'fa-layer-group',
+            'iconWrap' => 'bg-cyan-50 text-cyan-700',
+            'hover' => 'hover:border-cyan-300 hover:bg-cyan-50/50',
+        ],
+        'in-person' => [
+            'label' => 'In Person',
+            'blurb' => 'Classroom instruction with an instructor on site.',
+            'icon' => 'fa-chalkboard-user',
+            'iconWrap' => 'bg-emerald-50 text-[var(--brand)]',
+            'hover' => 'hover:border-emerald-300 hover:bg-emerald-50/50',
+        ],
+    ];
+@endphp
+<div class="mb-8">
+    <div class="mb-4">
+        <h2 class="text-lg font-bold text-gray-900">Choose a class format</h2>
+        <p class="mt-0.5 text-sm text-gray-500">Browse Online, Blended, or In Person training.</p>
+    </div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        @foreach($formatOptions as $format => $option)
+            @php $count = (int) ($deliveryCounts[$format] ?? 0); @endphp
+            <a href="{{ route('training-classes', ['delivery' => $format]) }}"
+               class="group rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm transition {{ $option['hover'] }}">
+                <div class="flex items-start justify-between gap-3">
+                    <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl {{ $option['iconWrap'] }}">
+                        <i class="fas {{ $option['icon'] }}"></i>
+                    </span>
+                    <i class="fas fa-arrow-right text-xs text-gray-300 transition group-hover:translate-x-0.5 group-hover:text-gray-500"></i>
+                </div>
+                <h3 class="mt-4 text-lg font-bold text-gray-900">{{ $option['label'] }}</h3>
+                <p class="mt-1 text-sm text-gray-500">{{ $option['blurb'] }}</p>
+                <p class="mt-3 text-xs font-semibold uppercase tracking-wide {{ $count > 0 ? 'text-[var(--brand)]' : 'text-gray-400' }}">
+                    {{ $count }} {{ $count === 1 ? 'class' : 'classes' }}
+                </p>
+            </a>
+        @endforeach
+    </div>
+</div>
+
 {{-- Stats --}}
 <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
     <div class="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">

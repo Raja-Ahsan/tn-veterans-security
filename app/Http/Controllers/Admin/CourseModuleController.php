@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CourseModule;
+use App\Models\CourseModuleVideo;
 use App\Models\ModuleQuizQuestion;
 use App\Models\Service;
+use App\Support\QuizQuestionPayload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -15,18 +17,23 @@ class CourseModuleController extends Controller
 {
     public function index(Service $service)
     {
-        $modules = $service->courseModules()->withCount('quizQuestions')->orderBy('order')->get();
+        $this->abortUnlessBlended($service);
+
+        $modules = $service->courseModules()->withCount(['quizQuestions', 'videos'])->orderBy('order')->get();
 
         return view('admin.course-modules.index', compact('service', 'modules'));
     }
 
     public function create(Service $service)
     {
+        $this->abortUnlessBlended($service);
+
         return view('admin.course-modules.create', compact('service'));
     }
 
     public function store(Request $request, Service $service)
     {
+        $this->abortUnlessBlended($service);
         $this->prepareModuleRequest($request);
 
         $validated = $this->validateModuleRequest($request);
@@ -46,21 +53,24 @@ class CourseModuleController extends Controller
             'materials' => $this->storeMaterials($request, []),
         ]);
 
-        $this->syncQuestions($module, $validated['questions'] ?? []);
+        $this->syncPrimaryVideoAndQuestions($request, $module, $validated['questions'] ?? []);
 
-        return redirect()->route('admin.classes.course-modules.index', $service)
-            ->with('success', 'Module created.');
+        return redirect()->route('admin.classes.course-modules.edit', [$service, $module])
+            ->with('success', 'Module created. Add more videos if this module has more than one lesson.');
     }
 
     public function edit(Service $service, CourseModule $courseModule)
     {
-        $courseModule->load('quizQuestions');
+        $this->abortUnlessBlended($service);
+
+        $courseModule->load(['videos.quizQuestions', 'quizQuestions']);
 
         return view('admin.course-modules.edit', compact('service', 'courseModule'));
     }
 
     public function update(Request $request, Service $service, CourseModule $courseModule)
     {
+        $this->abortUnlessBlended($service);
         $this->prepareModuleRequest($request);
 
         $validated = $this->validateModuleRequest($request);
@@ -84,15 +94,15 @@ class CourseModuleController extends Controller
             'materials' => $materials,
         ]);
 
-        $courseModule->quizQuestions()->delete();
-        $this->syncQuestions($courseModule, $validated['questions'] ?? []);
+        $this->syncPrimaryVideoAndQuestions($request, $courseModule, $validated['questions'] ?? []);
 
-        return redirect()->route('admin.classes.course-modules.index', $service)
+        return redirect()->route('admin.classes.course-modules.edit', [$service, $courseModule])
             ->with('success', 'Module updated.');
     }
 
     public function destroy(Service $service, CourseModule $courseModule)
     {
+        $this->abortUnlessBlended($service);
         $this->deleteMaterialFiles($courseModule->materials ?? []);
         $courseModule->delete();
 
@@ -102,6 +112,7 @@ class CourseModuleController extends Controller
 
     public function reorder(Request $request, Service $service)
     {
+        $this->abortUnlessBlended($service);
         if ($request->has('positions')) {
             $validated = $request->validate([
                 'positions' => 'required|array',
@@ -138,49 +149,18 @@ class CourseModuleController extends Controller
      */
     private function prepareModuleRequest(Request $request): void
     {
-        $questions = collect($request->input('questions', []))
-            ->map(function (array $question): array {
-                $options = collect($question['options'] ?? [])
-                    ->map(fn ($option) => is_string($option) ? trim($option) : $option)
-                    ->filter(fn ($option) => filled($option))
-                    ->values()
-                    ->all();
-
-                $allowMultiple = filter_var($question['allow_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                $correctRaw = $question['correct_answer'] ?? [];
-                if (! is_array($correctRaw)) {
-                    $correctRaw = filled($correctRaw) ? [$correctRaw] : [];
-                }
-
-                $correct = collect($correctRaw)
-                    ->map(fn ($answer) => is_string($answer) ? trim($answer) : $answer)
-                    ->filter(fn ($answer) => filled($answer))
-                    ->unique()
-                    ->values()
-                    ->all();
-
-                if (! $allowMultiple && count($correct) > 1) {
-                    $correct = [reset($correct)];
-                }
-
-                return [
-                    'question' => trim((string) ($question['question'] ?? '')),
-                    'options' => $options,
-                    'allow_multiple' => $allowMultiple,
-                    'correct_answer' => $correct,
-                ];
-            })
-            ->filter(fn (array $question) => $question['question'] !== '')
-            ->values()
-            ->all();
-
         $request->merge([
-            'questions' => $questions,
+            'questions' => QuizQuestionPayload::normalize($request->input('questions', [])),
             'video_url' => $request->filled('video_url') ? $request->input('video_url') : null,
             'quiz_time_limit_minutes' => $request->filled('quiz_time_limit_minutes')
                 ? (int) $request->input('quiz_time_limit_minutes')
                 : 15,
         ]);
+    }
+
+    private function abortUnlessBlended(Service $service): void
+    {
+        abort_unless($service->has_online_parts, 404);
     }
 
     /**
@@ -254,6 +234,9 @@ class CourseModuleController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
+            'video_title' => 'nullable|string|max:255',
+            'video_file' => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime,video/ogg|max:102400',
+            'remove_video_file' => 'sometimes|boolean',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
             'quiz_time_limit_minutes' => 'required|integer|min:1|max:180',
@@ -280,6 +263,8 @@ class CourseModuleController extends Controller
         return [
             'title.required' => 'Module title is required.',
             'video_url.url' => 'Video URL must be a valid link (or leave it empty).',
+            'video_file.mimetypes' => 'Upload an MP4, WebM, MOV, or OGG video.',
+            'video_file.max' => 'Video must be 100MB or smaller.',
             'quiz_time_limit_minutes.required' => 'Set a quiz time limit in minutes.',
             'quiz_time_limit_minutes.min' => 'Quiz time must be at least 1 minute.',
             'questions.*.question.required' => 'Each quiz question needs question text.',
@@ -349,8 +334,75 @@ class CourseModuleController extends Controller
     /**
      * @param  array<int, array<string, mixed>>  $questions
      */
-    private function syncQuestions(CourseModule $module, array $questions): void
+    private function syncPrimaryVideoAndQuestions(Request $request, CourseModule $module, array $questions): void
     {
+        $hasVideoInput = $request->hasFile('video_file')
+            || $request->filled('video_url')
+            || $request->boolean('remove_video_file')
+            || $request->filled('video_title');
+        $hasQuestions = $questions !== [];
+        $hasExistingVideo = $module->videos()->exists();
+
+        if (! $hasVideoInput && ! $hasQuestions && ! $hasExistingVideo) {
+            $module->quizQuestions()->whereNull('course_module_video_id')->delete();
+
+            return;
+        }
+
+        $video = $this->upsertPrimaryVideo($request, $module);
+        $this->syncQuestions($module, $questions, $video);
+    }
+
+    private function upsertPrimaryVideo(Request $request, CourseModule $module): CourseModuleVideo
+    {
+        $video = $module->videos()->orderBy('order')->orderBy('id')->first();
+
+        if (! $video) {
+            $video = $module->videos()->create([
+                'title' => $request->input('video_title') ?: 'Video 1',
+                'order' => 1,
+            ]);
+        }
+
+        $payload = [
+            'title' => $request->input('video_title') ?: ($video->title ?: 'Video 1'),
+            'video_url' => $request->filled('video_url') ? $request->input('video_url') : null,
+        ];
+
+        if ($request->boolean('remove_video_file')) {
+            $video->deleteStoredFile();
+            $payload['video_path'] = null;
+            $payload['original_name'] = null;
+        }
+
+        if ($request->hasFile('video_file')) {
+            $video->deleteStoredFile();
+            $file = $request->file('video_file');
+            $payload['video_path'] = $file->store('course-videos', 'public');
+            $payload['original_name'] = $file->getClientOriginalName();
+        }
+
+        $video->update($payload);
+
+        return $video->fresh();
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $questions
+     */
+    private function syncQuestions(CourseModule $module, array $questions, ?CourseModuleVideo $video = null): void
+    {
+        $query = $module->quizQuestions();
+        if ($video) {
+            $query->where(function ($builder) use ($video): void {
+                $builder->where('course_module_video_id', $video->id)
+                    ->orWhereNull('course_module_video_id');
+            });
+        } else {
+            $query->whereNull('course_module_video_id');
+        }
+        $query->delete();
+
         foreach ($questions as $index => $q) {
             if (empty($q['question'])) {
                 continue;
@@ -368,6 +420,7 @@ class CourseModuleController extends Controller
 
             ModuleQuizQuestion::create([
                 'course_module_id' => $module->id,
+                'course_module_video_id' => $video?->id,
                 'question' => $q['question'],
                 'options' => $options,
                 'allow_multiple' => (bool) ($q['allow_multiple'] ?? false),

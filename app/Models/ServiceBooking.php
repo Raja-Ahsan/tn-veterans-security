@@ -94,4 +94,35 @@ class ServiceBooking extends Model
             ->where('status', 'completed')
             ->sum('amount');
     }
+
+    /**
+     * @return list<string>
+     */
+    public static function openEnrollmentStatuses(): array
+    {
+        return ['pending', 'confirmed'];
+    }
+
+    /**
+     * A student may hold only one open enrollment per class (one schedule, one student profile).
+     */
+    public static function findOpenEnrollment(int $studentId, int $serviceId, bool $forUpdate = false): ?self
+    {
+        $query = static::query()
+            ->where('student_id', $studentId)
+            ->where('service_id', $serviceId)
+            ->whereIn('status', self::openEnrollmentStatuses())
+            ->latest('id');
+
+        if ($forUpdate) {
+            $query->lockForUpdate();
+        }
+
+        return $query->first();
+    }
+
+    public static function alreadyEnrolledMessage(): string
+    {
+        return 'You already have a booking for this class. Each student can enroll in one session, because each person has their own student profile.';
+    }
 }

@@ -38,7 +38,7 @@
                 <li><span class="font-medium">Class</span> = the course (title, price, description).</li>
                 <li><span class="font-medium">Sessions</span> = bookable date/time slots — managed under Class Schedules.</li>
                 <li><span class="font-medium">Blended</span> classes have online modules/quizzes. After deposit is paid, students take quizzes in their portal.</li>
-                <li><span class="font-medium">Edit</span> → Modules &amp; Quizzes to add content, then Student Progress to track scores.</li>
+                <li><span class="font-medium">Modules</span> — only for blended classes. In-person students take the test in class.</li>
             </ul>
         </div>
     </div>
@@ -58,6 +58,10 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Sessions
                         <span class="block font-normal normal-case tracking-normal text-gray-400">on the calendar</span>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Modules
+                        <span class="block font-normal normal-case tracking-normal text-gray-400">videos &amp; quizzes</span>
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Order

@@ -102,10 +102,13 @@ class StudentNotificationsTest extends TestCase
         Notification::fake();
 
         $this->post(route('student.register'), [
-            'name' => 'Jane Student',
+            'first_name' => 'Jane',
+            'last_name' => 'Student',
             'email' => 'jane.notify@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
+            'phone' => '6155550100',
+            'ssn' => '456-78-9012',
         ])->assertRedirect(route('student.dashboard'));
 
         $student = Student::query()->where('email', 'jane.notify@example.com')->firstOrFail();

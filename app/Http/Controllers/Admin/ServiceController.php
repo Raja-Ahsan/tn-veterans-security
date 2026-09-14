@@ -24,7 +24,7 @@ class ServiceController extends Controller
     public function index(Request $request): View|JsonResponse
     {
         $query = Service::query()
-            ->withCount(['classSchedules', 'bookings'])
+            ->withCount(['classSchedules', 'bookings', 'courseModules'])
             ->orderBy('order')
             ->orderBy('created_at', 'desc');
 

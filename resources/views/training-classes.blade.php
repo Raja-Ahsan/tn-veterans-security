@@ -16,6 +16,12 @@
                         {{-- add servuice name dynamically --}}
                         @if($category)
                             {{ ucfirst(str_replace('_', ' ', $category)) }}
+                        @elseif(($delivery ?? null) === 'online')
+                            <span class="text-(--primary-color)">ONLINE</span> CLASSES
+                        @elseif(($delivery ?? null) === 'blended')
+                            <span class="text-(--primary-color)">BLENDED</span> CLASSES
+                        @elseif(($delivery ?? null) === 'in-person')
+                            <span class="text-(--primary-color)">IN PERSON</span> CLASSES
                         @else
                         <span class="text-(--primary-color)">TRAINING</span> AND <span class="text-(--primary-color)">CLASSES</span>
                         @endif
@@ -57,6 +63,32 @@
                             </button>
                         </div>
                         <p id="training-services-search-status" class="mt-2 text-center text-sm text-gray-500" aria-live="polite"></p>
+                    </div>
+
+                    @php
+                        $deliveryFilters = [
+                            '' => 'All',
+                            'online' => 'Online',
+                            'blended' => 'Blended',
+                            'in-person' => 'In Person',
+                        ];
+                        $deliveryQuery = array_filter([
+                            'category' => $category,
+                            'subcategory' => $subcategory,
+                            'q' => request('q'),
+                        ]);
+                    @endphp
+                    <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+                        @foreach($deliveryFilters as $value => $label)
+                            @php
+                                $isActive = ($value === '' && empty($delivery)) || ($delivery ?? null) === $value;
+                                $href = route('training-classes', $value === '' ? $deliveryQuery : array_merge($deliveryQuery, ['delivery' => $value]));
+                            @endphp
+                            <a href="{{ $href }}"
+                               class="rounded-full px-4 py-2 text-sm font-semibold transition {{ $isActive ? 'bg-[var(--primary-color)] text-white shadow-sm' : 'border border-gray-200 bg-white text-gray-700 hover:border-[var(--primary-color)] hover:text-[var(--primary-color)]' }}">
+                                {{ $label }}
+                            </a>
+                        @endforeach
                     </div>
                 </div>
 
@@ -211,6 +243,7 @@
     var searchUrl = @json(route('training-classes.search'));
     var category = @json($category);
     var subcategory = @json($subcategory);
+    var delivery = @json($delivery ?? null);
     var timer = null;
     var controller = null;
 
@@ -238,6 +271,7 @@
         if (q) params.set('q', q);
         if (category) params.set('category', category);
         if (subcategory) params.set('subcategory', subcategory);
+        if (delivery) params.set('delivery', delivery);
 
         fetch(searchUrl + '?' + params.toString(), {
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },

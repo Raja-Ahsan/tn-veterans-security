@@ -835,20 +835,6 @@
                     <!-- FAQ Item 6 -->
                     <div class="faq-item"
                          data-aos="fade-up"
-                         data-aos-delay="500">
-                        <button class="faq-question">
-                            Do you help with job placement after training?
-                        </button>
-                        <div class="faq-answer">
-                            <div class="faq-answer-content">
-                                Yes, we assist our graduates in securing employment by connecting them with our network of trusted security partners.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- FAQ Item 7 -->
-                    <div class="faq-item"
-                         data-aos="fade-up"
                          data-aos-delay="550">
                         <button class="faq-question">
                             How long does the training take?

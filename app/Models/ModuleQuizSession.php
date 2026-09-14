@@ -17,6 +17,7 @@ class ModuleQuizSession extends Model
         'student_id',
         'service_id',
         'course_module_id',
+        'course_module_video_id',
         'current_index',
         'answers',
         'started_at',
@@ -50,6 +51,11 @@ class ModuleQuizSession extends Model
     public function courseModule(): BelongsTo
     {
         return $this->belongsTo(CourseModule::class);
+    }
+
+    public function courseModuleVideo(): BelongsTo
+    {
+        return $this->belongsTo(CourseModuleVideo::class);
     }
 
     public function attempt(): BelongsTo

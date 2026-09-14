@@ -11,6 +11,10 @@
         <p class="mt-0.5 text-sm text-gray-500">Students must pass each module quiz at 90% before completing the blended course.</p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
+        <a href="{{ route('admin.quiz-modules.index') }}"
+           class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            ← Quiz Modules
+        </a>
         <a href="{{ route('admin.classes.edit', $service) }}"
            class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
             ← Back to class
@@ -67,7 +71,9 @@
                                 <div class="min-w-0">
                                     <div class="truncate text-sm font-semibold text-gray-900">{{ $module->title }}</div>
                                     <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                        @if($module->video_url)
+                                        @if($module->videos_count)
+                                            <span class="inline-flex items-center gap-1"><i class="fas fa-video"></i> {{ $module->videos_count }} {{ Str::plural('video', $module->videos_count) }}</span>
+                                        @elseif($module->video_url)
                                             <span class="inline-flex items-center gap-1"><i class="fas fa-video"></i> Video</span>
                                         @endif
                                         @if($module->content)

@@ -10,6 +10,7 @@ class ModuleQuizAttempt extends Model
     protected $fillable = [
         'student_id',
         'course_module_id',
+        'course_module_video_id',
         'score',
         'passed',
         'answers',
@@ -31,5 +32,10 @@ class ModuleQuizAttempt extends Model
     public function courseModule(): BelongsTo
     {
         return $this->belongsTo(CourseModule::class);
+    }
+
+    public function courseModuleVideo(): BelongsTo
+    {
+        return $this->belongsTo(CourseModuleVideo::class);
     }
 }

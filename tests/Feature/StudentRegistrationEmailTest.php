@@ -21,11 +21,13 @@ class StudentRegistrationEmailTest extends TestCase
         Mail::fake();
 
         $response = $this->post(route('student.register'), [
-            'name' => 'Jane Student',
+            'first_name' => 'Jane',
+            'last_name' => 'Student',
             'email' => 'jane.student@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'phone' => '6155550100',
+            'ssn' => '456-78-9012',
         ]);
 
         $response->assertRedirect(route('student.dashboard'));

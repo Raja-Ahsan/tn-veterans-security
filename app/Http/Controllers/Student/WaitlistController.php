@@ -6,18 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\ClassSchedule;
 use App\Models\WaitlistEntry;
 use App\Services\AdminNotifier;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class WaitlistController extends Controller
 {
-    public function store(Request $request, ClassSchedule $classSchedule)
+    public function store(ClassSchedule $classSchedule)
     {
         $student = Auth::guard('student')->user();
-
-        $validated = $request->validate([
-            'number_of_students' => 'required|integer|min:1|max:100',
-        ]);
 
         if ($classSchedule->hasAvailableSpots()) {
             return back()->with('error', 'This class still has open seats. Please enroll directly.');
@@ -35,7 +30,7 @@ class WaitlistController extends Controller
         WaitlistEntry::create([
             'class_schedule_id' => $classSchedule->id,
             'student_id' => $student->id,
-            'number_of_students' => $validated['number_of_students'],
+            'number_of_students' => 1,
             'status' => 'waiting',
         ]);
 

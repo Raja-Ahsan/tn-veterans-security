@@ -173,18 +173,6 @@
                     </p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Number of Students</p>
-                    <p class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-user-graduate mr-2 text-gray-400"></i>{{ $booking->number_of_students ?? 1 }}
-                    </p>
-                </div>
-                @if($booking->group_name)
-                <div>
-                    <p class="text-sm text-gray-500 mb-1">Group Name</p>
-                    <p class="text-lg font-semibold text-gray-900">{{ $booking->group_name }}</p>
-                </div>
-                @endif
-                <div>
                     <p class="text-sm text-gray-500 mb-1">Booked On</p>
                     <p class="text-base font-medium text-gray-900">{{ $booking->created_at->format('F d, Y h:i A') }}</p>
                 </div>

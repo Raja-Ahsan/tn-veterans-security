@@ -76,6 +76,38 @@
                 </a>
             @endif
         </td>
+        @php
+            $moduleCount = $service->course_modules_count ?? 0;
+        @endphp
+        <td class="px-6 py-4 whitespace-nowrap">
+            @if ($service->has_online_parts)
+                <a href="{{ route('admin.classes.course-modules.index', $service) }}"
+                   class="group inline-flex flex-col gap-0.5"
+                   title="Build modules and quizzes for this blended class">
+                    @if ($moduleCount > 0)
+                        <span class="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-200 group-hover:bg-green-100">
+                            <i class="fas fa-book-open text-green-500"></i>
+                            {{ $moduleCount }} {{ Str::plural('module', $moduleCount) }}
+                        </span>
+                        <span class="text-xs text-green-600 group-hover:underline">Edit modules →</span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2.5 py-1 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-200 group-hover:bg-green-50 group-hover:text-green-700 group-hover:ring-green-200">
+                            <i class="fas fa-plus-circle"></i>
+                            No modules yet
+                        </span>
+                        <span class="text-xs text-green-600 group-hover:underline">Build module →</span>
+                    @endif
+                </a>
+            @else
+                <div class="inline-flex flex-col gap-0.5" title="In-person classes take the test in class">
+                    <span class="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2.5 py-1 text-sm font-medium text-gray-500 ring-1 ring-inset ring-gray-200">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        In-person test
+                    </span>
+                    <span class="text-xs text-gray-400">No online quiz</span>
+                </div>
+            @endif
+        </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $service->order }}</td>
         <td class="px-6 py-4 whitespace-nowrap">
             @if ($service->is_active)
@@ -102,7 +134,7 @@
     </tr>
 @empty
     <tr>
-        <td colspan="7" class="px-6 py-10 text-center">
+        <td colspan="8" class="px-6 py-10 text-center">
             <i class="fas fa-graduation-cap text-3xl text-gray-300 mb-3"></i>
             <p class="text-gray-500">
                 @if ($search !== '')

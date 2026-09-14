@@ -758,12 +758,25 @@
                                         <p class="text-gray-500 text-sm">Pricing available on class schedules.</p>
                                     @endif
 
-                                    {{-- Simple booking form (account created automatically if new) --}}
-                                    <p class="text-xs text-gray-500 mt-4 mb-2">No account? We'll create one for you when
-                                        you book.</p>
                                     @php
                                         $bookingSchedulesList = $bookingSchedules ?? collect();
+                                        $existingEnrollment = $existingEnrollment ?? null;
                                     @endphp
+                                    @if ($existingEnrollment)
+                                        <div class="mt-4 pt-4 border-t border-gray-200 space-y-3">
+                                            <p class="text-sm text-gray-700">You already have a booking for this class.
+                                                Each student can enroll in one session, because each person has their own
+                                                student profile.</p>
+                                            <a href="{{ route('student.bookings.show', $existingEnrollment) }}"
+                                                class="sd-btn w-full py-3 sm:py-4 text-sm sm:text-base justify-center">
+                                                <i class="fas fa-clipboard-list"></i> View your booking
+                                            </a>
+                                        </div>
+                                    @else
+                                    {{-- Simple booking form (account created automatically if new) --}}
+                                    <p class="text-xs text-gray-500 mt-4 mb-2">No account? We'll create one for you when
+                                        you book. This reserves one seat for you. Anyone else who wants this class should
+                                        sign up with their own student profile.</p>
                                     <form action="{{ route('training-classes.booking-inquiry', $service) }}" method="POST"
                                         class="mt-2 pt-4 border-t border-gray-200 space-y-4"
                                         id="service-booking-form"
@@ -801,26 +814,6 @@
                                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                             @enderror
                                         </div>
-                                        @php
-                                            $svcAvail = max(0, ($service->max_students ?? 0) - ($service->current_students ?? 0));
-                                            $maxAcrossSessions = $bookingSchedulesList->isNotEmpty()
-                                                ? (int) $bookingSchedulesList->max(fn ($s) => $s->getAvailableSpots())
-                                                : max(1, $svcAvail);
-                                        @endphp
-                                        <div>
-                                            <label for="booking_number_of_students" class="sd-form-label">Number of
-                                                students <span id="booking-seats-hint" class="text-gray-500 font-normal">(select a session)</span></label>
-                                            <input type="number" name="number_of_students"
-                                                id="booking_number_of_students"
-                                                value="{{ old('number_of_students', 1) }}"
-                                                min="{{ $service->min_students ?? 1 }}" max="{{ max(1, $maxAcrossSessions) }}"
-                                                class="sd-form-input @error('number_of_students') border-red-400 @enderror"
-                                                placeholder="1"
-                                                @if($bookingSchedulesList->isEmpty()) disabled @endif>
-                                            @error('number_of_students')
-                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
-                                        </div>
                                         <div>
                                             <label for="booking_location" class="sd-form-label">Location</label>
                                             <select name="location" id="booking_location"
@@ -853,12 +846,10 @@
                                                         @php
                                                             $locLabel = $s->location ?: 'No Specific Location';
                                                             $spots = $s->getAvailableSpots();
-                                                            $minSt = ($service->class_type ?? 'group') === 'group' ? (int) $s->min_students : 1;
                                                         @endphp
                                                         <option value="{{ $s->id }}"
                                                             data-location-label="{{ $locLabel }}"
                                                             data-spots="{{ $spots }}"
-                                                            data-min-students="{{ $minSt }}"
                                                             {{ (string) old('class_schedule_id') === (string) $s->id ? 'selected' : '' }}>
                                                             {{ $s->class_date->format('D, M j, Y') }}
                                                             · {{ \Carbon\Carbon::parse($s->start_time)->format('g:i A') }}
@@ -883,16 +874,11 @@
                                     @if ($bookingSchedulesList->isNotEmpty())
                                     <script>
                                     (function() {
-                                        var form = document.getElementById('service-booking-form');
-                                        if (!form) return;
                                         var locSelect = document.getElementById('booking_location');
                                         var sessionSelect = document.getElementById('booking_class_schedule_id');
-                                        var numInput = document.getElementById('booking_number_of_students');
-                                        var hint = document.getElementById('booking-seats-hint');
-                                        if (!sessionSelect || !numInput) return;
+                                        if (!sessionSelect) return;
 
                                         var options = Array.prototype.slice.call(sessionSelect.querySelectorAll('option[data-spots]'));
-                                        var serviceMin = parseInt(numInput.getAttribute('min'), 10) || 1;
 
                                         function selectedLocationValue() {
                                             if (!locSelect || !locSelect.value) return '';
@@ -901,43 +887,22 @@
 
                                         function filterSessions() {
                                             var loc = selectedLocationValue();
-                                            var firstVisible = null;
                                             options.forEach(function(opt) {
                                                 var match = !loc || opt.getAttribute('data-location-label') === loc;
                                                 opt.hidden = !match;
                                                 opt.disabled = !match;
-                                                if (match && !firstVisible) firstVisible = opt;
                                             });
                                             var cur = sessionSelect.options[sessionSelect.selectedIndex];
                                             if (cur && (cur.disabled || cur.hidden)) {
                                                 sessionSelect.value = '';
                                             }
-                                            updateFromSession();
                                         }
 
-                                        function updateFromSession() {
-                                            var opt = sessionSelect.options[sessionSelect.selectedIndex];
-                                            if (!opt || !opt.value) {
-                                                if (hint) hint.textContent = '(select a session)';
-                                                return;
-                                            }
-                                            var spots = parseInt(opt.getAttribute('data-spots'), 10);
-                                            var minSt = parseInt(opt.getAttribute('data-min-students'), 10) || serviceMin;
-                                            minSt = Math.max(minSt, serviceMin);
-                                            if (hint) hint.textContent = '(Available seats: ' + spots + ', min. ' + minSt + ')';
-                                            numInput.min = minSt;
-                                            numInput.max = Math.max(minSt, spots);
-                                            var v = parseInt(numInput.value, 10);
-                                            if (isNaN(v) || v < minSt) numInput.value = minSt;
-                                            if (v > spots) numInput.value = spots;
-                                        }
-
-                                        sessionSelect.addEventListener('change', updateFromSession);
                                         if (locSelect) locSelect.addEventListener('change', filterSessions);
                                         filterSessions();
-                                        updateFromSession();
                                     })();
                                     </script>
+                                    @endif
                                     @endif
                                 </div>
                             @endif

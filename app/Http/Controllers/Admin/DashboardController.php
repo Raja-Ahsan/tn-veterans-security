@@ -156,6 +156,8 @@ class DashboardController extends Controller
 
         $travelBelowMinimum = $this->travelClassService->getSchedulesBelowTravelMinimum();
 
+        $deliveryCounts = Service::deliveryCountMap();
+
         return view('admin.dashboard', compact(
             'servicesCount',
             'activeServicesCount',
@@ -188,7 +190,8 @@ class DashboardController extends Controller
             'bankPending',
             'recentBookings',
             'recentPayments',
-            'travelBelowMinimum'
+            'travelBelowMinimum',
+            'deliveryCounts'
         ));
     }
 }

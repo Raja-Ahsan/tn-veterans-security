@@ -40,6 +40,11 @@ class CourseModule extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function videos(): HasMany
+    {
+        return $this->hasMany(CourseModuleVideo::class)->orderBy('order')->orderBy('id');
+    }
+
     public function quizQuestions(): HasMany
     {
         return $this->hasMany(ModuleQuizQuestion::class)->orderBy('order');
@@ -48,6 +53,13 @@ class CourseModule extends Model
     public function progressRecords(): HasMany
     {
         return $this->hasMany(StudentModuleProgress::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (CourseModule $module): void {
+            $module->videos->each->delete();
+        });
     }
 
     public function passingScore(): int

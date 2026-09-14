@@ -265,6 +265,12 @@
                     </div>
                 @endif
 
+                @if(session('status'))
+                    <div class="alert bg-green-50 border-2 border-green-200 text-green-800">
+                        <p class="text-sm font-medium">{{ session('status') }}</p>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('student.login') }}">
                     @csrf
 
@@ -299,11 +305,12 @@
                         </div>
                     </div>
 
-                    <div class="mb-6">
+                    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
                         <label class="checkbox-wrapper">
                             <input type="checkbox" name="remember">
                             <span>Remember me for 30 days</span>
                         </label>
+                        <a href="{{ route('student.password.request') }}" class="auth-link text-sm">Forgot password?</a>
                     </div>
 
                     <button type="submit" class="btn-submit">

@@ -33,6 +33,14 @@
                         @endif
 
                         <div class="mb-4 space-y-2">
+                            @php
+                                $deliveryBadge = match ($service->deliveryFormat()) {
+                                    'online' => ['Online', 'bg-sky-100 text-sky-800'],
+                                    'blended' => ['Blended', 'bg-cyan-100 text-cyan-800'],
+                                    default => ['In Person', 'bg-emerald-100 text-emerald-800'],
+                                };
+                            @endphp
+                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold uppercase {{ $deliveryBadge[1] }}">{{ $deliveryBadge[0] }}</span>
                             @if($service->is_travel_based)
                                 <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold uppercase text-amber-800">Travel class</span>
                             @endif
@@ -75,6 +83,16 @@
         <h3 class="text-2xl font-bold text-[var(--text-color)] uppercase" style="font-family: var(--font-display);">
             No classes found
         </h3>
-        <p class="mt-2 text-gray-600">Try a different class name, or clear the search.</p>
+        <p class="mt-2 text-gray-600">
+            @if(request('delivery') === 'online')
+                No fully online classes are listed right now.
+            @elseif(request('delivery') === 'blended')
+                No blended classes are listed right now.
+            @elseif(request('delivery') === 'in-person')
+                No in person classes are listed right now.
+            @else
+                Try a different class name, or clear the search.
+            @endif
+        </p>
     </div>
 @endif

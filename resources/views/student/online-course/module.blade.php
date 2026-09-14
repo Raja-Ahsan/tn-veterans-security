@@ -4,11 +4,22 @@
 
 @section('content')
 @php
-    $embedUrl = $courseModule->embedVideoUrl();
-    $hasExternalVideo = $courseModule->hasExternalVideoLink();
+    $videos = $videos ?? collect();
+    $selectedVideo = $selectedVideo ?? null;
+    $videoProgressMap = $videoProgressMap ?? collect();
+    $hasWatchedVideo = $hasWatchedVideo ?? true;
+    $quizQuestions = $quizQuestions ?? $courseModule->quizQuestions;
+    $uploadedUrl = $selectedVideo?->uploadedVideoUrl();
+    $embedUrl = $selectedVideo?->embedVideoUrl() ?? ($selectedVideo ? null : $courseModule->embedVideoUrl());
+    $hasExternalVideo = $selectedVideo
+        ? $selectedVideo->hasExternalVideoLink()
+        : $courseModule->hasExternalVideoLink();
     $hasContent = filled(trim(strip_tags((string) $courseModule->content)));
-    $quizCount = $courseModule->quizQuestions->count();
-    $passed = (bool) ($moduleProgress?->is_completed);
+    $quizCount = $quizQuestions->count();
+    $passed = $selectedVideo
+        ? app(\App\Services\BlendedCourseService::class)->isVideoComplete(auth('student')->user(), $selectedVideo)
+        : (bool) ($moduleProgress?->is_completed);
+    $modulePassed = $modulePassed ?? (bool) ($moduleProgress?->is_completed);
     $quizReview = $quizReview ?? [];
     $latestAttempt = $latestAttempt ?? null;
     $hasReview = $passed && count($quizReview) > 0;
@@ -36,28 +47,102 @@
     <h1 class="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">{{ $courseModule->title }}</h1>
     @if($passed)
         <p class="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
-            <i class="fas fa-check-circle"></i> Passed with {{ $moduleProgress->best_score }}%
+            <i class="fas fa-check-circle"></i>
+            @if($selectedVideo)
+                {{ $selectedVideo->displayTitle() }} passed
+                @if($modulePassed) · Module complete @endif
+            @else
+                Passed with {{ $moduleProgress->best_score }}%
+            @endif
         </p>
     @elseif($quizCount > 0)
-        <p class="mt-2 text-sm text-gray-500">Review the material below, then take the timed quiz. Passing score: {{ $passingScore }}%.</p>
+        <p class="mt-2 text-sm text-gray-500">Watch the full video (pause is allowed; skipping ahead is not). After it ends, take the timed quiz. Passing score: {{ $passingScore }}%.</p>
     @endif
 </div>
 
 <div class="space-y-5">
-    @if($embedUrl)
+    @if($videos->count() > 0)
+        <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-gray-500">Videos in this module</h2>
+            <ol class="space-y-2">
+                @foreach($videos as $video)
+                    @php
+                        $vp = $videoProgressMap->get($video->id);
+                        $videoDone = app(\App\Services\BlendedCourseService::class)->isVideoComplete(auth('student')->user(), $video);
+                        $videoLocked = ! app(\App\Services\BlendedCourseService::class)->canAccessVideo(auth('student')->user(), $courseModule, $video);
+                        $isCurrent = $selectedVideo && $selectedVideo->id === $video->id;
+                    @endphp
+                    <li>
+                        @if($videoLocked)
+                            <div class="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-400">
+                                <i class="fas fa-lock w-4 text-center"></i>
+                                <span>{{ $loop->iteration }}. {{ $video->displayTitle() }}</span>
+                                <span class="ml-auto text-xs">Locked</span>
+                            </div>
+                        @else
+                            <a href="{{ route('student.online-course.module', [$service, $courseModule, 'video' => $video->id]) }}"
+                               class="flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm {{ $isCurrent ? 'border-[var(--brand)] bg-green-50 font-semibold text-gray-900' : 'border-gray-200 bg-white text-gray-800 hover:border-green-300' }}">
+                                <i class="fas {{ $videoDone ? 'fa-check-circle text-emerald-600' : 'fa-play-circle text-[var(--brand)]' }} w-4 text-center"></i>
+                                <span>{{ $loop->iteration }}. {{ $video->displayTitle() }}</span>
+                                @if($videoDone)
+                                    <span class="ml-auto text-xs font-semibold text-emerald-700">Passed</span>
+                                @elseif($vp?->video_watched)
+                                    <span class="ml-auto text-xs text-blue-700">Watched</span>
+                                @endif
+                            </a>
+                        @endif
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+    @endif
+
+    @if($uploadedUrl)
+        <div class="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-gray-200 bg-black shadow-sm">
+            <div class="aspect-video">
+                <video
+                    id="module-video-player"
+                    class="h-full w-full"
+                    controls
+                    controlsList="nodownload noplaybackrate noremoteplayback"
+                    disablePictureInPicture
+                    playsinline
+                    preload="metadata"
+                    oncontextmenu="return false;"
+                    data-watch-url="{{ route('student.online-course.video.watched', [$service, $courseModule, $selectedVideo]) }}"
+                    data-already-watched="{{ $hasWatchedVideo ? '1' : '0' }}"
+                    data-resume-seconds="{{ (int) ($videoProgress?->last_position_seconds ?? 0) }}"
+                    data-csrf="{{ csrf_token() }}"
+                >
+                    <source src="{{ $uploadedUrl }}" type="video/mp4">
+                    Your browser does not support this video.
+                </video>
+            </div>
+        </div>
+        @unless($hasWatchedVideo)
+            <p class="text-center text-sm text-amber-800"><i class="fas fa-info-circle mr-1"></i> Pause is allowed. Skipping ahead is disabled. Finish the video to unlock the quiz.</p>
+        @endunless
+    @elseif($embedUrl)
         <div class="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-gray-200 bg-black shadow-sm">
             <div class="aspect-video">
                 <iframe
+                    id="module-embed-player"
                     src="{{ $embedUrl }}"
                     class="h-full w-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
                     loading="lazy"
                     referrerpolicy="strict-origin-when-cross-origin"
-                    title="{{ $courseModule->title }} video"
+                    title="{{ $selectedVideo?->displayTitle() ?? $courseModule->title }} video"
+                    data-watch-url="{{ $selectedVideo ? route('student.online-course.video.watched', [$service, $courseModule, $selectedVideo]) : '' }}"
+                    data-already-watched="{{ $hasWatchedVideo ? '1' : '0' }}"
+                    data-csrf="{{ csrf_token() }}"
                 ></iframe>
             </div>
         </div>
+        @if($selectedVideo && $selectedVideo->requiresWatchCompletion() && ! $hasWatchedVideo)
+            <p class="text-center text-sm text-amber-800"><i class="fas fa-info-circle mr-1"></i> Watch this video to the end to unlock the quiz.</p>
+        @endif
     @elseif($hasExternalVideo)
         <div class="rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -69,7 +154,7 @@
                         This link opens in a new tab (not an embeddable YouTube/Vimeo player).
                     </p>
                 </div>
-                <a href="{{ $courseModule->video_url }}" target="_blank" rel="noopener noreferrer"
+                <a href="{{ $selectedVideo->video_url ?? $courseModule->video_url }}" target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700">
                     Open resource <i class="fas fa-arrow-up-right-from-square text-xs"></i>
                 </a>
@@ -105,11 +190,11 @@
             <h2 class="mb-3 text-lg font-bold text-gray-900">Lesson content</h2>
             <div class="prose max-w-none text-gray-700">{!! nl2br(e($courseModule->content)) !!}</div>
         </div>
-    @elseif(! $embedUrl && ! $hasExternalVideo && $quizCount > 0 && count($materials) === 0)
+    @elseif(! $uploadedUrl && ! $embedUrl && ! $hasExternalVideo && $quizCount > 0 && count($materials) === 0)
         <div class="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-6 text-sm text-gray-600 shadow-sm">
             No written lesson content was added for this module. You can still take the quiz below.
         </div>
-    @elseif(! $embedUrl && ! $hasExternalVideo && $quizCount === 0)
+    @elseif(! $uploadedUrl && ! $embedUrl && ! $hasExternalVideo && $quizCount === 0)
         <div class="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-10 text-center shadow-sm">
             <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
                 <i class="fas fa-book-open text-xl"></i>
@@ -206,7 +291,7 @@
         </div>
     @endif
 
-    @if($passed)
+    @if($modulePassed)
         <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
             <p class="font-semibold text-emerald-900">Module completed</p>
             <p class="mt-1 text-sm text-emerald-800">Best score: {{ $moduleProgress->best_score }}%. You can continue to the next unlocked module.</p>
@@ -257,10 +342,10 @@
                 Back to modules
             </a>
         </div>
-    @elseif($quizCount > 0)
+    @elseif($quizCount > 0 && ! $passed)
         <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
             <div class="mb-5">
-                <h2 class="text-xl font-bold text-gray-900">Module Quiz</h2>
+                <h2 class="text-xl font-bold text-gray-900">{{ $selectedVideo ? $selectedVideo->displayTitle().' quiz' : 'Module Quiz' }}</h2>
                 <p class="text-sm text-gray-500">
                     {{ $quizCount }} {{ Str::plural('question', $quizCount) }}
                     · {{ $quizMinutes }} {{ Str::plural('minute', $quizMinutes) }} time limit
@@ -282,9 +367,17 @@
                    class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
                     <i class="fas fa-play text-xs"></i> Continue quiz
                 </a>
+            @elseif($selectedVideo && $selectedVideo->requiresWatchCompletion() && ! $hasWatchedVideo)
+                <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <i class="fas fa-lock mr-1"></i>
+                    Finish watching the video to unlock this quiz. You can pause, but you cannot skip ahead.
+                </div>
             @elseif($canAttemptQuiz)
                 <form method="POST" action="{{ route('student.online-course.quiz.start', [$service, $courseModule]) }}">
                     @csrf
+                    @if($selectedVideo)
+                        <input type="hidden" name="video_id" value="{{ $selectedVideo->id }}">
+                    @endif
                     <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
                         <i class="fas fa-play text-xs"></i> Start timed quiz
                     </button>
@@ -293,4 +386,127 @@
         </div>
     @endif
 </div>
+
+@if(($uploadedUrl || $embedUrl) && $selectedVideo && ! $hasWatchedVideo)
+<script>
+(function () {
+    var video = document.getElementById('module-video-player');
+    var embed = document.getElementById('module-embed-player');
+    var watchUrl = (video || embed) ? (video || embed).getAttribute('data-watch-url') : '';
+    var csrf = (video || embed) ? (video || embed).getAttribute('data-csrf') : '';
+    var already = (video || embed) && (video || embed).getAttribute('data-already-watched') === '1';
+    if (already || !watchUrl) return;
+
+    var markedComplete = false;
+    var lastSavedPosition = 0;
+
+    function postWatch(payload) {
+        return fetch(watchUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload)
+        });
+    }
+
+    function markComplete(duration, position) {
+        if (markedComplete) return;
+        markedComplete = true;
+        postWatch({
+            completed: true,
+            duration_seconds: Math.round(duration || 0),
+            position_seconds: Math.round(position || duration || 0)
+        }).then(function () {
+            window.location.reload();
+        }).catch(function () {
+            markedComplete = false;
+        });
+    }
+
+    function saveProgress(position, duration) {
+        var rounded = Math.floor(position || 0);
+        if (rounded < lastSavedPosition + 5) return;
+        lastSavedPosition = rounded;
+        postWatch({
+            completed: false,
+            position_seconds: rounded,
+            duration_seconds: Math.round(duration || 0)
+        });
+    }
+
+    if (video) {
+        var maxWatched = Math.max(0, parseFloat(video.getAttribute('data-resume-seconds') || '0') || 0);
+        var seekingLock = false;
+        lastSavedPosition = Math.floor(maxWatched);
+
+        function clampForwardSeek() {
+            if (video.currentTime > maxWatched + 0.35) {
+                seekingLock = true;
+                video.currentTime = maxWatched;
+            }
+        }
+
+        video.addEventListener('loadedmetadata', function () {
+            if (maxWatched > 0 && maxWatched < (video.duration || Infinity)) {
+                video.currentTime = maxWatched;
+            }
+        });
+
+        video.addEventListener('timeupdate', function () {
+            if (seekingLock || video.seeking) return;
+            if (video.currentTime > maxWatched) {
+                maxWatched = video.currentTime;
+            }
+            saveProgress(maxWatched, video.duration || 0);
+        });
+
+        video.addEventListener('seeking', clampForwardSeek);
+        video.addEventListener('seeked', function () {
+            clampForwardSeek();
+            seekingLock = false;
+        });
+
+        video.addEventListener('ratechange', function () {
+            if (video.playbackRate > 1) {
+                video.playbackRate = 1;
+            }
+        });
+
+        video.addEventListener('keydown', function (event) {
+            // Block forward skip keys while locked.
+            var blocked = ['ArrowRight', 'ArrowUp', '.', '>', 'MediaFastForward'];
+            if (blocked.indexOf(event.key) !== -1) {
+                event.preventDefault();
+            }
+        });
+
+        video.addEventListener('ended', function () {
+            maxWatched = Math.max(maxWatched, video.duration || 0);
+            markComplete(video.duration || 0, maxWatched);
+        });
+    }
+
+    if (embed && /youtube\.com\/embed/.test(embed.src || '')) {
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+        window.onYouTubeIframeAPIReady = function () {
+            new YT.Player('module-embed-player', {
+                events: {
+                    onStateChange: function (event) {
+                        if (event.data === YT.PlayerState.ENDED) {
+                            markComplete(0, 0);
+                        }
+                    }
+                }
+            });
+        };
+    }
+})();
+</script>
+@endif
 @endsection

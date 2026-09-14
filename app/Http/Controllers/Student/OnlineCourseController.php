@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\CourseModule;
+use App\Models\CourseModuleVideo;
 use App\Models\ModuleQuizSession;
 use App\Models\Service;
 use App\Services\AdminNotifier;
@@ -62,16 +63,30 @@ class OnlineCourseController extends Controller
                 ->with('error', 'Complete the previous module before continuing.');
         }
 
-        $courseModule->load('quizQuestions');
+        $courseModule->load(['videos.quizQuestions', 'quizQuestions']);
+        $videos = $this->blendedCourse->getVideosForModule($courseModule);
+        $selectedVideo = $this->resolveSelectedVideo($student, $courseModule, $videos);
+        if ($selectedVideo && ! $this->blendedCourse->canAccessVideo($student, $courseModule, $selectedVideo)) {
+            return redirect()->route('student.online-course.module', [$service, $courseModule])
+                ->with('error', 'Pass the previous video quiz before continuing.');
+        }
+
         $moduleProgress = $progress->get($courseModule->id);
-        $latestAttempt = $this->blendedCourse->getLatestAttempt($student, $courseModule);
-        $passed = (bool) ($moduleProgress?->is_completed);
+        $videoProgressMap = $this->blendedCourse->getVideoProgress($student, $courseModule);
+        $latestAttempt = $this->blendedCourse->getLatestAttempt($student, $courseModule, $selectedVideo);
+        $videoProgress = $selectedVideo ? $videoProgressMap->get($selectedVideo->id) : null;
+        $passed = $selectedVideo
+            ? $this->blendedCourse->isVideoComplete($student, $selectedVideo)
+            : (bool) ($moduleProgress?->is_completed);
         $quizReview = ($latestAttempt && $passed)
-            ? $this->blendedCourse->buildQuizReview($courseModule, $latestAttempt->answers ?? [], true)
+            ? $this->blendedCourse->buildQuizReview($courseModule, $latestAttempt->answers ?? [], true, $selectedVideo)
             : [];
-        $canAttemptQuiz = $this->blendedCourse->canAttemptQuiz($student, $courseModule);
-        $needsReenrollment = $this->blendedCourse->hasExhaustedQuizAttempt($student, $courseModule);
-        $expired = $this->blendedCourse->finalizeExpiredOpenSession($student, $courseModule);
+        $canAttemptQuiz = $this->blendedCourse->canAttemptQuiz($student, $courseModule, $selectedVideo);
+        $needsReenrollment = $this->blendedCourse->hasExhaustedQuizAttempt($student, $courseModule, $selectedVideo);
+        $hasWatchedVideo = $selectedVideo
+            ? $this->blendedCourse->hasWatchedVideo($student, $selectedVideo)
+            : true;
+        $expired = $this->blendedCourse->finalizeExpiredOpenSession($student, $courseModule, $selectedVideo);
         if ($expired) {
             $this->afterQuizCompleted($student, $service, $courseModule);
 
@@ -79,52 +94,125 @@ class OnlineCourseController extends Controller
                 ->with('warning', 'Time is up. Your answers were submitted automatically.');
         }
 
-        $openSession = $this->blendedCourse->getOpenSession($student, $courseModule);
+        $openSession = $this->blendedCourse->getOpenSession($student, $courseModule, $selectedVideo);
         if ($openSession) {
             return redirect()->route('student.online-course.quiz.take', [$service, $courseModule])
                 ->with('warning', 'Finish this quiz first — your timer is still running.');
         }
 
+        $quizQuestions = $this->blendedCourse->questionsForDisplay($courseModule, $selectedVideo);
         $quizMinutes = $this->blendedCourse->quizTimeLimitMinutes($courseModule);
         $passingScore = $courseModule->passingScore();
         $maxAttempts = $courseModule->maxAttempts();
-        $attemptsUsed = (int) ($moduleProgress?->attempts ?? 0);
+        $attemptsUsed = (int) ($videoProgress?->attempts ?? $moduleProgress?->attempts ?? 0);
         $materials = $courseModule->materialFiles();
         $supportEmail = \App\Models\SiteSetting::query()->value('email');
         $supportPhone = \App\Models\SiteSetting::query()->value('phone');
+        $modulePassed = (bool) ($moduleProgress?->is_completed);
 
         return view('student.online-course.module', compact(
             'service',
             'courseModule',
             'moduleProgress',
             'modules',
+            'videos',
+            'selectedVideo',
+            'videoProgressMap',
             'latestAttempt',
             'quizReview',
             'openSession',
             'quizMinutes',
             'canAttemptQuiz',
             'needsReenrollment',
+            'hasWatchedVideo',
             'passingScore',
             'maxAttempts',
             'attemptsUsed',
             'materials',
             'supportEmail',
-            'supportPhone'
+            'supportPhone',
+            'quizQuestions',
+            'modulePassed'
         ));
     }
 
-    public function startQuiz(Service $service, CourseModule $courseModule)
+    public function markWatched(Request $request, Service $service, CourseModule $courseModule, CourseModuleVideo $courseModuleVideo)
+    {
+        $this->assertModuleAccess($service, $courseModule);
+        abort_unless($courseModuleVideo->course_module_id === $courseModule->id, 404);
+
+        $student = Auth::guard('student')->user();
+        if (! $this->blendedCourse->canAccessVideo($student, $courseModule, $courseModuleVideo)) {
+            abort(403, 'Pass the previous video quiz first.');
+        }
+
+        $validated = $request->validate([
+            'completed' => ['sometimes', 'boolean'],
+            'duration_seconds' => ['nullable', 'integer', 'min:0'],
+            'position_seconds' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $completed = (bool) ($validated['completed'] ?? false);
+        $duration = isset($validated['duration_seconds']) ? (int) $validated['duration_seconds'] : null;
+        $position = isset($validated['position_seconds'])
+            ? (int) $validated['position_seconds']
+            : ($completed ? (int) ($duration ?? 0) : 0);
+
+        // Legacy clients that only posted duration after "ended" still count as complete.
+        if (! array_key_exists('completed', $validated) && $request->filled('duration_seconds')) {
+            $completed = true;
+            $position = max($position, (int) $request->integer('duration_seconds'));
+        }
+
+        $progress = $this->blendedCourse->markVideoWatched(
+            $student,
+            $courseModule,
+            $courseModuleVideo,
+            $duration,
+            $position,
+            $completed
+        );
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'watched' => (bool) $progress->video_watched,
+                'last_position_seconds' => (int) $progress->last_position_seconds,
+            ]);
+        }
+
+        if ($progress->video_watched) {
+            return redirect()->route('student.online-course.module', [$service, $courseModule, 'video' => $courseModuleVideo->id])
+                ->with('success', 'Video complete. You can start the quiz.');
+        }
+
+        return redirect()->route('student.online-course.module', [$service, $courseModule, 'video' => $courseModuleVideo->id])
+            ->with('error', 'Finish the video to the end before starting the quiz.');
+    }
+
+    public function startQuiz(Request $request, Service $service, CourseModule $courseModule)
     {
         $this->assertModuleAccess($service, $courseModule);
         $student = Auth::guard('student')->user();
+        $courseModule->load(['videos.quizQuestions', 'quizQuestions']);
+        $video = $this->resolveQuizVideoFromRequest($request, $student, $courseModule);
 
-        $courseModule->load('quizQuestions');
-        if ($courseModule->quizQuestions->isEmpty()) {
+        $questions = $this->blendedCourse->questionsForDisplay($courseModule, $video);
+        if ($questions->isEmpty()) {
             return redirect()->route('student.online-course.module', [$service, $courseModule])
                 ->with('error', 'This module has no quiz questions yet.');
         }
 
-        $expired = $this->blendedCourse->finalizeExpiredOpenSession($student, $courseModule);
+        if ($video && ! $this->blendedCourse->canAccessVideo($student, $courseModule, $video)) {
+            return redirect()->route('student.online-course.module', [$service, $courseModule])
+                ->with('error', 'Pass the previous video quiz before continuing.');
+        }
+
+        if ($video && $video->requiresWatchCompletion() && ! $this->blendedCourse->hasWatchedVideo($student, $video)) {
+            return redirect()->route('student.online-course.module', [$service, $courseModule, 'video' => $video->id])
+                ->with('error', 'Watch the full video before starting the quiz. You can pause, but you cannot skip ahead.');
+        }
+
+        $expired = $this->blendedCourse->finalizeExpiredOpenSession($student, $courseModule, $video);
         if ($expired) {
             $this->afterQuizCompleted($student, $service, $courseModule);
 
@@ -132,17 +220,17 @@ class OnlineCourseController extends Controller
                 ->with('warning', 'Time is up. Your answers were submitted automatically.');
         }
 
-        $open = $this->blendedCourse->getOpenSession($student, $courseModule);
+        $open = $this->blendedCourse->getOpenSession($student, $courseModule, $video);
         if ($open) {
             return redirect()->route('student.online-course.quiz.take', [$service, $courseModule]);
         }
 
-        if (! $this->blendedCourse->canAttemptQuiz($student, $courseModule)) {
+        if (! $this->blendedCourse->canAttemptQuiz($student, $courseModule, $video)) {
             return redirect()->route('student.online-course.module', [$service, $courseModule])
                 ->with('error', 'This quiz attempt is used. Contact admin to re-enroll for a new attempt with updated questions.');
         }
 
-        $this->blendedCourse->startQuizSession($student, $service, $courseModule);
+        $this->blendedCourse->startQuizSession($student, $service, $courseModule, $video);
 
         return redirect()->route('student.online-course.quiz.take', [$service, $courseModule]);
     }
@@ -151,7 +239,7 @@ class OnlineCourseController extends Controller
     {
         $this->assertModuleAccess($service, $courseModule);
         $student = Auth::guard('student')->user();
-        $courseModule->load(['quizQuestions' => fn ($q) => $q->orderBy('order')]);
+        $courseModule->load(['videos.quizQuestions']);
 
         $expired = $this->blendedCourse->finalizeExpiredOpenSession($student, $courseModule);
         if ($expired) {
@@ -167,7 +255,7 @@ class OnlineCourseController extends Controller
                 ->with('error', 'Start the quiz to begin the timed attempt.');
         }
 
-        $questions = $courseModule->quizQuestions;
+        $questions = $this->blendedCourse->questionsForQuiz($courseModule, $session->courseModuleVideo);
         $total = $questions->count();
         $index = min($session->current_index, max($total - 1, 0));
         $question = $questions->get($index);
@@ -203,8 +291,10 @@ class OnlineCourseController extends Controller
             ->latest('id')
             ->firstOrFail();
 
+        $questions = $this->blendedCourse->questionsForQuiz($courseModule, $session->courseModuleVideo);
+
         if ($session->isExpired() || $request->boolean('auto_submit')) {
-            $question = $courseModule->quizQuestions->get($session->current_index);
+            $question = $questions->get($session->current_index);
             if ($question) {
                 $answer = $question->allow_multiple
                     ? $request->input('answers', [])
@@ -229,7 +319,7 @@ class OnlineCourseController extends Controller
                 ->with('warning', 'Time is up. Your answers were submitted automatically.');
         }
 
-        $question = $courseModule->quizQuestions->get($session->current_index);
+        $question = $questions->get($session->current_index);
         if (! $question) {
             $session = $this->blendedCourse->finalizeSession($student, $courseModule, $session, false);
             $this->afterQuizCompleted($student, $service, $courseModule);
@@ -303,8 +393,9 @@ class OnlineCourseController extends Controller
         $answers = $moduleQuizSession->answers ?? ($moduleQuizSession->attempt->answers ?? []);
         $score = $moduleQuizSession->attempt?->score ?? 0;
         $passed = (bool) ($moduleQuizSession->attempt?->passed);
+        $quizVideo = $moduleQuizSession->courseModuleVideo;
         $quizReview = $passed
-            ? $this->blendedCourse->buildQuizReview($courseModule, $answers, true)
+            ? $this->blendedCourse->buildQuizReview($courseModule, $answers, true, $quizVideo)
             : [];
         $progress = $this->blendedCourse->getProgress($student, $service);
         $modules = $this->blendedCourse->getModulesForService($service);
@@ -313,6 +404,14 @@ class OnlineCourseController extends Controller
         $supportEmail = \App\Models\SiteSetting::query()->value('email');
         $supportPhone = \App\Models\SiteSetting::query()->value('phone');
         $passingScore = $courseModule->passingScore();
+        $nextVideo = null;
+        if ($passed && $quizVideo) {
+            $nextVideo = $this->blendedCourse->firstContinueVideo($student, $courseModule);
+            if ($nextVideo && $nextVideo->id === $quizVideo->id) {
+                $nextVideo = null;
+            }
+        }
+        $modulePassed = (bool) ($progress->get($courseModule->id)?->is_completed);
 
         return view('student.online-course.quiz-result', compact(
             'service',
@@ -327,7 +426,10 @@ class OnlineCourseController extends Controller
             'certificate',
             'supportEmail',
             'supportPhone',
-            'passingScore'
+            'passingScore',
+            'quizVideo',
+            'nextVideo',
+            'modulePassed'
         ));
     }
 
@@ -378,5 +480,37 @@ class OnlineCourseController extends Controller
         );
 
         $this->completionService->notifyIfCourseCompleted($student, $service, $this->blendedCourse, $courseModule);
+    }
+
+    /**
+     * @param  Collection<int, CourseModuleVideo>  $videos
+     */
+    private function resolveSelectedVideo($student, CourseModule $courseModule, $videos): ?CourseModuleVideo
+    {
+        if ($videos->isEmpty()) {
+            return null;
+        }
+
+        $requestedId = (int) request('video');
+        if ($requestedId) {
+            $requested = $videos->firstWhere('id', $requestedId);
+            if ($requested && $this->blendedCourse->canAccessVideo($student, $courseModule, $requested)) {
+                return $requested;
+            }
+        }
+
+        return $this->blendedCourse->firstContinueVideo($student, $courseModule);
+    }
+
+    private function resolveQuizVideoFromRequest(Request $request, $student, CourseModule $courseModule): ?CourseModuleVideo
+    {
+        $videoId = $request->integer('video_id') ?: $request->integer('video');
+        $video = $this->blendedCourse->resolveQuizVideo($courseModule, $videoId ?: null);
+
+        if ($video) {
+            return $video;
+        }
+
+        return $this->blendedCourse->firstContinueVideo($student, $courseModule);
     }
 }

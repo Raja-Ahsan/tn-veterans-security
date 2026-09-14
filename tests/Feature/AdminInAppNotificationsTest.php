@@ -48,10 +48,13 @@ class AdminInAppNotificationsTest extends TestCase
         ]);
 
         $this->post(route('student.register'), [
-            'name' => 'Jane Student',
+            'first_name' => 'Jane',
+            'last_name' => 'Student',
             'email' => 'jane.admin.notify@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
+            'phone' => '6155550100',
+            'ssn' => '456-78-9012',
         ])->assertRedirect(route('student.dashboard'));
 
         Notification::assertSentTo($admin, AdminAlert::class, function (AdminAlert $notification): bool {

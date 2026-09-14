@@ -100,17 +100,42 @@
             </script>
 
             <!-- Name -->
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name <span class="text-red-500">*</span></label>
-                <input type="text" 
-                       id="name" 
-                       name="name" 
-                       value="{{ old('name', $student->name) }}"
-                       required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent">
-                @error('name')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                    <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
+                    <input type="text"
+                           id="first_name"
+                           name="first_name"
+                           value="{{ old('first_name', $student->first_name) }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent">
+                    @error('first_name')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="middle_name" class="block text-sm font-medium text-gray-700 mb-2">Middle Name</label>
+                    <input type="text"
+                           id="middle_name"
+                           name="middle_name"
+                           value="{{ old('middle_name', $student->middle_name) }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent">
+                    @error('middle_name')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
+                    <input type="text"
+                           id="last_name"
+                           name="last_name"
+                           value="{{ old('last_name', $student->last_name) }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent">
+                    @error('last_name')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
             <!-- Email -->
@@ -129,13 +154,39 @@
 
             <!-- Phone -->
             <div>
-                <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input type="text" 
-                       id="phone" 
-                       name="phone" 
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number <span class="text-red-500">*</span></label>
+                <input type="tel"
+                       id="phone"
+                       name="phone"
                        value="{{ old('phone', $student->phone) }}"
+                       required
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent">
                 @error('phone')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- SSN -->
+            <div>
+                <label for="ssn" class="block text-sm font-medium text-gray-700 mb-2">
+                    Social Security Number
+                    @if(blank($student->ssn_last_four))
+                        <span class="text-red-500">*</span>
+                    @endif
+                </label>
+                @if(filled($student->ssn_last_four))
+                    <p class="mb-2 text-sm text-gray-600">On file: <span class="font-semibold">{{ $student->maskedSsn() }}</span>. Leave blank to keep it, or enter a new SSN to replace it.</p>
+                @endif
+                <input type="text"
+                       id="ssn"
+                       name="ssn"
+                       value="{{ old('ssn') }}"
+                       inputmode="numeric"
+                       autocomplete="off"
+                       placeholder="XXX-XX-XXXX"
+                       @required(blank($student->ssn_last_four))
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent">
+                @error('ssn')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>

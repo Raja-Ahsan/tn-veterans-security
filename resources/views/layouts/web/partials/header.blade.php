@@ -55,7 +55,7 @@
         'login' => request()->routeIs('student.login'),
         'register' => request()->routeIs('student.register'),
         'dashboard' => (request()->routeIs('student.*')
-            && ! request()->routeIs(['student.login', 'student.register']))
+            && ! request()->routeIs(['student.login', 'student.register', 'student.password.*']))
             || (request()->routeIs('admin.*') && ! request()->routeIs('admin.login')),
         'classes_all' => request()->routeIs('training-classes') && ! request()->filled('category') && ! request()->filled('subcategory'),
     ];

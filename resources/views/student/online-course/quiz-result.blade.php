@@ -37,7 +37,7 @@
             <i class="fas {{ $passed ? 'fa-trophy' : 'fa-times' }} text-2xl"></i>
         </div>
         <h1 class="text-2xl font-bold {{ $passed ? 'text-emerald-950' : 'text-red-950' }}">
-            {{ $passed ? 'Module passed!' : 'Not quite there yet' }}
+            {{ $passed ? (($nextVideo ?? null) ? 'Video quiz passed!' : 'Module passed!') : 'Not quite there yet' }}
         </h1>
         <p class="mt-2 text-4xl font-black {{ $passed ? 'text-emerald-700' : 'text-red-700' }}">{{ $score }}%</p>
         <p class="mt-2 text-sm {{ $passed ? 'text-emerald-800' : 'text-red-800' }}">
@@ -48,7 +48,12 @@
         </p>
 
         <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
-            @if($passed && $nextUnlocked)
+            @if($passed && ($nextVideo ?? null))
+                <a href="{{ route('student.online-course.module', [$service, $courseModule, 'video' => $nextVideo->id]) }}"
+                   class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
+                    Continue to next video <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            @elseif($passed && $nextUnlocked)
                 <a href="{{ route('student.online-course.module', [$service, $nextModule]) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
                     Continue to next module <i class="fas fa-arrow-right text-xs"></i>

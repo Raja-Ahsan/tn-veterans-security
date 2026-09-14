@@ -134,7 +134,7 @@
         var questions = [
             { q: 'Will you be working around Alcohol?', yesMsg: 'Dallas Law is required.', key: 'Dallas Law' },
             { q: 'Will you be working at a school or hospital?', yesMsg: 'Active Shooter and BLS are mandatory. Handle With Care is recommended.', key: 'Active Shooter, BLS, Handle With Care' },
-            { q: 'Do you plan to carry Mace, Baton, Taser, or Handcuffs?', yesMsg: 'Less Than Lethal training is required.', key: 'Less Than Lethal' }
+            { q: 'Do you plan to carry OC Spray, Baton, Taser, or Handcuffs?', yesMsg: 'Less Than Lethal training is required.', key: 'Less Than Lethal' }
         ];
         var step = 0;
         var requiredTrainings = [];

@@ -9,6 +9,7 @@ class ModuleQuizQuestion extends Model
 {
     protected $fillable = [
         'course_module_id',
+        'course_module_video_id',
         'question',
         'options',
         'allow_multiple',
@@ -29,6 +30,11 @@ class ModuleQuizQuestion extends Model
     public function courseModule(): BelongsTo
     {
         return $this->belongsTo(CourseModule::class);
+    }
+
+    public function courseModuleVideo(): BelongsTo
+    {
+        return $this->belongsTo(CourseModuleVideo::class);
     }
 
     /**
