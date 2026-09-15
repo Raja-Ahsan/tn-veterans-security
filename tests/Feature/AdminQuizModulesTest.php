@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Models\User;
 use App\Support\QuizQuestionPayload;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class AdminQuizModulesTest extends TestCase
@@ -339,6 +340,87 @@ class AdminQuizModulesTest extends TestCase
             'course_module_id' => $module->id,
             'question' => 'Should not overwrite',
         ]);
+    }
+
+    public function test_video_upload_rejects_files_larger_than_configured_limit(): void
+    {
+        $admin = User::factory()->create();
+        [$service, $module, $video] = $this->seedVideo();
+
+        $oversized = UploadedFile::fake()->create(
+            'too-big.mp4',
+            ((int) config('filesystems.course_video_max_kb')) + 1,
+            'video/mp4'
+        );
+
+        $this->actingAs($admin)
+            ->put(route('admin.classes.course-modules.videos.update', [$service, $module, $video]), [
+                'title' => 'Video 1',
+                'video_source' => 'upload',
+                'video_file' => $oversized,
+            ])
+            ->assertSessionHasErrors('video_file');
+
+        $this->actingAs($admin)
+            ->put(route('admin.classes.course-modules.update', [$service, $module]), [
+                'title' => $module->title,
+                'quiz_time_limit_minutes' => 15,
+                'passing_score' => 90,
+                'max_attempts' => 1,
+                'is_active' => 1,
+                'video_source' => 'upload',
+                'video_file' => $oversized,
+            ])
+            ->assertSessionHasErrors('video_file');
+    }
+
+    public function test_video_source_cannot_be_both_upload_and_url(): void
+    {
+        $admin = User::factory()->create();
+        [$service, $module, $video] = $this->seedVideo();
+
+        $file = UploadedFile::fake()->create('lesson.mp4', 100, 'video/mp4');
+
+        $this->actingAs($admin)
+            ->put(route('admin.classes.course-modules.videos.update', [$service, $module, $video]), [
+                'title' => 'Video 1',
+                'video_source' => 'upload',
+                'video_file' => $file,
+                'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            ])
+            ->assertRedirect(route('admin.classes.course-modules.edit', [$service, $module]));
+
+        $video->refresh();
+        $this->assertNotNull($video->video_path);
+        $this->assertNull($video->video_url);
+
+        $this->actingAs($admin)
+            ->put(route('admin.classes.course-modules.videos.update', [$service, $module, $video]), [
+                'title' => 'Video 1',
+                'video_source' => 'url',
+                'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                'video_file' => UploadedFile::fake()->create('ignored.mp4', 100, 'video/mp4'),
+            ])
+            ->assertRedirect(route('admin.classes.course-modules.edit', [$service, $module]));
+
+        $video->refresh();
+        $this->assertNull($video->video_path);
+        $this->assertSame('https://www.youtube.com/watch?v=dQw4w9WgXcQ', $video->video_url);
+    }
+
+    public function test_edit_form_shows_exclusive_video_source_controls(): void
+    {
+        $admin = User::factory()->create();
+        [$service, $module] = $this->seedVideo();
+
+        $this->actingAs($admin)
+            ->get(route('admin.classes.course-modules.edit', [$service, $module]))
+            ->assertOk()
+            ->assertSee('Video source', false)
+            ->assertSee('name="video_source"', false)
+            ->assertSee('value="upload"', false)
+            ->assertSee('value="url"', false)
+            ->assertSee('Max 5MB', false);
     }
 
     public function test_creating_a_module_on_an_in_person_class_is_forbidden(): void

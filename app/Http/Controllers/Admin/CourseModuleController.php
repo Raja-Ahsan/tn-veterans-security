@@ -149,9 +149,21 @@ class CourseModuleController extends Controller
      */
     private function prepareModuleRequest(Request $request): void
     {
+        $source = $request->input('video_source', 'upload');
+        $videoUrl = $request->filled('video_url') ? $request->input('video_url') : null;
+
+        if ($source === 'upload') {
+            $videoUrl = null;
+        }
+
+        if ($source === 'url') {
+            $request->files->remove('video_file');
+        }
+
         $request->merge([
             'questions' => QuizQuestionPayload::normalize($request->input('questions', [])),
-            'video_url' => $request->filled('video_url') ? $request->input('video_url') : null,
+            'video_url' => $videoUrl,
+            'video_source' => in_array($source, ['upload', 'url'], true) ? $source : 'upload',
             'quiz_time_limit_minutes' => $request->filled('quiz_time_limit_minutes')
                 ? (int) $request->input('quiz_time_limit_minutes')
                 : 15,
@@ -175,8 +187,9 @@ class CourseModuleController extends Controller
             $this->moduleAttributes(),
         );
 
-        $validator->after(function ($validator): void {
+        $validator->after(function ($validator) use ($request): void {
             $this->correctAnswerMustMatchOptions($validator);
+            $this->rejectMixedVideoSources($request, $validator);
         });
 
         if ($validator->fails()) {
@@ -225,6 +238,16 @@ class CourseModuleController extends Controller
         }
     }
 
+    private function rejectMixedVideoSources(Request $request, \Illuminate\Validation\Validator $validator): void
+    {
+        if ($request->hasFile('video_file') && $request->filled('video_url')) {
+            $validator->errors()->add(
+                'video_file',
+                'Choose either an uploaded video or a video URL, not both.'
+            );
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -235,7 +258,8 @@ class CourseModuleController extends Controller
             'content' => 'nullable|string',
             'video_url' => 'nullable|url|max:500',
             'video_title' => 'nullable|string|max:255',
-            'video_file' => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime,video/ogg|max:102400',
+            'video_source' => 'nullable|in:upload,url',
+            'video_file' => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime,video/ogg|max:'.config('filesystems.course_video_max_kb'),
             'remove_video_file' => 'sometimes|boolean',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
@@ -260,11 +284,14 @@ class CourseModuleController extends Controller
      */
     private function moduleMessages(): array
     {
+        $maxMb = max(1, (int) ceil(config('filesystems.course_video_max_kb') / 1024));
+
         return [
             'title.required' => 'Module title is required.',
             'video_url.url' => 'Video URL must be a valid link (or leave it empty).',
             'video_file.mimetypes' => 'Upload an MP4, WebM, MOV, or OGG video.',
-            'video_file.max' => 'Video must be 100MB or smaller.',
+            'video_file.max' => "Video must be {$maxMb}MB or smaller.",
+            'video_source.in' => 'Choose upload or video URL as the video source.',
             'quiz_time_limit_minutes.required' => 'Set a quiz time limit in minutes.',
             'quiz_time_limit_minutes.min' => 'Quiz time must be at least 1 minute.',
             'questions.*.question.required' => 'Each quiz question needs question text.',
@@ -379,20 +406,23 @@ class CourseModuleController extends Controller
 
         $payload = [
             'title' => $request->input('video_title') ?: ($video->title ?: 'Video 1'),
-            'video_url' => $request->filled('video_url') ? $request->input('video_url') : null,
+            'video_url' => $request->input('video_source') === 'url' && $request->filled('video_url')
+                ? $request->input('video_url')
+                : null,
         ];
 
-        if ($request->boolean('remove_video_file')) {
+        if ($request->input('video_source') === 'url' || $request->boolean('remove_video_file')) {
             $video->deleteStoredFile();
             $payload['video_path'] = null;
             $payload['original_name'] = null;
         }
 
-        if ($request->hasFile('video_file')) {
+        if ($request->input('video_source') !== 'url' && $request->hasFile('video_file')) {
             $video->deleteStoredFile();
             $file = $request->file('video_file');
             $payload['video_path'] = $file->store('course-videos', 'public');
             $payload['original_name'] = $file->getClientOriginalName();
+            $payload['video_url'] = null;
         }
 
         $video->update($payload);

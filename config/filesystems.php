@@ -77,4 +77,16 @@ return [
         public_path('storage') => storage_path('app/public'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Course video upload limit (kilobytes)
+    |--------------------------------------------------------------------------
+    |
+    | Default 5MB for local/dev. Set COURSE_VIDEO_MAX_KB=102400 (100MB) in
+    | production when the server upload limits allow larger files.
+    |
+    */
+
+    'course_video_max_kb' => (int) env('COURSE_VIDEO_MAX_KB', 5120),
+
 ];

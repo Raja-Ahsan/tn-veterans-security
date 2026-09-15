@@ -34,11 +34,15 @@ class CourseModuleVideoController extends Controller
 
         $video = $courseModule->videos()->create([
             'title' => $validated['title'] ?? ('Video '.$nextOrder),
-            'video_url' => $validated['video_url'] ?? null,
+            'video_url' => ($request->input('video_source') === 'url')
+                ? ($validated['video_url'] ?? null)
+                : null,
             'order' => $nextOrder,
         ]);
 
-        $this->storeVideoFile($request, $video);
+        if ($request->input('video_source') !== 'url') {
+            $this->storeVideoFile($request, $video);
+        }
         $this->syncQuestions($courseModule, $video, $validated['questions'] ?? []);
 
         return redirect()->route('admin.classes.course-modules.edit', [$service, $courseModule])
@@ -67,11 +71,13 @@ class CourseModuleVideoController extends Controller
 
         $courseModuleVideo->update([
             'title' => $validated['title'] ?? $courseModuleVideo->title,
-            'video_url' => $validated['video_url'] ?? null,
+            'video_url' => ($request->input('video_source') === 'url')
+                ? ($validated['video_url'] ?? null)
+                : null,
             'order' => $validated['order'] ?? $courseModuleVideo->order,
         ]);
 
-        if ($request->boolean('remove_video_file')) {
+        if ($request->input('video_source') === 'url' || $request->boolean('remove_video_file')) {
             $courseModuleVideo->deleteStoredFile();
             $courseModuleVideo->update([
                 'video_path' => null,
@@ -79,7 +85,9 @@ class CourseModuleVideoController extends Controller
             ]);
         }
 
-        $this->storeVideoFile($request, $courseModuleVideo);
+        if ($request->input('video_source') !== 'url') {
+            $this->storeVideoFile($request, $courseModuleVideo);
+        }
         $this->syncQuestions($courseModule, $courseModuleVideo, $validated['questions'] ?? []);
 
         return redirect()->route('admin.classes.course-modules.edit', [$service, $courseModule])
@@ -171,9 +179,21 @@ class CourseModuleVideoController extends Controller
 
     private function prepareVideoRequest(Request $request): void
     {
+        $source = $request->input('video_source', 'upload');
+        $videoUrl = $request->filled('video_url') ? $request->input('video_url') : null;
+
+        if ($source === 'upload') {
+            $videoUrl = null;
+        }
+
+        if ($source === 'url') {
+            $request->files->remove('video_file');
+        }
+
         $request->merge([
             'questions' => QuizQuestionPayload::normalize($request->input('questions', [])),
-            'video_url' => $request->filled('video_url') ? $request->input('video_url') : null,
+            'video_url' => $videoUrl,
+            'video_source' => in_array($source, ['upload', 'url'], true) ? $source : 'upload',
         ]);
     }
 
@@ -182,10 +202,14 @@ class CourseModuleVideoController extends Controller
      */
     private function validateVideoRequest(Request $request): array
     {
+        $maxKb = (int) config('filesystems.course_video_max_kb');
+        $maxMb = max(1, (int) ceil($maxKb / 1024));
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'video_url' => 'nullable|url|max:500',
-            'video_file' => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime,video/ogg|max:102400',
+            'video_source' => 'nullable|in:upload,url',
+            'video_file' => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime,video/ogg|max:'.$maxKb,
             'remove_video_file' => 'sometimes|boolean',
             'order' => 'nullable|integer|min:1',
             'questions' => 'nullable|array',
@@ -198,12 +222,20 @@ class CourseModuleVideoController extends Controller
         ], [
             'title.required' => 'Video title is required.',
             'video_file.mimetypes' => 'Upload an MP4, WebM, MOV, or OGG video.',
-            'video_file.max' => 'Video must be 100MB or smaller.',
+            'video_file.max' => "Video must be {$maxMb}MB or smaller.",
+            'video_source.in' => 'Choose upload or video URL as the video source.',
             'questions.*.question.required' => 'Each quiz question needs question text.',
             'questions.*.options.min' => 'Each quiz question needs at least 2 options.',
         ]);
 
-        $validator->after(function ($validator): void {
+        $validator->after(function ($validator) use ($request): void {
+            if ($request->hasFile('video_file') && $request->filled('video_url')) {
+                $validator->errors()->add(
+                    'video_file',
+                    'Choose either an uploaded video or a video URL, not both.'
+                );
+            }
+
             $questions = $validator->getData()['questions'] ?? [];
             foreach ($questions as $index => $question) {
                 $options = $question['options'] ?? [];

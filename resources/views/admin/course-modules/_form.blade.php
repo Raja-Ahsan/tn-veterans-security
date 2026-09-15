@@ -23,6 +23,10 @@
     if (! is_array($questions) || count($questions) === 0) {
         $questions = [$defaultQuestion];
     }
+    $videoMaxMb = max(1, (int) ceil(config('filesystems.course_video_max_kb') / 1024));
+    $hasUploadedVideo = (bool) $primaryVideo?->uploadedVideoUrl();
+    $existingVideoUrl = old('video_url', $primaryVideo->video_url ?? ($hideModuleDetails ? '' : ($courseModule->video_url ?? '')));
+    $videoSource = old('video_source', ($hasUploadedVideo || blank($existingVideoUrl)) ? 'upload' : 'url');
 @endphp
 
 @if($errors->any())
@@ -52,14 +56,14 @@
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
 {{-- Module details --}}
-<div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm space-y-4 {{ $errors->has('title') || $errors->has('video_url') || $errors->has('quiz_time_limit_minutes') ? 'ring-1 ring-red-200' : '' }}">
+<div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-5 {{ $errors->has('title') || $errors->has('video_url') || $errors->has('video_file') || $errors->has('quiz_time_limit_minutes') ? 'ring-1 ring-red-200' : '' }}">
     <div class="flex items-start gap-3 border-b border-gray-100 pb-3">
         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-600 text-sm font-bold text-white">1</span>
         <div>
             <h3 class="text-lg font-bold text-gray-900">{{ $hideModuleDetails ? 'Video details' : 'Module details' }}</h3>
             <p class="text-sm text-gray-500">
                 @if($hideModuleDetails)
-                    Upload or link this video, then add its quiz. Students must finish the video before the quiz.
+                    Choose one video source (upload or URL), then add its quiz.
                 @elseif($moduleVideoCount > 1)
                     Module title, content, and quiz settings. Edit each video’s file and questions from the list above.
                 @else
@@ -70,95 +74,137 @@
     </div>
 
     @unless($hideModuleDetails)
-    <div>
-        <label for="module_title" class="block text-sm font-bold text-gray-700 mb-1.5">Title <span class="text-red-500">*</span></label>
-        <input type="text" id="module_title" name="title" value="{{ old('title', $courseModule->title ?? '') }}" required
-               placeholder="e.g. Module 1 — Safety Basics"
-               class="w-full rounded-md border px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 {{ $errors->has('title') ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500' }}">
-        @error('title')
-            <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-        @enderror
-    </div>
+    <div class="space-y-4">
+        <div>
+            <label for="module_title" class="block text-sm font-semibold text-gray-700 mb-1.5">Title <span class="text-red-500">*</span></label>
+            <input type="text" id="module_title" name="title" value="{{ old('title', $courseModule->title ?? '') }}" required
+                   placeholder="e.g. Module 1 — Safety Basics"
+                   class="w-full rounded-lg border px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 {{ $errors->has('title') ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-green-500 focus:ring-green-100' }}">
+            @error('title')
+                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
 
-    <div>
-        <label for="module_content" class="block text-sm font-bold text-gray-700 mb-1.5">Content</label>
-        <textarea id="module_content" name="content" rows="8"
-                  placeholder="Lesson text, instructions, or reading material…"
-                  class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">{{ old('content', $courseModule->content ?? '') }}</textarea>
-        @error('content')
-            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-        @enderror
+        <div>
+            <label for="module_content" class="block text-sm font-semibold text-gray-700 mb-1.5">Content <span class="font-normal text-gray-400">(optional)</span></label>
+            <textarea id="module_content" name="content" rows="5"
+                      placeholder="Lesson text, instructions, or reading material…"
+                      class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100 focus:ring-offset-0">{{ old('content', $courseModule->content ?? '') }}</textarea>
+            @error('content')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+        </div>
     </div>
     @endunless
 
     @if($managePrimaryVideoQuiz)
-    <div>
-        <label for="video_title" class="block text-sm font-bold text-gray-700 mb-1.5">
-            {{ $hideModuleDetails ? 'Video title' : 'First video title' }}
-            @if($hideModuleDetails) <span class="text-red-500">*</span> @else <span class="font-normal text-gray-400">(optional)</span> @endif
-        </label>
-        <input type="text" id="video_title" name="{{ $hideModuleDetails ? 'title' : 'video_title' }}"
-               value="{{ old($hideModuleDetails ? 'title' : 'video_title', $primaryVideo->title ?? ($hideModuleDetails ? '' : 'Video 1')) }}"
-               @if($hideModuleDetails) required @endif
-               placeholder="e.g. Lesson 1 — Carry laws"
-               class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
-        @error('title')
-            @if($hideModuleDetails)
-                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-            @endif
-        @enderror
-    </div>
-
-    <div>
-        <label for="video_file" class="block text-sm font-bold text-gray-700 mb-1.5">Upload video <span class="font-normal text-gray-400">(optional)</span></label>
-        @if($primaryVideo?->uploadedVideoUrl())
-            <p class="mb-2 text-sm text-gray-600">
-                <i class="fas fa-file-video mr-1 text-green-600"></i>
-                Current file: <span class="font-medium">{{ $primaryVideo->original_name ?: basename($primaryVideo->video_path) }}</span>
-            </p>
-            <label class="mb-2 inline-flex items-center gap-2 text-sm text-red-700">
-                <input type="checkbox" name="remove_video_file" value="1" class="rounded border-gray-400 text-red-600 focus:ring-red-500">
-                Remove uploaded video
+    <div class="space-y-4 {{ $hideModuleDetails ? '' : 'border-t border-gray-100 pt-5' }}">
+        <div>
+            <label for="video_title" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                {{ $hideModuleDetails ? 'Video title' : 'First video title' }}
+                @if($hideModuleDetails) <span class="text-red-500">*</span> @else <span class="font-normal text-gray-400">(optional)</span> @endif
             </label>
-        @endif
-        <input type="file" id="video_file" name="video_file" accept="video/mp4,video/webm,video/quicktime,video/ogg"
-               class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-green-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-green-700 hover:file:bg-green-100">
-        <p class="mt-1 text-xs text-gray-500">MP4 / WebM / MOV, max 100MB. Students must watch the full video before the quiz. Pause is allowed; skipping ahead is not.</p>
-        @error('video_file')
-            <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div>
-        <label for="module_video" class="block text-sm font-bold text-gray-700 mb-1.5">Or video URL <span class="font-normal text-gray-400">(optional)</span></label>
-        <div class="relative">
-            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                <i class="fas fa-video text-sm"></i>
-            </span>
-            <input type="text" id="module_video" name="video_url" value="{{ old('video_url', $primaryVideo->video_url ?? $courseModule->video_url ?? '') }}"
-                   placeholder="https://www.youtube.com/watch?v=… or Vimeo link"
-                   class="w-full rounded-md border py-2.5 pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-1 {{ $errors->has('video_url') ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500' }}">
+            <input type="text" id="video_title" name="{{ $hideModuleDetails ? 'title' : 'video_title' }}"
+                   value="{{ old($hideModuleDetails ? 'title' : 'video_title', $primaryVideo->title ?? ($hideModuleDetails ? '' : 'Video 1')) }}"
+                   @if($hideModuleDetails) required @endif
+                   placeholder="e.g. Lesson 1 — Carry laws"
+                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100 focus:ring-offset-0">
+            @error('title')
+                @if($hideModuleDetails)
+                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                @endif
+            @enderror
         </div>
-        <p class="mt-1 text-xs text-gray-500">Use a YouTube or Vimeo link if you are not uploading a file. Upload is preferred so skip-ahead can be blocked.</p>
-        @error('video_url')
-            <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-        @enderror
+
+        <div class="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-3">
+            <div>
+                <p class="text-sm font-semibold text-gray-800">Video source <span class="font-normal text-gray-400">(pick one)</span></p>
+                <p class="mt-0.5 text-xs text-gray-500">Upload a file <strong>or</strong> paste a link — not both. Upload is better because students cannot skip ahead.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Video source">
+                <label class="video-source-option cursor-pointer rounded-lg border bg-white px-3 py-3 text-center transition has-[:checked]:border-green-500 has-[:checked]:bg-green-50 has-[:checked]:ring-2 has-[:checked]:ring-green-100 {{ $videoSource === 'upload' ? 'border-green-500' : 'border-gray-200 hover:border-gray-300' }}">
+                    <input type="radio" name="video_source" value="upload" class="sr-only" {{ $videoSource === 'upload' ? 'checked' : '' }}>
+                    <span class="flex flex-col items-center gap-1">
+                        <i class="fas fa-cloud-upload-alt text-lg {{ $videoSource === 'upload' ? 'text-green-600' : 'text-gray-400' }}"></i>
+                        <span class="text-sm font-semibold text-gray-900">Upload file</span>
+                        <span class="text-[11px] text-gray-500">MP4 / WebM / MOV</span>
+                    </span>
+                </label>
+                <label class="video-source-option cursor-pointer rounded-lg border bg-white px-3 py-3 text-center transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 has-[:checked]:ring-2 has-[:checked]:ring-blue-100 {{ $videoSource === 'url' ? 'border-blue-500' : 'border-gray-200 hover:border-gray-300' }}">
+                    <input type="radio" name="video_source" value="url" class="sr-only" {{ $videoSource === 'url' ? 'checked' : '' }}>
+                    <span class="flex flex-col items-center gap-1">
+                        <i class="fas fa-link text-lg {{ $videoSource === 'url' ? 'text-blue-600' : 'text-gray-400' }}"></i>
+                        <span class="text-sm font-semibold text-gray-900">Video URL</span>
+                        <span class="text-[11px] text-gray-500">YouTube / Vimeo</span>
+                    </span>
+                </label>
+            </div>
+
+            <div id="video-source-upload" class="{{ $videoSource === 'upload' ? '' : 'hidden' }} space-y-3 rounded-lg border border-gray-200 bg-white p-3">
+                @if($hasUploadedVideo)
+                    <div class="flex flex-wrap items-center justify-between gap-2 rounded-md border border-green-100 bg-green-50 px-3 py-2 text-sm text-green-900">
+                        <span class="min-w-0 truncate">
+                            <i class="fas fa-file-video mr-1.5 text-green-600"></i>
+                            <span class="font-medium">{{ $primaryVideo->original_name ?: basename($primaryVideo->video_path) }}</span>
+                        </span>
+                        <label class="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-red-700">
+                            <input type="checkbox" name="remove_video_file" value="1" id="remove_video_file" class="rounded border-gray-400 text-red-600 focus:ring-red-500">
+                            Remove
+                        </label>
+                    </div>
+                @endif
+                <div>
+                    <label for="video_file" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                        {{ $hasUploadedVideo ? 'Replace video file' : 'Choose video file' }}
+                    </label>
+                    <input type="file" id="video_file" name="video_file" accept="video/mp4,video/webm,video/quicktime,video/ogg"
+                           class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-green-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-green-700 hover:file:bg-green-100">
+                    <p class="mt-1.5 text-xs text-gray-500">Max {{ $videoMaxMb }}MB. Students must watch fully before the quiz (pause ok, skip ahead blocked).</p>
+                    @error('video_file')
+                        <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <div id="video-source-url" class="{{ $videoSource === 'url' ? '' : 'hidden' }} space-y-2 rounded-lg border border-gray-200 bg-white p-3">
+                @if($hasUploadedVideo)
+                    <p class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                        Switching to a URL will remove the uploaded file when you save.
+                    </p>
+                @endif
+                <label for="module_video" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Paste video link</label>
+                <div class="relative">
+                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-video text-sm"></i>
+                    </span>
+                    <input type="url" id="module_video" name="video_url" value="{{ $existingVideoUrl }}"
+                           placeholder="https://www.youtube.com/watch?v=… or Vimeo link"
+                           class="w-full rounded-lg border py-2.5 pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 {{ $errors->has('video_url') ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-100' }}"
+                           @if($videoSource !== 'url') disabled @endif>
+                </div>
+                <p class="text-xs text-gray-500">External players may allow skipping. Prefer upload when possible.</p>
+                @error('video_url')
+                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
     </div>
     @endif
 
     @unless($hideModuleDetails)
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-2 gap-3 border-t border-gray-100 pt-5">
         <div>
-            <label for="module_order" class="block text-sm font-bold text-gray-700 mb-1.5">Order</label>
+            <label for="module_order" class="block text-sm font-semibold text-gray-700 mb-1.5">Order</label>
             <input type="number" id="module_order" name="order" value="{{ old('order', $courseModule->order ?? '') }}" min="0"
                    placeholder="Auto"
-                   class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
-            <p class="mt-1 text-[11px] text-gray-500">Leave blank for next number.</p>
+                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100 focus:ring-offset-0">
+            <p class="mt-1 text-[11px] text-gray-500">Blank = next number</p>
         </div>
         <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1.5">Status</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
             <input type="hidden" name="is_active" value="0">
-            <label for="module_is_active" class="flex h-[42px] cursor-pointer items-center gap-2 rounded-md border border-gray-200 bg-white px-3 transition-colors hover:border-green-300 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+            <label for="module_is_active" class="flex h-[42px] cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 transition-colors hover:border-green-300 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
                 <input type="checkbox" id="module_is_active" name="is_active" value="1"
                        {{ (string) old('is_active', ($courseModule->is_active ?? true) ? '1' : '0') === '1' ? 'checked' : '' }}
                        class="rounded border-gray-400 text-green-600 focus:ring-green-500">
@@ -167,39 +213,46 @@
         </div>
     </div>
 
-    <div>
-        <label for="quiz_time_limit_minutes" class="block text-sm font-bold text-gray-700 mb-1.5">
-            Quiz time limit (minutes) <span class="text-red-500">*</span>
-        </label>
-        <input type="number" id="quiz_time_limit_minutes" name="quiz_time_limit_minutes" min="1" max="180"
-               value="{{ old('quiz_time_limit_minutes', $courseModule->quiz_time_limit_minutes ?? 15) }}" required
-               class="w-full rounded-md border px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 {{ $errors->has('quiz_time_limit_minutes') ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-green-500 focus:ring-green-500' }}">
-        <p class="mt-1 text-xs text-gray-500">Countdown starts when the student clicks Start Quiz. Unanswered questions are submitted when time runs out.</p>
-        @error('quiz_time_limit_minutes')
-            <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-        @enderror
+    <div class="space-y-4 rounded-xl border border-gray-100 bg-slate-50/60 p-4">
+        <div>
+            <p class="text-sm font-semibold text-gray-800">Quiz settings</p>
+            <p class="text-xs text-gray-500">Applies to every video quiz in this module.</p>
+        </div>
+
+        <div>
+            <label for="quiz_time_limit_minutes" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                Time limit (minutes) <span class="text-red-500">*</span>
+            </label>
+            <input type="number" id="quiz_time_limit_minutes" name="quiz_time_limit_minutes" min="1" max="180"
+                   value="{{ old('quiz_time_limit_minutes', $courseModule->quiz_time_limit_minutes ?? 15) }}" required
+                   class="w-full rounded-lg border px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 {{ $errors->has('quiz_time_limit_minutes') ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-green-500 focus:ring-green-100' }}">
+            <p class="mt-1 text-xs text-gray-500">Starts when the student clicks Start Quiz.</p>
+            @error('quiz_time_limit_minutes')
+                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label for="passing_score" class="block text-sm font-semibold text-gray-700 mb-1.5">Pass score (%) <span class="text-red-500">*</span></label>
+                <input type="number" id="passing_score" name="passing_score" min="1" max="100"
+                       value="{{ old('passing_score', $courseModule->passing_score ?? 90) }}" required
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100 focus:ring-offset-0">
+            </div>
+            <div>
+                <label for="max_attempts" class="block text-sm font-semibold text-gray-700 mb-1.5">Max attempts <span class="text-red-500">*</span></label>
+                <input type="number" id="max_attempts" name="max_attempts" min="1" max="20"
+                       value="{{ old('max_attempts', $courseModule->max_attempts ?? 1) }}" required
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100 focus:ring-offset-0">
+            </div>
+        </div>
+        <p class="text-xs text-gray-500">After failed attempts, admin must reset the student for another try.</p>
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
-        <div>
-            <label for="passing_score" class="block text-sm font-bold text-gray-700 mb-1.5">Passing score (%) <span class="text-red-500">*</span></label>
-            <input type="number" id="passing_score" name="passing_score" min="1" max="100"
-                   value="{{ old('passing_score', $courseModule->passing_score ?? 90) }}" required
-                   class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
-        </div>
-        <div>
-            <label for="max_attempts" class="block text-sm font-bold text-gray-700 mb-1.5">Max quiz attempts <span class="text-red-500">*</span></label>
-            <input type="number" id="max_attempts" name="max_attempts" min="1" max="20"
-                   value="{{ old('max_attempts', $courseModule->max_attempts ?? 1) }}" required
-                   class="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
-        </div>
-    </div>
-    <p class="text-xs text-gray-500 -mt-2">After max attempts are used without passing, admin must reset the student to allow another try.</p>
-
-    <div>
-        <label for="materials_files" class="block text-sm font-bold text-gray-700 mb-1.5">Materials / PDFs <span class="font-normal text-gray-400">(optional)</span></label>
+    <div class="border-t border-gray-100 pt-5">
+        <label for="materials_files" class="block text-sm font-semibold text-gray-700 mb-1.5">Materials / PDFs <span class="font-normal text-gray-400">(optional)</span></label>
         @if(! empty($courseModule?->materials))
-            <ul class="mb-2 space-y-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+            <ul class="mb-2 space-y-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
                 @foreach($courseModule->materialFiles() as $file)
                     <li class="flex items-center gap-2">
                         <i class="fas fa-paperclip text-gray-400"></i>
@@ -215,7 +268,7 @@
         <input type="file" id="materials_files" name="materials_files[]" multiple
                accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg"
                class="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-green-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-green-700 hover:file:bg-green-100">
-        <p class="mt-1 text-xs text-gray-500">Upload up to 5 files (PDF/Office/images), max 10MB each. New uploads are added to existing files.</p>
+        <p class="mt-1 text-xs text-gray-500">Up to 5 files (PDF/Office/images), max 10MB each.</p>
     </div>
     @endunless
 </div>
@@ -348,6 +401,74 @@
 </div>{{-- end two-column grid --}}
 
 @if($managePrimaryVideoQuiz)
+<script>
+(function () {
+    var uploadPanel = document.getElementById('video-source-upload');
+    var urlPanel = document.getElementById('video-source-url');
+    var fileInput = document.getElementById('video_file');
+    var urlInput = document.getElementById('module_video');
+    var removeFile = document.getElementById('remove_video_file');
+    var sourceRadios = document.querySelectorAll('input[name="video_source"]');
+    if (!uploadPanel || !urlPanel || !sourceRadios.length) return;
+
+    var lastUrl = urlInput ? urlInput.value : '';
+
+    function setSource(source) {
+        var isUpload = source === 'upload';
+        uploadPanel.classList.toggle('hidden', !isUpload);
+        urlPanel.classList.toggle('hidden', isUpload);
+
+        if (fileInput) {
+            fileInput.disabled = !isUpload;
+            if (!isUpload) {
+                fileInput.value = '';
+            }
+        }
+        if (urlInput) {
+            urlInput.disabled = isUpload;
+            if (isUpload) {
+                lastUrl = urlInput.value || lastUrl;
+                urlInput.value = '';
+            } else if (!urlInput.value) {
+                urlInput.value = lastUrl;
+            }
+        }
+        if (removeFile && !isUpload) {
+            removeFile.checked = false;
+        }
+
+        sourceRadios.forEach(function (radio) {
+            var label = radio.closest('label');
+            if (!label) return;
+            var icon = label.querySelector('i');
+            if (radio.value === 'upload') {
+                label.classList.toggle('border-green-500', radio.checked);
+                label.classList.toggle('border-gray-200', !radio.checked);
+                if (icon) {
+                    icon.classList.toggle('text-green-600', radio.checked);
+                    icon.classList.toggle('text-gray-400', !radio.checked);
+                }
+            } else {
+                label.classList.toggle('border-blue-500', radio.checked);
+                label.classList.toggle('border-gray-200', !radio.checked);
+                if (icon) {
+                    icon.classList.toggle('text-blue-600', radio.checked);
+                    icon.classList.toggle('text-gray-400', !radio.checked);
+                }
+            }
+        });
+    }
+
+    sourceRadios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            setSource(radio.value);
+        });
+    });
+
+    var checked = document.querySelector('input[name="video_source"]:checked');
+    setSource(checked ? checked.value : 'upload');
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
 (function () {
