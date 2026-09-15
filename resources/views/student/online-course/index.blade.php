@@ -69,7 +69,7 @@
                         <p class="mt-0.5 text-sm text-emerald-700">Completed — best score {{ $mp->best_score }}%</p>
                     @elseif($failed)
                         <p class="mt-0.5 text-sm text-amber-800">
-                            Failed — best score {{ $mp->best_score }}% · contact admin to re-enroll / reset
+                            Not passed yet — best score {{ $mp->best_score }}%. Rewatch and try again (free).
                         </p>
                     @elseif($locked)
                         <p class="mt-0.5 text-sm text-gray-500">Locked — pass previous module first</p>
@@ -85,7 +85,7 @@
                     @if($completed)
                         Review
                     @elseif($failed)
-                        View details
+                        Try again
                     @else
                         Open
                     @endif

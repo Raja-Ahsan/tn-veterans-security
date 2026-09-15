@@ -51,10 +51,13 @@
 
 
     .header-logo {
-            @apply w-auto h-32 md:h-44 lg:h-56 max-w-none drop-shadow-2xl;
+            @apply w-auto h-28 md:h-36 xl:h-44 2xl:h-52 max-w-none drop-shadow-2xl;
     }
     .destop-nav-link {
-        @apply hover:text-[var(--primary-color)] transition-colors;
+        @apply hover:text-[var(--primary-color)] transition-colors whitespace-nowrap leading-tight;
+    }
+    .header-signup-btn {
+        @apply inline-flex items-center justify-center text-[13px] 2xl:text-[14px] font-semibold tracking-wide px-4 py-2 rounded-md shadow-sm transition-colors;
     }
 
     .destop-nav-link.nav-link-active {
@@ -274,9 +277,9 @@ a.training-card:hover {
     @apply translate-y-0 opacity-100;
 }
 
-@media (min-width: 1024px) and (max-width: 1200px) {
+@media (min-width: 1280px) and (max-width: 1439px) {
     .desktop-nav {
-       @apply text-[12px] space-x-4;
+       @apply text-[12px] gap-x-2.5;
     }
 }
 

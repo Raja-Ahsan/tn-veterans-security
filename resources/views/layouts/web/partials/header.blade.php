@@ -165,12 +165,12 @@
 </style>
 
 <header class="relative w-full z-50 ">
-    <div class="container mx-auto px-4 lg:px-10">
-        <div class="flex items-center justify-between h-20 lg:h-24">
+    <div class="container mx-auto px-4 xl:px-8 2xl:px-10">
+        <div class="flex items-center justify-between gap-3 h-20 xl:h-24">
             
-            <!-- Logo Area (Exact Match to Screenshot) -->
-            <div class="relative flex-shrink-0 z-[60]">
-                <a href="{{ url('/') }}" class="absolute -top-4 left-0 lg:-top-4">
+            <!-- Logo Area -->
+            <div class="relative shrink-0 z-[60]">
+                <a href="{{ url('/') }}" class="absolute -top-4 left-0">
                     @if($siteSettings && $siteSettings->header_logo)
                         <img src="{{ asset('storage/' . $siteSettings->header_logo) }}" 
                              alt="TN Veterans Logo" 
@@ -182,11 +182,11 @@
                     @endif
                 </a>
                 <!-- Spacing block to push navigation to the right -->
-                <div class="w-24 md:w-32 lg:w-48"></div>
+                <div class="w-24 md:w-32 xl:w-40 2xl:w-48"></div>
             </div>
 
-            <!-- Desktop Navigation Links (Middle/Right) -->
-            <nav class="desktop-nav hidden lg:flex items-center space-x-6 text-[15px] font-medium text-[var(--text-color)]">
+            <!-- Desktop Navigation (xl+ only — avoids cramped mid-size layouts) -->
+            <nav class="desktop-nav hidden xl:flex flex-1 items-center justify-end gap-x-3 2xl:gap-x-5 text-[13px] 2xl:text-[14px] font-medium text-[var(--text-color)] whitespace-nowrap min-w-0">
                 <a href="{{ url('/') }}" data-nav-section="home" class="destop-nav-link {{ $navActive['home'] ? 'nav-link-active' : '' }}">Home</a>
                 <a href="{{ route('about') }}" data-nav-section="about" class="destop-nav-link {{ $navActive['about'] ? 'nav-link-active' : '' }}">About Us</a>
                 
@@ -194,9 +194,9 @@
 
                 <!-- Training Services with Mega Menu -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('training-classes') }}" data-nav-section="training" class="destop-nav-link flex items-center gap-1 py-8 {{ $navActive['training'] ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('training-classes') }}" data-nav-section="training" class="destop-nav-link flex items-center gap-1 py-6 {{ $navActive['training'] ? 'nav-link-active' : '' }}">
                         Training & Classes
-                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </a>
@@ -224,9 +224,9 @@
 
                 <!-- Affiliated dropdown -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('affiliated-services') }}" data-nav-section="affiliated" class="js-affiliated-nav destop-nav-link flex items-center gap-1 py-8 {{ $navActive['affiliated'] ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('affiliated-services') }}" data-nav-section="affiliated" class="js-affiliated-nav destop-nav-link flex items-center gap-1 py-6 {{ $navActive['affiliated'] ? 'nav-link-active' : '' }}">
                         Affiliated
-                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </a>
@@ -263,10 +263,10 @@
 
                 <!-- Security Training with dropdown (Initial Security, Renewals) -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('security-training') }}" data-nav-section="security" class="destop-nav-link flex items-center gap-1 py-8 cursor-default {{ $navActive['security'] ? 'nav-link-active' : '' }}">
+                    <a href="{{ route('security-training') }}" data-nav-section="security" class="destop-nav-link flex items-center gap-1 py-6 cursor-default {{ $navActive['security'] ? 'nav-link-active' : '' }}">
                         Security Training
 
-                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </a>
@@ -287,38 +287,38 @@
                 <a href="{{ route('contact') }}" data-nav-section="contact" class="destop-nav-link {{ $navActive['contact'] ? 'nav-link-active' : '' }}">Contact Us</a>
             </nav>
 
-            <!-- Desktop Button (Far Right) -->
-            <div class="hidden lg:flex items-center gap-4">
+            <!-- Desktop auth (xl+) -->
+            <div class="hidden xl:flex items-center shrink-0 gap-3 pl-3 border-l border-gray-200 ml-1">
                 @if(Auth::guard('web')->check())
-                    <a href="{{ route('admin.dashboard') }}" class="destop-nav-link {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
+                    <a href="{{ route('admin.dashboard') }}" class="destop-nav-link whitespace-nowrap {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
                     <form method="POST" action="{{ route('admin.logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="destop-nav-link">Logout</button>
                     </form>
                 @elseif(Auth::guard('student')->check())
-                    <a href="{{ route('student.dashboard') }}" class="destop-nav-link {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
+                    <a href="{{ route('student.dashboard') }}" class="destop-nav-link whitespace-nowrap {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
                     <form method="POST" action="{{ route('student.logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="destop-nav-link">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('student.login') }}" class="destop-nav-link {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
-                    <a href="{{ route('student.register') }}" class="btn primary-button {{ $navActive['register'] ? 'ring-2 ring-offset-2 ring-[var(--primary-color)]' : '' }}">
+                    <a href="{{ route('student.login') }}" class="destop-nav-link whitespace-nowrap {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
+                    <a href="{{ route('student.register') }}" class="header-signup-btn primary-button {{ $navActive['register'] ? 'ring-2 ring-offset-2 ring-[var(--primary-color)]' : '' }}">
                         Sign Up
                     </a>
                 @endif
             </div>
 
-            <!-- Hamburger Button (<1024px) -->
-            <button id="menuBtn" class="lg:hidden text-3xl text-gray-800 focus:outline-none p-2">
+            <!-- Hamburger (<1280px) -->
+            <button id="menuBtn" type="button" class="xl:hidden text-3xl text-gray-800 focus:outline-none p-2 shrink-0" aria-label="Open menu">
                 <span id="menuIcon">☰</span>
             </button>
         </div>
     </div>
 
-    <!-- Mobile Menu Vertical List -->
-    <div id="mobileMenu" class="hidden lg:hidden   overflow-hidden transition-all duration-300">
-        <nav class="flex flex-col p-6 space-y-1 mt-[60px]">
+    <!-- Mobile / tablet menu -->
+    <div id="mobileMenu" class="hidden xl:hidden overflow-hidden transition-all duration-300 bg-white border-t border-gray-100 shadow-lg">
+        <nav class="flex flex-col px-6 pb-6 pt-4 space-y-1 mt-28 md:mt-32">
             <a href="{{ url('/') }}" data-nav-section="home" class="mobile-nav-links {{ $navActive['home'] ? 'nav-link-active' : '' }}">Home</a>
             <a href="{{ route('about') }}" data-nav-section="about" class="mobile-nav-links {{ $navActive['about'] ? 'nav-link-active' : '' }}">About Us</a>
             <a href="{{ route('class-calendar') }}" data-nav-section="training" class="mobile-nav-links {{ $navActive['class_calendar'] ? 'nav-link-active' : '' }}">Class Calendar</a>

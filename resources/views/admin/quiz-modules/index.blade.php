@@ -6,15 +6,6 @@
 @section('content')
 @php
     $tabMeta = [
-        'online' => [
-            'label' => 'Online',
-            'icon' => 'fa-laptop',
-            'blurb' => 'Fully online modules and quizzes. Students complete everything in their portal.',
-            'active' => 'border-sky-500 text-sky-700 bg-sky-50',
-            'badge' => 'bg-sky-100 text-sky-800',
-            'typeBadge' => 'bg-sky-100 text-sky-800',
-            'typeIcon' => 'fa-laptop',
-        ],
         'blended' => [
             'label' => 'Blended',
             'icon' => 'fa-layer-group',
@@ -48,15 +39,15 @@
     <div class="flex gap-3">
         <i class="fas fa-info-circle mt-0.5 text-blue-500"></i>
         <ul class="list-disc space-y-0.5 pl-4 text-blue-800">
-            <li>Check <span class="font-medium">Has online parts / quizzes</span> on a class to make it Online or Blended, then add modules here.</li>
-            <li>Uncheck that option (and leave testing in person) for an In Person class — students test in the classroom.</li>
+            <li>Check <span class="font-medium">Has online parts / quizzes</span> on a class to make it Blended, then add modules here.</li>
+            <li>Uncheck that option for an In Person class — students test in the classroom.</li>
             <li>Each module can have multiple videos. Every video has its own quiz. Students must finish the video before the quiz, and pass before the next video.</li>
         </ul>
     </div>
 </div>
 
 {{-- Delivery tabs --}}
-<div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3" role="tablist" aria-label="Class delivery type">
+<div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2" role="tablist" aria-label="Class delivery type">
     @foreach($tabMeta as $format => $meta)
         @php $count = (int) ($deliveryCounts[$format] ?? 0); @endphp
         <a href="{{ route('admin.quiz-modules.index', ['delivery' => $format]) }}"
@@ -141,12 +132,9 @@
                             @if($delivery === 'in-person')
                                 <p>No in-person classes yet.</p>
                                 <p class="mt-1 text-sm">Create a class without online parts, or turn off online quizzes on an existing class.</p>
-                            @elseif($delivery === 'online')
-                                <p>No fully online classes yet.</p>
-                                <p class="mt-1 text-sm">Edit a class, enable <span class="font-medium text-gray-700">Has online parts / quizzes</span>, and uncheck <span class="font-medium text-gray-700">Testing is in-person</span>.</p>
                             @else
                                 <p>No blended classes yet.</p>
-                                <p class="mt-1 text-sm">Edit a class, check <span class="font-medium text-gray-700">Has online parts / quizzes</span> and keep testing in person, then return here to add videos and quizzes.</p>
+                                <p class="mt-1 text-sm">Edit a class, check <span class="font-medium text-gray-700">Has online parts / quizzes</span>, then return here to add videos and quizzes.</p>
                             @endif
                             <a href="{{ route('admin.classes.index') }}" class="mt-3 inline-block font-medium text-green-600 hover:underline">Go to Classes</a>
                         </td>

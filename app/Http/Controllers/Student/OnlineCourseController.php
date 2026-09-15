@@ -226,8 +226,17 @@ class OnlineCourseController extends Controller
         }
 
         if (! $this->blendedCourse->canAttemptQuiz($student, $courseModule, $video)) {
-            return redirect()->route('student.online-course.module', [$service, $courseModule])
-                ->with('error', 'This quiz attempt is used. Contact admin to re-enroll for a new attempt with updated questions.');
+            $message = ($video && $video->requiresWatchCompletion() && ! $this->blendedCourse->hasWatchedVideo($student, $video))
+                ? 'Watch the full video before starting the quiz. You can pause, but you cannot skip ahead.'
+                : 'This quiz is already completed.';
+
+            $params = [$service, $courseModule];
+            if ($video) {
+                $params['video'] = $video->id;
+            }
+
+            return redirect()->route('student.online-course.module', $params)
+                ->with('error', $message);
         }
 
         $this->blendedCourse->startQuizSession($student, $service, $courseModule, $video);

@@ -181,7 +181,8 @@ class BlendedCourseService
     }
 
     /**
-     * Attempts remaining / allowed for this module or video quiz.
+     * Students may retake quizzes freely until they pass (no attempt lock / admin reset).
+     * Video quizzes also require a full watch before each attempt.
      */
     public function canAttemptQuiz(Student $student, CourseModule $module, ?CourseModuleVideo $video = null): bool
     {
@@ -195,15 +196,7 @@ class BlendedCourseService
                 ->where('course_module_video_id', $video->id)
                 ->first();
 
-            if (! $progress) {
-                return true;
-            }
-
-            if ($progress->is_completed) {
-                return false;
-            }
-
-            return (int) ($progress->attempts ?? 0) < $module->maxAttempts();
+            return ! ($progress?->is_completed);
         }
 
         $progress = StudentModuleProgress::query()
@@ -215,35 +208,12 @@ class BlendedCourseService
             return true;
         }
 
-        if ($progress->is_completed || $progress->admin_override) {
-            return false;
-        }
-
-        return (int) ($progress->attempts ?? 0) < $module->maxAttempts();
+        return ! $progress->is_completed && ! $progress->admin_override;
     }
 
     public function hasExhaustedQuizAttempt(Student $student, CourseModule $module, ?CourseModuleVideo $video = null): bool
     {
-        if ($video) {
-            $progress = StudentVideoProgress::query()
-                ->where('student_id', $student->id)
-                ->where('course_module_video_id', $video->id)
-                ->first();
-
-            return $progress !== null
-                && ! $progress->is_completed
-                && (int) ($progress->attempts ?? 0) >= $module->maxAttempts();
-        }
-
-        $progress = StudentModuleProgress::query()
-            ->where('student_id', $student->id)
-            ->where('course_module_id', $module->id)
-            ->first();
-
-        return $progress !== null
-            && ! $progress->is_completed
-            && ! $progress->admin_override
-            && (int) ($progress->attempts ?? 0) >= $module->maxAttempts();
+        return false;
     }
 
     public function isEligibleForInPersonTesting(Student $student, Service $service): bool
@@ -652,6 +622,11 @@ class BlendedCourseService
             $progress->completed_at = now();
             $progress->video_watched = true;
             $progress->watched_at = $progress->watched_at ?? now();
+        } else {
+            // Fail → must rewatch this video before the next free retake.
+            $progress->video_watched = false;
+            $progress->watched_at = null;
+            $progress->last_position_seconds = 0;
         }
 
         $progress->save();

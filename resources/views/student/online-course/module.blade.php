@@ -26,13 +26,11 @@
     $quizMinutes = $quizMinutes ?? 15;
     $openSession = $openSession ?? null;
     $canAttemptQuiz = $canAttemptQuiz ?? true;
-    $needsReenrollment = $needsReenrollment ?? false;
+    $needsReenrollment = false;
     $supportEmail = $supportEmail ?? null;
     $supportPhone = $supportPhone ?? null;
     $passingScore = $passingScore ?? $courseModule->passingScore();
-    $maxAttempts = $maxAttempts ?? $courseModule->maxAttempts();
-    $attemptsUsed = (int) ($moduleProgress?->attempts ?? 0);
-    $attemptsRemaining = max(0, $maxAttempts - $attemptsUsed);
+    $attemptsUsed = (int) ($attemptsUsed ?? 0);
     $materials = $materials ?? $courseModule->materialFiles();
 @endphp
 
@@ -306,42 +304,6 @@
                 </a>
             </div>
         </div>
-    @elseif($needsReenrollment)
-        <div class="rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:p-6">
-            <h2 class="text-xl font-bold text-amber-950">Quiz attempt used</h2>
-            <p class="mt-2 text-sm text-amber-900">
-                @php
-                    $displayScore = $moduleProgress?->best_score ?? $latestAttempt?->score;
-                    $latestScore = $latestAttempt?->score;
-                @endphp
-                Your best score was
-                <strong>{{ $displayScore ?? '—' }}%</strong>
-                ({{ $passingScore }}% required).
-                @if($latestScore !== null && (int) $latestScore !== (int) $displayScore)
-                    Latest attempt: <strong>{{ $latestScore }}%</strong>.
-                @endif
-                All {{ $maxAttempts }} {{ Str::plural('attempt', $maxAttempts) }} used. Correct answers are not shown.
-            </p>
-            <p class="mt-3 text-sm text-amber-900">
-                To try again, contact admin to <strong>re-enroll / reset this module</strong> after they update the questions and answers.
-            </p>
-            @if($supportEmail || $supportPhone)
-                <p class="mt-3 text-sm text-amber-950">
-                    Contact:
-                    @if($supportEmail)
-                        <a href="mailto:{{ $supportEmail }}" class="font-semibold underline">{{ $supportEmail }}</a>
-                    @endif
-                    @if($supportEmail && $supportPhone) · @endif
-                    @if($supportPhone)
-                        <a href="tel:{{ $supportPhone }}" class="font-semibold underline">{{ $supportPhone }}</a>
-                    @endif
-                </p>
-            @endif
-            <a href="{{ route('student.online-course.index', $service) }}"
-               class="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-5 py-2.5 text-sm font-semibold text-amber-950 hover:bg-amber-100">
-                Back to modules
-            </a>
-        </div>
     @elseif($quizCount > 0 && ! $passed)
         <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
             <div class="mb-5">
@@ -350,13 +312,27 @@
                     {{ $quizCount }} {{ Str::plural('question', $quizCount) }}
                     · {{ $quizMinutes }} {{ Str::plural('minute', $quizMinutes) }} time limit
                     · {{ $passingScore }}% required to pass
-                    · {{ $maxAttempts }} {{ Str::plural('attempt', $maxAttempts) }}
                     @if($attemptsUsed > 0)
-                        ({{ $attemptsRemaining }} remaining)
+                        · {{ $attemptsUsed }} {{ Str::plural('attempt', $attemptsUsed) }} so far — unlimited free retries
+                    @else
+                        · unlimited free retries until you pass
                     @endif
                     · one question at a time (no going back)
                 </p>
             </div>
+
+            @if($latestAttempt && ! $passed)
+                <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <p class="font-semibold">Last score: {{ $latestAttempt->score }}% ({{ $passingScore }}% required).</p>
+                    <p class="mt-1">
+                        @if($selectedVideo)
+                            Rewatch the video fully, then start the quiz again. No admin reset needed.
+                        @else
+                            You can start the quiz again for free. No admin reset needed.
+                        @endif
+                    </p>
+                </div>
+            @endif
 
             @if($openSession)
                 <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -379,7 +355,7 @@
                         <input type="hidden" name="video_id" value="{{ $selectedVideo->id }}">
                     @endif
                     <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
-                        <i class="fas fa-play text-xs"></i> Start timed quiz
+                        <i class="fas fa-play text-xs"></i> {{ $attemptsUsed > 0 ? 'Retake timed quiz' : 'Start timed quiz' }}
                     </button>
                 </form>
             @endif

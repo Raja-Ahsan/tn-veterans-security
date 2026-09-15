@@ -16,8 +16,6 @@
                         {{-- add servuice name dynamically --}}
                         @if($category)
                             {{ ucfirst(str_replace('_', ' ', $category)) }}
-                        @elseif(($delivery ?? null) === 'online')
-                            <span class="text-(--primary-color)">ONLINE</span> CLASSES
                         @elseif(($delivery ?? null) === 'blended')
                             <span class="text-(--primary-color)">BLENDED</span> CLASSES
                         @elseif(($delivery ?? null) === 'in-person')
@@ -68,7 +66,6 @@
                     @php
                         $deliveryFilters = [
                             '' => 'All',
-                            'online' => 'Online',
                             'blended' => 'Blended',
                             'in-person' => 'In Person',
                         ];
@@ -153,7 +150,7 @@
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div class="flex gap-6 items-start group">
                                 <div class="flex-shrink-0">
                                     <div class="w-16 h-16 bg-[var(--primary-color)] rounded-lg flex items-center justify-center text-white text-[32px] font-bold shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform">
@@ -169,7 +166,7 @@
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div class="flex gap-6 items-start group">
                                 <div class="flex-shrink-0">
                                     <div class="w-16 h-16 bg-[var(--primary-color)] rounded-lg flex items-center justify-center text-white text-[32px] font-bold shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform">

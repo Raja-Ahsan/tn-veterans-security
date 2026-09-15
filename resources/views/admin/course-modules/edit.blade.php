@@ -35,18 +35,38 @@
     </div>
     @php $moduleVideos = $courseModule->videos ?? collect(); @endphp
     @if($moduleVideos->count() > 0)
-        <ul class="divide-y divide-gray-100 rounded-md border border-gray-200">
+        @if($moduleVideos->count() > 1)
+            <p class="mb-2 text-xs text-gray-500">Drag the <i class="fas fa-grip-vertical text-gray-400"></i> handle to rearrange videos. Order saves automatically and students see the same order.</p>
+        @endif
+        <ul id="module-videos-sortable"
+            class="divide-y divide-gray-100 rounded-md border border-gray-200"
+            @if($moduleVideos->count() > 1)
+                data-reorder-url="{{ route('admin.classes.course-modules.videos.reorder', [$service, $courseModule]) }}"
+            @endif>
             @foreach($moduleVideos as $video)
-                <li class="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <p class="font-semibold text-gray-900">{{ $loop->iteration }}. {{ $video->displayTitle() }}</p>
-                        <p class="text-xs text-gray-500">
-                            {{ $video->quizQuestions->count() }} {{ Str::plural('question', $video->quizQuestions->count()) }}
-                            @if($video->video_path) · uploaded file @endif
-                            @if($video->video_url) · URL @endif
-                        </p>
+                <li class="module-video-row flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between bg-white"
+                    data-video-id="{{ $video->id }}">
+                    <div class="flex min-w-0 items-start gap-2 sm:items-center">
+                        @if($moduleVideos->count() > 1)
+                            <button type="button"
+                                    class="video-drag-handle mt-0.5 shrink-0 cursor-grab active:cursor-grabbing rounded border border-gray-200 bg-gray-50 px-1.5 py-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                    title="Drag to reorder"
+                                    aria-label="Drag to reorder {{ $video->displayTitle() }}">
+                                <i class="fas fa-grip-vertical"></i>
+                            </button>
+                        @endif
+                        <div class="min-w-0">
+                            <p class="font-semibold text-gray-900">
+                                <span class="video-order-num">{{ $loop->iteration }}</span>. {{ $video->displayTitle() }}
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                {{ $video->quizQuestions->count() }} {{ Str::plural('question', $video->quizQuestions->count()) }}
+                                @if($video->video_path) · uploaded file @endif
+                                @if($video->video_url) · URL @endif
+                            </p>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2 sm:pl-0 {{ $moduleVideos->count() > 1 ? 'pl-9' : '' }}">
                         <a href="{{ route('admin.classes.course-modules.videos.edit', [$service, $courseModule, $video]) }}"
                            class="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100">Edit</a>
                         @if($moduleVideos->count() > 1)
@@ -80,4 +100,64 @@
         </a>
     </div>
 </form>
+
+@if(($courseModule->videos ?? collect())->count() > 1)
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+(function () {
+    var list = document.getElementById('module-videos-sortable');
+    if (!list || typeof Sortable === 'undefined') {
+        return;
+    }
+
+    var reorderUrl = list.getAttribute('data-reorder-url');
+    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        || document.querySelector('input[name="_token"]')?.value;
+
+    function renumberVideos() {
+        list.querySelectorAll('.module-video-row').forEach(function (row, index) {
+            var num = row.querySelector('.video-order-num');
+            if (num) {
+                num.textContent = String(index + 1);
+            }
+        });
+    }
+
+    function persistOrder() {
+        if (!reorderUrl || !csrfToken) {
+            return;
+        }
+
+        var order = Array.prototype.map.call(list.querySelectorAll('.module-video-row'), function (row) {
+            return row.getAttribute('data-video-id');
+        });
+
+        fetch(reorderUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ order: order })
+        }).catch(function () {
+            // Keep local order; admin can refresh if save failed.
+        });
+    }
+
+    Sortable.create(list, {
+        handle: '.video-drag-handle',
+        animation: 180,
+        ghostClass: 'opacity-40',
+        chosenClass: 'bg-slate-50',
+        dragClass: 'shadow-lg',
+        onEnd: function () {
+            renumberVideos();
+            persistOrder();
+        }
+    });
+})();
+</script>
+@endif
 @endsection

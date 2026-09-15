@@ -11,12 +11,12 @@ class AdminDashboardDeliveryCountsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_dashboard_shows_online_blended_and_in_person_counts(): void
+    public function test_admin_dashboard_shows_blended_and_in_person_counts(): void
     {
         $admin = User::factory()->create();
 
         Service::query()->create([
-            'title' => 'Online Firearms Safety',
+            'title' => 'Former Online Now Blended',
             'is_active' => true,
             'has_online_parts' => true,
             'testing_in_person' => false,
@@ -48,17 +48,16 @@ class AdminDashboardDeliveryCountsTest extends TestCase
             ->get(route('admin.dashboard'))
             ->assertOk()
             ->assertSee('Classes by delivery')
-            ->assertSee('Online')
             ->assertSee('Blended')
             ->assertSee('In Person')
-            ->assertSee(route('admin.quiz-modules.index', ['delivery' => 'online']), false)
+            ->assertDontSee(route('admin.quiz-modules.index', ['delivery' => 'online']), false)
             ->assertSee(route('admin.quiz-modules.index', ['delivery' => 'blended']), false)
             ->assertSee(route('admin.quiz-modules.index', ['delivery' => 'in-person']), false);
 
         $counts = Service::deliveryCountMap();
 
-        $this->assertSame(1, $counts['online']);
-        $this->assertSame(2, $counts['blended']);
+        $this->assertSame(3, $counts['blended']);
         $this->assertSame(1, $counts['in-person']);
+        $this->assertArrayNotHasKey('online', $counts);
     }
 }

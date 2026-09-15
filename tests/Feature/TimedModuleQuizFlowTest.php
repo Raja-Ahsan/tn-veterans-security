@@ -67,7 +67,7 @@ class TimedModuleQuizFlowTest extends TestCase
             ->assertOk();
     }
 
-    public function test_failed_quiz_blocks_retake_without_admin_reset(): void
+    public function test_failed_quiz_allows_free_retake_without_admin_reset(): void
     {
         Mail::fake();
 
@@ -94,19 +94,26 @@ class TimedModuleQuizFlowTest extends TestCase
                     ->get(route('student.online-course.quiz.result', [$service, $module1, $session]))
                     ->assertOk()
                     ->assertDontSee('Answer review')
-                    ->assertSee('Free retake is not available');
+                    ->assertSee('You can try again for free')
+                    ->assertDontSee('Free retake is not available');
             }
         }
 
         $this->actingAs($student, 'student')
-            ->post(route('student.online-course.quiz.start', [$service, $module1]))
-            ->assertRedirect(route('student.online-course.module', [$service, $module1]));
+            ->get(route('student.online-course.index', $service))
+            ->assertOk()
+            ->assertSee('Try again')
+            ->assertDontSee('contact admin to re-enroll');
 
         $this->actingAs($student, 'student')
             ->get(route('student.online-course.module', [$service, $module1]))
             ->assertOk()
-            ->assertSee('Quiz attempt used')
-            ->assertDontSee('Start timed quiz');
+            ->assertDontSee('Quiz attempt used')
+            ->assertSee('Retake timed quiz');
+
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.start', [$service, $module1]))
+            ->assertRedirect(route('student.online-course.quiz.take', [$service, $module1]));
 
         $this->actingAs($student, 'student')
             ->get(route('student.online-course.module', [$service, $module2]))
@@ -265,7 +272,7 @@ class TimedModuleQuizFlowTest extends TestCase
         $this->actingAs($student, 'student')
             ->get(route('student.online-course.module', [$service, $module1]))
             ->assertOk()
-            ->assertSee('Start timed quiz');
+            ->assertSee('Retake timed quiz');
 
         $this->actingAs($student, 'student')
             ->post(route('student.online-course.quiz.start', [$service, $module1]))

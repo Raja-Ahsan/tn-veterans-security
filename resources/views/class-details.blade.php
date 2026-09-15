@@ -586,8 +586,8 @@
                                         {{ $service->class_type === 'one-on-one' ? 'One-on-One' : 'Group' }}</span>
                                 @endif
                                 @if ($service->has_online_parts)
-                                    <span class="sd-badge sd-badge-blue"><i class="fas fa-globe"></i> Online
-                                        components</span>
+                                    <span class="sd-badge sd-badge-blue"><i class="fas fa-layer-group"></i> Blended
+                                        course</span>
                                 @endif
                                 @if ($service->testing_in_person)
                                     <span class="sd-badge sd-badge-green"><i class="fas fa-clipboard-check"></i> In-person
@@ -644,7 +644,10 @@
                                             class="sd-detail-value">{{ $service->class_type === 'one-on-one' ? 'One-on-One' : 'Group' }}</span>
                                     </div>
                                 @endif
-                                <div class="sd-detail-row"><span class="sd-detail-label">Online components</span><span
+                                <div class="sd-detail-row"><span class="sd-detail-label">Delivery</span><span
+                                        class="sd-detail-value">{{ $service->deliveryFormatLabel() }}</span>
+                                </div>
+                                <div class="sd-detail-row"><span class="sd-detail-label">Online modules</span><span
                                         class="sd-detail-value">{{ $service->has_online_parts ? 'Yes' : 'No' }}</span>
                                 </div>
                                 <div class="sd-detail-row"><span class="sd-detail-label">In-person testing</span><span

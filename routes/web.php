@@ -90,9 +90,16 @@ Route::get('/training-classes', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
     $q = trim((string) request()->query('q', ''));
-    $delivery = request()->query('delivery');
-    if (! \App\Models\Service::isValidDeliveryFormat($delivery)) {
-        $delivery = null;
+    $rawDelivery = request()->query('delivery');
+    $delivery = \App\Models\Service::normalizeDeliveryFormat(is_string($rawDelivery) ? $rawDelivery : null);
+
+    if ($rawDelivery === \App\Models\Service::DELIVERY_ONLINE) {
+        return redirect()->route('training-classes', array_filter([
+            'category' => $category,
+            'subcategory' => $subcategory,
+            'q' => $q !== '' ? $q : null,
+            'delivery' => \App\Models\Service::DELIVERY_BLENDED,
+        ]));
     }
 
     $services = PublicTrainingServiceQuery::listing($category, $subcategory, $q, $delivery)->get();
@@ -114,10 +121,8 @@ Route::get('/training-classes/search', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
     $q = trim((string) request()->query('q', ''));
-    $delivery = request()->query('delivery');
-    if (! \App\Models\Service::isValidDeliveryFormat($delivery)) {
-        $delivery = null;
-    }
+    $rawDelivery = request()->query('delivery');
+    $delivery = \App\Models\Service::normalizeDeliveryFormat(is_string($rawDelivery) ? $rawDelivery : null);
 
     $services = PublicTrainingServiceQuery::listing($category, $subcategory, $q, $delivery)->get();
 
@@ -148,12 +153,12 @@ Route::get('/training-classes/enhanced-armed-guard-security-subcategories', func
     return view('enhanced-armed-guard-subcategories', compact('services'));
 })->name('handgun.subcategories');
 
-Route::get('/training-classes/{id}', [ServicePageController::class, 'showById'])->name('training-classes.show');
-Route::get('/class/{slug}', [ServicePageController::class, 'showBySlug'])->name('class.show')->where('slug', '[a-z0-9\-]+');
-
 Route::permanentRedirect('/training-services/enhanced-armed-guard-security-subcategories', '/training-classes/enhanced-armed-guard-security-subcategories');
 Route::permanentRedirect('/training-services/{id}', '/training-classes/{id}');
 Route::permanentRedirect('/service/{slug}', '/class/{slug}');
+
+Route::get('/training-classes/{id}', [ServicePageController::class, 'showById'])->name('training-classes.show');
+Route::get('/class/{slug}', [ServicePageController::class, 'showBySlug'])->name('class.show')->where('slug', '[a-z0-9\-]+');
 
 Route::post('/training-classes/{service}/booking-inquiry', function (\App\Models\Service $service, \Illuminate\Http\Request $request) {
     $bookableCount = ClassSchedule::where('service_id', $service->id)
@@ -473,6 +478,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/classes/{service}/course-modules/{courseModule}/edit', [App\Http\Controllers\Admin\CourseModuleController::class, 'edit'])->name('classes.course-modules.edit');
         Route::put('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'update'])->name('classes.course-modules.update');
         Route::delete('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'destroy'])->name('classes.course-modules.destroy');
+        Route::post('/classes/{service}/course-modules/{courseModule}/videos/reorder', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'reorder'])->name('classes.course-modules.videos.reorder');
         Route::post('/classes/{service}/course-modules/{courseModule}/videos', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'store'])->name('classes.course-modules.videos.store');
         Route::get('/classes/{service}/course-modules/{courseModule}/videos/create', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'create'])->name('classes.course-modules.videos.create');
         Route::get('/classes/{service}/course-modules/{courseModule}/videos/{courseModuleVideo}/edit', [App\Http\Controllers\Admin\CourseModuleVideoController::class, 'edit'])->name('classes.course-modules.videos.edit');

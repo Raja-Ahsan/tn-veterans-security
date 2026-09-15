@@ -59,9 +59,15 @@
                     Continue to next module <i class="fas fa-arrow-right text-xs"></i>
                 </a>
             @elseif(! $passed)
-                <a href="{{ route('student.online-course.module', [$service, $courseModule]) }}"
+                @php
+                    $retryParams = [$service, $courseModule];
+                    if ($moduleQuizSession->course_module_video_id) {
+                        $retryParams['video'] = $moduleQuizSession->course_module_video_id;
+                    }
+                @endphp
+                <a href="{{ route('student.online-course.module', $retryParams) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
-                    Back to module
+                    {{ $moduleQuizSession->course_module_video_id ? 'Rewatch video & try again' : 'Try quiz again' }}
                 </a>
             @endif
 
@@ -84,23 +90,16 @@
             <p class="mt-4 text-sm text-emerald-800">Next module unlocks after this pass is recorded.</p>
         @elseif(! $passed)
             <div class="mt-5 rounded-xl border border-amber-200 bg-white/80 px-4 py-3 text-left text-sm text-amber-950">
-                <p class="font-semibold"><i class="fas fa-ban mr-1"></i> Free retake is not available</p>
+                <p class="font-semibold"><i class="fas fa-redo mr-1"></i> You can try again for free</p>
                 <p class="mt-1 text-amber-900">
-                    Correct answers are not shown after a failed attempt. To try again you must
-                    <strong>re-enroll / contact admin</strong> so they can update the module questions and reset your attempt.
+                    Correct answers are not shown after a failed attempt.
+                    @if($moduleQuizSession->course_module_video_id ?? null)
+                        Rewatch this video fully, then take the quiz again until you pass.
+                    @else
+                        Return to the module and start the quiz again until you pass.
+                    @endif
+                    No admin reset or extra payment is required.
                 </p>
-                @if(! empty($supportEmail) || ! empty($supportPhone))
-                    <p class="mt-2 text-amber-800">
-                        Contact:
-                        @if(! empty($supportEmail))
-                            <a href="mailto:{{ $supportEmail }}" class="font-semibold underline">{{ $supportEmail }}</a>
-                        @endif
-                        @if(! empty($supportEmail) && ! empty($supportPhone)) · @endif
-                        @if(! empty($supportPhone))
-                            <a href="tel:{{ $supportPhone }}" class="font-semibold underline">{{ $supportPhone }}</a>
-                        @endif
-                    </p>
-                @endif
             </div>
         @endif
     </div>

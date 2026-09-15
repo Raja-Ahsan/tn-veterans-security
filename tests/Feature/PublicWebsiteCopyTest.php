@@ -20,7 +20,18 @@ class PublicWebsiteCopyTest extends TestCase
     {
         $this->get(route('training-classes'))
             ->assertOk()
-            ->assertSee('Job Placement', false);
+            ->assertSee('Job Placement', false)
+            ->assertSee('Veteran Friendly', false)
+            ->assertSee('Ongoing Support', false);
+    }
+
+    public function test_enhanced_armed_guard_subcategories_page_loads(): void
+    {
+        $this->get(route('handgun.subcategories'))
+            ->assertOk()
+            ->assertSee('Job Placement', false)
+            ->assertSee('Rifle', false)
+            ->assertSee('Shotgun', false);
     }
 
     public function test_security_training_prequal_asks_about_oc_spray_not_mace(): void

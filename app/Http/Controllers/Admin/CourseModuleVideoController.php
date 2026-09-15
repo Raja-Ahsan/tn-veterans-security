@@ -98,6 +98,77 @@ class CourseModuleVideoController extends Controller
             ->with('success', 'Video deleted.');
     }
 
+    public function reorder(Request $request, Service $service, CourseModule $courseModule)
+    {
+        abort_unless($courseModule->service_id === $service->id, 404);
+        abort_unless($service->has_online_parts, 404);
+
+        if ($request->has('order')) {
+            $validated = $request->validate([
+                'order' => 'required|array|min:1',
+                'order.*' => 'integer|exists:course_module_videos,id',
+            ]);
+
+            foreach ($validated['order'] as $index => $videoId) {
+                CourseModuleVideo::query()
+                    ->where('course_module_id', $courseModule->id)
+                    ->where('id', $videoId)
+                    ->update(['order' => $index + 1]);
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Video order updated.']);
+            }
+
+            return back()->with('success', 'Video order updated.');
+        }
+
+        if ($request->filled('move_video_id') && $request->filled('direction')) {
+            $validated = $request->validate([
+                'move_video_id' => 'required|integer|exists:course_module_videos,id',
+                'direction' => 'required|in:up,down',
+            ]);
+
+            $videos = $courseModule->videos()->orderBy('order')->orderBy('id')->get()->values();
+            $index = $videos->search(
+                fn (CourseModuleVideo $video): bool => (int) $video->id === (int) $validated['move_video_id']
+            );
+
+            abort_if($index === false, 404);
+
+            $swapWith = $validated['direction'] === 'up' ? $index - 1 : $index + 1;
+            if ($swapWith < 0 || $swapWith >= $videos->count()) {
+                return back();
+            }
+
+            $orderedIds = $videos->pluck('id')->all();
+            [$orderedIds[$index], $orderedIds[$swapWith]] = [$orderedIds[$swapWith], $orderedIds[$index]];
+
+            foreach ($orderedIds as $position => $videoId) {
+                CourseModuleVideo::query()
+                    ->where('course_module_id', $courseModule->id)
+                    ->where('id', $videoId)
+                    ->update(['order' => $position + 1]);
+            }
+
+            return back()->with('success', 'Video order updated.');
+        }
+
+        $validated = $request->validate([
+            'positions' => 'required|array',
+            'positions.*' => 'integer|min:1',
+        ]);
+
+        foreach ($validated['positions'] as $videoId => $position) {
+            CourseModuleVideo::query()
+                ->where('course_module_id', $courseModule->id)
+                ->where('id', $videoId)
+                ->update(['order' => $position]);
+        }
+
+        return back()->with('success', 'Video order updated.');
+    }
+
     private function prepareVideoRequest(Request $request): void
     {
         $request->merge([

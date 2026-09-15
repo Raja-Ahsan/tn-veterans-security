@@ -88,17 +88,9 @@
 <!-- Class delivery formats -->
 @php
     $deliveryCards = [
-        'online' => [
-            'label' => 'Online',
-            'blurb' => 'Modules & quizzes only',
-            'icon' => 'fa-laptop',
-            'border' => 'border-sky-500',
-            'iconColor' => 'text-sky-500',
-            'countColor' => 'text-sky-700',
-        ],
         'blended' => [
             'label' => 'Blended',
-            'blurb' => 'Online + in-person testing',
+            'blurb' => 'Online modules + in-person training',
             'icon' => 'fa-layer-group',
             'border' => 'border-cyan-500',
             'iconColor' => 'text-cyan-600',
@@ -118,11 +110,11 @@
     <div class="mb-3 flex items-end justify-between gap-3">
         <div>
             <h3 class="text-lg font-bold text-gray-800">Classes by delivery</h3>
-            <p class="text-sm text-gray-500">Quick counts for Online, Blended, and In Person offerings.</p>
+            <p class="text-sm text-gray-500">Quick counts for Blended and In Person offerings.</p>
         </div>
         <a href="{{ route('admin.quiz-modules.index') }}" class="text-sm font-medium text-green-600 hover:underline">Quiz Modules →</a>
     </div>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         @foreach($deliveryCards as $format => $card)
             @php $count = (int) ($deliveryCounts[$format] ?? 0); @endphp
             <a href="{{ route('admin.quiz-modules.index', ['delivery' => $format]) }}"

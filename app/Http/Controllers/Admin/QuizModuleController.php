@@ -11,10 +11,8 @@ class QuizModuleController extends Controller
 {
     public function index(Request $request): View
     {
-        $delivery = $request->string('delivery')->toString();
-        if (! Service::isValidDeliveryFormat($delivery)) {
-            $delivery = Service::DELIVERY_BLENDED;
-        }
+        $delivery = Service::normalizeDeliveryFormat($request->string('delivery')->toString())
+            ?? Service::DELIVERY_BLENDED;
 
         $deliveryCounts = Service::deliveryCountMap();
 

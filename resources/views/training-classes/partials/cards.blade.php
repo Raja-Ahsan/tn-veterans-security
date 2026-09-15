@@ -35,7 +35,6 @@
                         <div class="mb-4 space-y-2">
                             @php
                                 $deliveryBadge = match ($service->deliveryFormat()) {
-                                    'online' => ['Online', 'bg-sky-100 text-sky-800'],
                                     'blended' => ['Blended', 'bg-cyan-100 text-cyan-800'],
                                     default => ['In Person', 'bg-emerald-100 text-emerald-800'],
                                 };
@@ -84,9 +83,7 @@
             No classes found
         </h3>
         <p class="mt-2 text-gray-600">
-            @if(request('delivery') === 'online')
-                No fully online classes are listed right now.
-            @elseif(request('delivery') === 'blended')
+            @if(request('delivery') === 'blended')
                 No blended classes are listed right now.
             @elseif(request('delivery') === 'in-person')
                 No in person classes are listed right now.

@@ -53,7 +53,7 @@ class AdminQuizModulesTest extends TestCase
             'order' => 0,
         ]);
         Service::query()->create([
-            'title' => 'Online Firearms Safety',
+            'title' => 'Blended Firearms Safety',
             'is_active' => true,
             'has_online_parts' => true,
             'testing_in_person' => false,
@@ -72,9 +72,9 @@ class AdminQuizModulesTest extends TestCase
             ->assertOk()
             ->assertSee('Quiz Modules')
             ->assertSee('Handgun Carry Permit')
+            ->assertSee('Blended Firearms Safety')
             ->assertSee('Add module')
-            ->assertDontSee('First AID CPR AED')
-            ->assertDontSee('Online Firearms Safety');
+            ->assertDontSee('First AID CPR AED');
     }
 
     public function test_quiz_modules_tabs_filter_by_delivery_and_show_counts(): void
@@ -88,7 +88,7 @@ class AdminQuizModulesTest extends TestCase
             'order' => 0,
         ]);
         Service::query()->create([
-            'title' => 'Online Firearms Safety',
+            'title' => 'Blended Firearms Safety',
             'is_active' => true,
             'has_online_parts' => true,
             'testing_in_person' => false,
@@ -105,9 +105,8 @@ class AdminQuizModulesTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.quiz-modules.index', ['delivery' => 'online']))
             ->assertOk()
-            ->assertSee('Online Firearms Safety')
-            ->assertSee('Add module')
-            ->assertDontSee('Blended Handgun Carry')
+            ->assertSee('Blended Firearms Safety')
+            ->assertSee('Blended Handgun Carry')
             ->assertDontSee('In Person First Aid');
 
         $this->actingAs($admin)
@@ -116,16 +115,18 @@ class AdminQuizModulesTest extends TestCase
             ->assertSee('In Person First Aid')
             ->assertSee('No online quiz')
             ->assertSee('Edit class')
-            ->assertDontSee('Online Firearms Safety')
+            ->assertDontSee('Blended Firearms Safety')
             ->assertDontSee('Blended Handgun Carry');
 
         $html = $this->actingAs($admin)
             ->get(route('admin.quiz-modules.index', ['delivery' => 'blended']))
             ->assertOk()
             ->assertSee('Blended Handgun Carry')
+            ->assertSee('Blended Firearms Safety')
+            ->assertDontSee('>Online<', false)
             ->getContent();
 
-        $this->assertStringContainsString(route('admin.quiz-modules.index', ['delivery' => 'online']), $html);
+        $this->assertStringNotContainsString(route('admin.quiz-modules.index', ['delivery' => 'online']), $html);
         $this->assertStringContainsString(route('admin.quiz-modules.index', ['delivery' => 'blended']), $html);
         $this->assertStringContainsString(route('admin.quiz-modules.index', ['delivery' => 'in-person']), $html);
     }
@@ -213,6 +214,46 @@ class AdminQuizModulesTest extends TestCase
 
         $this->assertSame(2, $first->fresh()->order);
         $this->assertSame(1, $second->fresh()->order);
+    }
+
+    public function test_admin_can_reorder_videos_within_a_module(): void
+    {
+        $admin = User::factory()->create();
+        [$service, $module] = $this->seedVideo();
+
+        $first = CourseModuleVideo::query()->where('course_module_id', $module->id)->firstOrFail();
+        $second = CourseModuleVideo::query()->create([
+            'course_module_id' => $module->id,
+            'title' => 'Video 2',
+            'order' => 2,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.classes.course-modules.edit', [$service, $module]))
+            ->assertOk()
+            ->assertSee(route('admin.classes.course-modules.videos.reorder', [$service, $module]), false)
+            ->assertSee('video-drag-handle', false)
+            ->assertSee('Drag the');
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.classes.course-modules.videos.reorder', [$service, $module]), [
+                'order' => [$second->id, $first->id],
+            ])
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $this->assertSame(2, $first->fresh()->order);
+        $this->assertSame(1, $second->fresh()->order);
+
+        $this->actingAs($admin)
+            ->post(route('admin.classes.course-modules.videos.reorder', [$service, $module]), [
+                'order' => [$first->id, $second->id],
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertSame(1, $first->fresh()->order);
+        $this->assertSame(2, $second->fresh()->order);
     }
 
     public function test_creating_a_module_on_an_in_person_class_is_forbidden(): void

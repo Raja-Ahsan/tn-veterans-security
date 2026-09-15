@@ -39,25 +39,54 @@ class BookingController extends Controller
         $student = Auth::guard('student')->user();
         $filter = $request->query('filter', 'all');
 
-        $query = ServiceBooking::where('student_id', $student->id)
+        $query = ServiceBooking::query()
+            ->where('service_bookings.student_id', $student->id)
             ->with(['service', 'classSchedule']);
 
         if ($filter === 'upcoming') {
-            $query->whereIn('status', ['pending', 'confirmed'])
-                ->where('booking_date', '>=', now()->toDateString());
+            // Active enrollments — still open for schedule, deposit, and online quizzes.
+            $query->whereIn('service_bookings.status', ['pending', 'confirmed']);
         } elseif ($filter === 'past') {
-            $query->where(function ($q) {
-                $q->whereIn('status', ['completed', 'cancelled'])
-                    ->orWhere('booking_date', '<', now()->toDateString());
-            });
+            $query->whereIn('service_bookings.status', ['completed', 'cancelled']);
         }
 
-        $bookings = $query->orderBy('booking_date', 'desc')
-            ->orderBy('created_at', 'desc')
+        $bookings = $query
+            ->leftJoin('class_schedules', 'service_bookings.class_schedule_id', '=', 'class_schedules.id')
+            ->select('service_bookings.*')
+            ->orderByRaw('COALESCE(class_schedules.class_date, service_bookings.booking_date) desc')
+            ->orderByDesc('service_bookings.created_at')
             ->paginate(10)
             ->withQueryString();
 
-        return view('student.bookings', compact('bookings', 'filter'));
+        $bookedScheduleIds = ServiceBooking::query()
+            ->where('student_id', $student->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereNotNull('class_schedule_id')
+            ->pluck('class_schedule_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $openClassesToBook = ClassSchedule::query()
+            ->with('service')
+            ->where('status', 'scheduled')
+            ->where('class_date', '>=', now()->toDateString())
+            ->whereHas('service', function ($serviceQuery) {
+                \App\Support\PublicTrainingServiceQuery::apply(
+                    $serviceQuery->where('is_active', true)
+                );
+            })
+            ->where(function ($capacityQuery) {
+                $capacityQuery->where('admin_override_capacity', true)
+                    ->orWhereColumn('current_students', '<', 'max_students');
+            })
+            ->when($bookedScheduleIds->isNotEmpty(), fn ($q) => $q->whereNotIn('id', $bookedScheduleIds->all()))
+            ->orderBy('class_date')
+            ->orderBy('start_time')
+            ->limit(12)
+            ->get();
+
+        return view('student.bookings', compact('bookings', 'filter', 'openClassesToBook'));
     }
 
     /**

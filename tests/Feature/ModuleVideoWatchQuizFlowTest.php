@@ -100,6 +100,47 @@ class ModuleVideoWatchQuizFlowTest extends TestCase
             ->assertRedirect(route('student.online-course.module', [$service, $module]));
     }
 
+    public function test_failing_video_quiz_requires_rewatch_then_allows_free_retake(): void
+    {
+        Mail::fake();
+        Storage::fake('public');
+
+        [$student, $service, $module, $video1] = $this->seedTwoVideos();
+
+        $this->watch($student, $service, $module, $video1);
+        $this->failVideoQuiz($student, $service, $module, $video1);
+
+        $progress = StudentVideoProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_video_id', $video1->id)
+            ->first();
+
+        $this->assertNotNull($progress);
+        $this->assertFalse((bool) $progress->video_watched);
+        $this->assertFalse((bool) $progress->is_completed);
+        $this->assertSame(1, (int) $progress->attempts);
+
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.start', [$service, $module]), [
+                'video_id' => $video1->id,
+            ])
+            ->assertRedirect(route('student.online-course.module', [$service, $module, 'video' => $video1->id]));
+
+        $this->actingAs($student, 'student')
+            ->get(route('student.online-course.module', [$service, $module, 'video' => $video1->id]))
+            ->assertOk()
+            ->assertSee('Finish watching the video to unlock this quiz')
+            ->assertDontSee('Quiz attempt used');
+
+        $this->watch($student, $service, $module, $video1);
+
+        $this->actingAs($student, 'student')
+            ->post(route('student.online-course.quiz.start', [$service, $module]), [
+                'video_id' => $video1->id,
+            ])
+            ->assertRedirect(route('student.online-course.quiz.take', [$service, $module]));
+    }
+
     public function test_passing_all_videos_unlocks_the_next_module(): void
     {
         Mail::fake();

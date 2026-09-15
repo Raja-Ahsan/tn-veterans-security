@@ -125,12 +125,14 @@ class Service extends Model
     }
 
     /**
+     * Public delivery filters: Blended (has online modules) or In Person.
+     * "Online" is treated as Blended — they are the same offering type.
+     *
      * @return list<string>
      */
     public static function deliveryFormats(): array
     {
         return [
-            self::DELIVERY_ONLINE,
             self::DELIVERY_BLENDED,
             self::DELIVERY_IN_PERSON,
         ];
@@ -138,33 +140,36 @@ class Service extends Model
 
     public static function isValidDeliveryFormat(?string $format): bool
     {
-        return in_array($format, self::deliveryFormats(), true);
+        return self::normalizeDeliveryFormat($format) !== null;
     }
 
     /**
-     * How this class is delivered: fully online, blended, or in person.
+     * Map legacy "online" to blended; otherwise return a known format or null.
+     */
+    public static function normalizeDeliveryFormat(?string $format): ?string
+    {
+        if ($format === self::DELIVERY_ONLINE) {
+            return self::DELIVERY_BLENDED;
+        }
+
+        return in_array($format, self::deliveryFormats(), true) ? $format : null;
+    }
+
+    /**
+     * How this class is delivered: blended (online modules + class work) or in person.
      */
     public function deliveryFormat(): string
     {
-        if ($this->has_online_parts) {
-            return $this->testing_in_person ? self::DELIVERY_BLENDED : self::DELIVERY_ONLINE;
-        }
-
-        return self::DELIVERY_IN_PERSON;
+        return $this->has_online_parts ? self::DELIVERY_BLENDED : self::DELIVERY_IN_PERSON;
     }
 
     public function deliveryFormatLabel(): string
     {
-        return match ($this->deliveryFormat()) {
-            self::DELIVERY_ONLINE => 'Online',
-            self::DELIVERY_BLENDED => 'Blended',
-            default => 'In Person',
-        };
+        return $this->deliveryFormat() === self::DELIVERY_BLENDED ? 'Blended' : 'In Person';
     }
 
     /**
-     * Filter by delivery format. Online, Blended, and In Person are mutually exclusive
-     * and match deliveryFormat().
+     * Filter by delivery format. Blended = any class with online modules/quizzes.
      *
      * @param  Builder<Service>  $query
      * @return Builder<Service>
@@ -175,30 +180,30 @@ class Service extends Model
     }
 
     /**
-     * Mutually exclusive delivery filter matching deliveryFormat().
+     * Delivery filter matching deliveryFormat().
      *
      * @param  Builder<Service>  $query
      * @return Builder<Service>
      */
     public function scopeExactDelivery(Builder $query, ?string $format): Builder
     {
+        $format = self::normalizeDeliveryFormat($format);
+
         return match ($format) {
-            self::DELIVERY_ONLINE => $query->where('has_online_parts', true)->where('testing_in_person', false),
-            self::DELIVERY_BLENDED => $query->where('has_online_parts', true)->where('testing_in_person', true),
+            self::DELIVERY_BLENDED => $query->where('has_online_parts', true),
             self::DELIVERY_IN_PERSON => $query->where('has_online_parts', false),
             default => $query,
         };
     }
 
     /**
-     * Counts per delivery format (online / blended / in-person), mutually exclusive.
+     * Counts per delivery format (blended / in-person).
      *
-     * @return array{online: int, blended: int, in-person: int}
+     * @return array{blended: int, in-person: int}
      */
     public static function deliveryCountMap(bool $activeOnly = false): array
     {
         $counts = [
-            self::DELIVERY_ONLINE => 0,
             self::DELIVERY_BLENDED => 0,
             self::DELIVERY_IN_PERSON => 0,
         ];

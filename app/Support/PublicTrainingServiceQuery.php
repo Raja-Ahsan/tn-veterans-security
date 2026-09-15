@@ -46,7 +46,7 @@ class PublicTrainingServiceQuery
         }
 
         if (Service::isValidDeliveryFormat($delivery)) {
-            $query->ofDelivery($delivery);
+            $query->ofDelivery(Service::normalizeDeliveryFormat($delivery));
         }
 
         return $query->orderBy('order')->orderBy('created_at', 'desc');
