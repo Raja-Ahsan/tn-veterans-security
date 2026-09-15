@@ -6,6 +6,8 @@
         'correct_answer' => [],
     ];
     $hideModuleDetails = $hideModuleDetails ?? false;
+    $moduleVideoCount = $hideModuleDetails ? 0 : (int) ($courseModule?->videos?->count() ?? 0);
+    $managePrimaryVideoQuiz = $hideModuleDetails || $moduleVideoCount <= 1;
     $primaryVideo = $courseModuleVideo ?? ($hideModuleDetails ? null : $courseModule?->videos?->first());
     $questionsSource = ($primaryVideo?->quizQuestions && $primaryVideo->quizQuestions->isNotEmpty())
         ? $primaryVideo->quizQuestions
@@ -34,6 +36,20 @@
     </div>
 @endif
 
+@if(! $hideModuleDetails && $moduleVideoCount > 1)
+    <div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+        <p class="font-semibold"><i class="fas fa-info-circle mr-1"></i> This module has {{ $moduleVideoCount }} videos</p>
+        <p class="mt-1">
+            Drag videos above to reorder (saves automatically). To change a video’s quiz questions, use that video’s
+            <strong>Edit</strong> button — updating the module here only saves title, content, and quiz settings, and will not overwrite video quizzes.
+        </p>
+    </div>
+@endif
+
+@if($managePrimaryVideoQuiz && $primaryVideo)
+    <input type="hidden" name="editing_video_id" value="{{ $primaryVideo->id }}">
+@endif
+
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
 {{-- Module details --}}
 <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm space-y-4 {{ $errors->has('title') || $errors->has('video_url') || $errors->has('quiz_time_limit_minutes') ? 'ring-1 ring-red-200' : '' }}">
@@ -44,6 +60,8 @@
             <p class="text-sm text-gray-500">
                 @if($hideModuleDetails)
                     Upload or link this video, then add its quiz. Students must finish the video before the quiz.
+                @elseif($moduleVideoCount > 1)
+                    Module title, content, and quiz settings. Edit each video’s file and questions from the list above.
                 @else
                     Title, first video, and its quiz. Add more videos after saving if this module has extra lessons.
                 @endif
@@ -73,6 +91,7 @@
     </div>
     @endunless
 
+    @if($managePrimaryVideoQuiz)
     <div>
         <label for="video_title" class="block text-sm font-bold text-gray-700 mb-1.5">
             {{ $hideModuleDetails ? 'Video title' : 'First video title' }}
@@ -125,6 +144,7 @@
             <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
         @enderror
     </div>
+    @endif
 
     @unless($hideModuleDetails)
     <div class="grid grid-cols-2 gap-3">
@@ -200,6 +220,7 @@
     @endunless
 </div>
 
+@if($managePrimaryVideoQuiz)
 {{-- Quiz --}}
 <div class="rounded-lg border bg-white p-5 shadow-sm space-y-4 {{ $errors->has('questions') || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'questions.')) ? 'border-red-300 ring-1 ring-red-200' : 'border-blue-200' }}">
     <div class="flex items-start gap-3 border-b border-blue-100 pb-3">
@@ -311,8 +332,22 @@
         <i class="fas fa-plus"></i> Add Question
     </button>
 </div>
+@else
+{{-- Multi-video: quizzes edited per video --}}
+<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm space-y-3">
+    <div class="flex items-start gap-3 border-b border-slate-200 pb-3">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-600 text-sm font-bold text-white">2</span>
+        <div>
+            <h3 class="text-lg font-bold text-gray-900">Video quizzes</h3>
+            <p class="text-sm text-gray-500">This module has multiple videos. Edit each video’s questions from the list above so rearranging videos cannot overwrite quizzes.</p>
+        </div>
+    </div>
+    <p class="text-sm text-gray-600">Use <strong>Edit</strong> next to a video to change its quiz. Drag handles only change order.</p>
+</div>
+@endif
 </div>{{-- end two-column grid --}}
 
+@if($managePrimaryVideoQuiz)
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
 (function () {
@@ -581,3 +616,4 @@
     });
 })();
 </script>
+@endif

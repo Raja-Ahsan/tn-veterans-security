@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CourseModule;
 use App\Models\CourseModuleVideo;
+use App\Models\ModuleQuizQuestion;
 use App\Models\Service;
 use App\Models\User;
 use App\Support\QuizQuestionPayload;
@@ -254,6 +255,90 @@ class AdminQuizModulesTest extends TestCase
 
         $this->assertSame(1, $first->fresh()->order);
         $this->assertSame(2, $second->fresh()->order);
+    }
+
+    public function test_updating_multi_video_module_does_not_wipe_video_quizzes_after_reorder(): void
+    {
+        $admin = User::factory()->create();
+        [$service, $module, $video1] = $this->seedVideo();
+
+        $video2 = CourseModuleVideo::query()->create([
+            'course_module_id' => $module->id,
+            'title' => 'Video 2',
+            'order' => 2,
+        ]);
+
+        ModuleQuizQuestion::query()->create([
+            'course_module_id' => $module->id,
+            'course_module_video_id' => $video1->id,
+            'question' => 'Video 1 Q1',
+            'options' => ['A', 'B'],
+            'correct_answer' => ['A'],
+            'order' => 0,
+        ]);
+        ModuleQuizQuestion::query()->create([
+            'course_module_id' => $module->id,
+            'course_module_video_id' => $video1->id,
+            'question' => 'Video 1 Q2',
+            'options' => ['C', 'D'],
+            'correct_answer' => ['C'],
+            'order' => 1,
+        ]);
+        ModuleQuizQuestion::query()->create([
+            'course_module_id' => $module->id,
+            'course_module_video_id' => $video2->id,
+            'question' => 'Video 2 Q1',
+            'options' => ['E', 'F'],
+            'correct_answer' => ['E'],
+            'order' => 0,
+        ]);
+        ModuleQuizQuestion::query()->create([
+            'course_module_id' => $module->id,
+            'course_module_video_id' => $video2->id,
+            'question' => 'Video 2 Q2',
+            'options' => ['G', 'H'],
+            'correct_answer' => ['G'],
+            'order' => 1,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.classes.course-modules.videos.reorder', [$service, $module]), [
+                'order' => [$video2->id, $video1->id],
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->actingAs($admin)
+            ->put(route('admin.classes.course-modules.update', [$service, $module]), [
+                'title' => $module->title,
+                'quiz_time_limit_minutes' => 15,
+                'passing_score' => 90,
+                'max_attempts' => 1,
+                'is_active' => 1,
+                'questions' => [
+                    [
+                        'question' => 'Should not overwrite',
+                        'options' => ['X', 'Y'],
+                        'correct_answer' => ['X'],
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('admin.classes.course-modules.edit', [$service, $module]));
+
+        $this->assertSame(2, $video1->fresh()->quizQuestions()->count());
+        $this->assertSame(2, $video2->fresh()->quizQuestions()->count());
+        $this->assertDatabaseHas('module_quiz_questions', [
+            'course_module_video_id' => $video1->id,
+            'question' => 'Video 1 Q1',
+        ]);
+        $this->assertDatabaseHas('module_quiz_questions', [
+            'course_module_video_id' => $video2->id,
+            'question' => 'Video 2 Q2',
+        ]);
+        $this->assertDatabaseMissing('module_quiz_questions', [
+            'course_module_id' => $module->id,
+            'question' => 'Should not overwrite',
+        ]);
     }
 
     public function test_creating_a_module_on_an_in_person_class_is_forbidden(): void

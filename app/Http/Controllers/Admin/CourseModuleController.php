@@ -332,16 +332,25 @@ class CourseModuleController extends Controller
     }
 
     /**
+     * Sync the module's single primary video + quiz.
+     * When a module already has multiple videos, quizzes are edited per-video only —
+     * updating the module must not rewrite whichever video is currently first by order.
+     *
      * @param  array<int, array<string, mixed>>  $questions
      */
     private function syncPrimaryVideoAndQuestions(Request $request, CourseModule $module, array $questions): void
     {
+        $videoCount = $module->videos()->count();
+        if ($videoCount > 1) {
+            return;
+        }
+
         $hasVideoInput = $request->hasFile('video_file')
             || $request->filled('video_url')
             || $request->boolean('remove_video_file')
             || $request->filled('video_title');
         $hasQuestions = $questions !== [];
-        $hasExistingVideo = $module->videos()->exists();
+        $hasExistingVideo = $videoCount > 0;
 
         if (! $hasVideoInput && ! $hasQuestions && ! $hasExistingVideo) {
             $module->quizQuestions()->whereNull('course_module_video_id')->delete();
@@ -355,7 +364,11 @@ class CourseModuleController extends Controller
 
     private function upsertPrimaryVideo(Request $request, CourseModule $module): CourseModuleVideo
     {
-        $video = $module->videos()->orderBy('order')->orderBy('id')->first();
+        $editingVideoId = $request->integer('editing_video_id');
+        $video = $editingVideoId > 0
+            ? $module->videos()->whereKey($editingVideoId)->first()
+            : null;
+        $video ??= $module->videos()->orderBy('order')->orderBy('id')->first();
 
         if (! $video) {
             $video = $module->videos()->create([
