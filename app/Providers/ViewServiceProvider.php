@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Affiliate;
 use App\Models\Service;
 use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,13 @@ class ViewServiceProvider extends ServiceProvider
                 ->limit(6)
                 ->get();
             $view->with('footerServices', $footerServices);
+        });
+
+        View::composer('layouts.web.partials.header', function ($view) {
+            $view->with([
+                'servicesAffiliates' => Affiliate::query()->inMainNav()->get(),
+                'nraAffiliates' => Affiliate::query()->inNraNav()->get(),
+            ]);
         });
 
         View::composer('student.layouts.master', function ($view) {

@@ -77,6 +77,9 @@
                     <a href="{{ route('admin.locations.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.locations.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-map-marker-alt mr-3"></i> Locations
                     </a>
+                    <a href="{{ route('admin.affiliates.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.affiliates.*', 'admin.affiliate-categories.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                        <i class="fas fa-handshake mr-3"></i> Affiliates
+                    </a>
                     <a href="{{ route('admin.categories.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.categories.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-tags mr-3"></i> Categories
                     </a>

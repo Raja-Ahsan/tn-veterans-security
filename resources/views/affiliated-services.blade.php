@@ -34,60 +34,22 @@
                 </div>
 
                 <div>
-                    @php
-                        $sections = [
-                            [
-                                'title' => 'Veteran Owned Security Companies',
-                                'companies' => [
-                                    ['initials' => 'ES', 'name' => 'Elite Security', 'url' => 'https://www.elitesecuritytn.org'],
-                                    ['initials' => 'VST', 'name' => 'Vanguard Security Training', 'url' => 'https://vanguardsecuritytrainingllc.com'],
-                                    ['initials' => 'RSG', 'name' => 'Regiment Security Group', 'url' => 'https://www.regimentsecuritygroup.com'],
-                                    ['initials' => 'ESS', 'name' => 'Essential Security Services', 'url' => 'https://www.essentialsecurityservices.com'],
-                                ],
-                            ],
-                            [
-                                'title' => 'Non Veteran Owned Security Companies',
-                                'companies' => [
-                                    ['initials' => 'STN', 'name' => 'SafetyTN Security Solutions', 'url' => 'https://safetytennessee.com'],
-                                    ['initials' => 'JSC', 'name' => 'JS Security Consulting', 'url' => 'https://www.jssecurityconsulting.com'],
-                                    ['initials' => 'APX', 'name' => 'Apex', 'url' => 'https://apexsgi.com'],
-                                ],
-                            ],
-                            [
-                                'title' => 'Veteran Owned Companies (Non Security)',
-                                'companies' => [
-                                    ['initials' => 'G+L', 'name' => 'Guns and Leather', 'url' => 'https://gunsandleather.com'],
-                                    ['initials' => 'SGA', 'name' => "Shooter's Guns, Ammo & Range", 'url' => 'https://www.shootersnashville.com'],
-                                    ['initials' => 'SWC', 'name' => 'South Winds Cattle Company', 'url' => 'https://www.southwindscattleco.com'],
-                                ],
-                            ],
-                            [
-                                'title' => 'Non Veteran Owned Companies (Non Security)',
-                                'companies' => [
-                                    ['initials' => 'CBP', 'name' => 'Code Blue CPR Services', 'url' => 'https://codebluecprservices.com'],
-                                    ['initials' => 'USL', 'name' => 'USLAW Shield', 'url' => 'https://members.uslawshield.com/login'],
-                                    ['initials' => 'TPT', 'name' => 'TN Professional Training Institute', 'url' => 'https://www.tnpti.com'],
-                                ],
-                            ],
-                        ];
-                    @endphp
-
-                    @foreach ($sections as $sectionIndex => $section)
+                    @forelse ($sections as $sectionIndex => $section)
                         <div class="affiliate-section-box @unless($loop->last) mb-16 lg:mb-24 @endunless" data-aos="fade-up" data-aos-delay="{{ $sectionIndex * 100 }}">
                             <h3 class="text-[22px] md:text-[28px] font-bold text-[var(--text-color)] uppercase mb-8 lg:mb-10 border-l-4 border-[var(--primary-color)] pl-4">
-                                {{ $section['title'] }}
+                                {{ $section->name }}
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                                @foreach ($section['companies'] as $index => $company)
+                                @foreach ($section->affiliates as $company)
                                     @php
-                                        $initialLen = strlen($company['initials']);
+                                        $initialLen = strlen($company->initials);
                                         $initialClass = $initialLen <= 2 ? 'text-lg' : ($initialLen <= 3 ? 'text-sm' : 'text-xs');
                                     @endphp
-                                    <a href="{{ $company['url'] }}" target="_blank" rel="noopener noreferrer" class="group block bg-gray-50 hover:bg-[var(--primary-color)]/10 border border-gray-200 hover:border-[var(--primary-color)] rounded-xl p-6 transition-all duration-300">
+                                    <a href="{{ $company->url }}" target="_blank" rel="noopener noreferrer" class="group block bg-gray-50 hover:bg-[var(--primary-color)]/10 border border-gray-200 hover:border-[var(--primary-color)] rounded-xl p-6 transition-all duration-300">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-lg bg-[var(--primary-color)] flex items-center justify-center text-white font-bold {{ $initialClass }} shrink-0 group-hover:scale-110 transition-transform">{{ $company['initials'] }}</div>
+                                            <div class="w-12 h-12 rounded-lg bg-[var(--primary-color)] flex items-center justify-center text-white font-bold {{ $initialClass }} shrink-0 group-hover:scale-110 transition-transform">{{ $company->initials }}</div>
                                             <div>
-                                                <h4 class="text-xl font-bold text-[var(--text-color)] group-hover:text-[var(--primary-color)] transition-colors">{{ $company['name'] }}</h4>
+                                                <h4 class="text-xl font-bold text-[var(--text-color)] group-hover:text-[var(--primary-color)] transition-colors">{{ $company->name }}</h4>
                                                 <span class="inline-flex items-center gap-1 text-[var(--primary-color)] font-semibold mt-2 text-sm">Visit site <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></span>
                                             </div>
                                         </div>
@@ -95,7 +57,9 @@
                                 @endforeach
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <p class="text-center text-[#666]">Partner listings will appear here once they are added in the admin panel.</p>
+                    @endforelse
                 </div>
             </div>
         </section>

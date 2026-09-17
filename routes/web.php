@@ -137,11 +137,27 @@ Route::permanentRedirect('/training-services', '/training-classes');
 Route::permanentRedirect('/training-services/search', '/training-classes/search');
 
 Route::get('/affiliated-services', function () {
-    return view('affiliated-services');
+    $sections = \App\Models\AffiliateCategory::query()
+        ->active()
+        ->forPage(\App\Models\AffiliateCategory::PAGE_PARTNERS)
+        ->ordered()
+        ->with(['affiliates' => fn ($q) => $q->active()->ordered()])
+        ->get()
+        ->filter(fn ($category) => $category->affiliates->isNotEmpty());
+
+    return view('affiliated-services', compact('sections'));
 })->name('affiliated-services');
 
 Route::get('/nra-services', function () {
-    return view('nra-services');
+    $nraAffiliates = \App\Models\Affiliate::query()
+        ->active()
+        ->whereHas('category', function ($query) {
+            $query->active()->forPage(\App\Models\AffiliateCategory::PAGE_NRA);
+        })
+        ->ordered()
+        ->get();
+
+    return view('nra-services', compact('nraAffiliates'));
 })->name('nra-services');
 // Services by Page
 
@@ -434,6 +450,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('instructors', App\Http\Controllers\Admin\InstructorController::class)->except(['show']);
         Route::resource('locations', App\Http\Controllers\Admin\LocationController::class)->except(['show']);
+        Route::resource('affiliates', App\Http\Controllers\Admin\AffiliateController::class)->except(['show']);
+        Route::resource('affiliate-categories', App\Http\Controllers\Admin\AffiliateCategoryController::class)->except(['show']);
         Route::post('/categories/quick-store', [App\Http\Controllers\Admin\ServiceCategoryController::class, 'quickStore'])
             ->name('categories.quick-store');
         Route::resource('categories', App\Http\Controllers\Admin\ServiceCategoryController::class)

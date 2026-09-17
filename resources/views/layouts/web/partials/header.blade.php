@@ -59,25 +59,8 @@
             || (request()->routeIs('admin.*') && ! request()->routeIs('admin.login')),
         'classes_all' => request()->routeIs('training-classes') && ! request()->filled('category') && ! request()->filled('subcategory'),
     ];
-    $servicesAffiliates = [
-        ['name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'external' => true], 
-        ['name' => 'Code Blue CPR Services', 'url' => 'https://codebluecprservices.com/', 'external' => true],
-        ['name' => 'Elite Security Service', 'url' => 'https://www.elitesecuritytn.org/', 'external' => true],
-        ['name' => 'Guns & Leather', 'url' => 'https://www.gunsandleather.com/', 'external' => true],
-        ['name' => 'JS Security Consulting', 'url' => 'https://www.jssecurityconsulting.com/', 'external' => true],
-        ['name' => 'SafetyTN Security Solutions', 'url' => 'https://www.safetytennessee.com/', 'external' => true],
-        ['name' => 'Shooter\'s Nashville', 'url' => 'https://www.shootersnashville.com/', 'external' => true],
-        ['name' => 'US Law Shield', 'url' => 'https://members.uslawshield.com/login', 'external' => true],
-        ['name' => 'Vanguard Security Training LLC', 'url' => 'https://vanguardsecuritytrainingllc.com/index.php', 'external' => true],
-    ];
-    $nraAffiliates = [
-        ['name' => 'Join NRA', 'url' => 'https://membership.nra.org/recruiters/Join/XI048340', 'external' => true],
-        ['name' => 'TNPTI', 'url' => 'https://www.tnpti.com/', 'external' => true],
-        ['name' => 'SouthwindS Cattle Company', 'url' => 'https://www.southwindscattleco.com/', 'external' => true],
-        ['name' => 'Raven 1 Tactical', 'url' => 'https://raven1tactical.com/', 'external' => true],
-        ['name' => 'Blue Line Security', 'url' => 'https://www.nashvillebluelinesecurity.com/services', 'external' => true],
-        ['name' => 'Tactical Rifles and Ammo', 'url' => 'https://tacticalriflesandammollc.com/', 'external' => true], 
-    ];
+    $servicesAffiliates = $servicesAffiliates ?? collect();
+    $nraAffiliates = $nraAffiliates ?? collect();
 @endphp
 
 <style>
@@ -233,8 +216,8 @@
                     <div class="dropdown-simple">
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-visible py-2">
                             @foreach($servicesAffiliates as $aff)
-                                <a href="{{ $aff['url'] }}" data-nav-section="affiliated" class="category-item js-affiliated-trigger" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
-                                    {{ $aff['name'] }}
+                                <a href="{{ $aff->url }}" data-nav-section="affiliated" class="category-item js-affiliated-trigger" @if(str_starts_with($aff->url, 'http')) target="_blank" rel="noopener noreferrer" @endif>
+                                    {{ $aff->name }}
                                 </a>
                             @endforeach
                             <div class="affiliated-nra-sub border-t border-gray-100">
@@ -247,16 +230,13 @@
                                 <div class="affiliated-nra-flyout">
                                     <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
                                         @foreach($nraAffiliates as $aff)
-                                            <a href="{{ $aff['url'] }}" data-nav-section="affiliated" class="category-item js-affiliated-trigger" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
-                                                {{ $aff['name'] }}
+                                            <a href="{{ $aff->url }}" data-nav-section="affiliated" class="category-item js-affiliated-trigger" @if(str_starts_with($aff->url, 'http')) target="_blank" rel="noopener noreferrer" @endif>
+                                                {{ $aff->name }}
                                             </a>
                                         @endforeach
                                     </div>
                                 </div>
                             </div>
-                            <a href="https://www.regimentsecuritygroup.com" data-nav-section="affiliated" class="category-item js-affiliated-trigger" target="_blank" rel="noopener noreferrer">
-                                Regiment Security Group
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -364,15 +344,15 @@
                 <div id="mobileServicesMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
                         @foreach($servicesAffiliates as $aff)
-                            <a href="{{ $aff['url'] }}" data-nav-section="affiliated" class="mobile-nav-links js-affiliated-trigger text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
-                                {{ $aff['name'] }}
+                            <a href="{{ $aff->url }}" data-nav-section="affiliated" class="mobile-nav-links js-affiliated-trigger text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)" @if(str_starts_with($aff->url, 'http')) target="_blank" rel="noopener noreferrer" @endif>
+                                {{ $aff->name }}
                             </a>
                         @endforeach
                         <div class="border-t border-gray-200 pt-3 mt-1 col-span-1">
                             <a href="{{ route('nra-services') }}" data-nav-section="affiliated" class="mobile-nav-links js-affiliated-trigger text-[16px]! py-2 px-4 font-semibold text-gray-800 block border-l-4 {{ $isNraServicesPage ? 'border-(--primary-color) bg-emerald-50 text-(--primary-color)' : 'border-transparent' }}">NRA</a>
                             @foreach($nraAffiliates as $aff)
-                                <a href="{{ $aff['url'] }}" data-nav-section="affiliated" class="mobile-nav-links js-affiliated-trigger text-[16px]! py-2.5 pl-6 pr-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color) text-gray-700" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
-                                    {{ $aff['name'] }}
+                                <a href="{{ $aff->url }}" data-nav-section="affiliated" class="mobile-nav-links js-affiliated-trigger text-[16px]! py-2.5 pl-6 pr-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color) text-gray-700" @if(str_starts_with($aff->url, 'http')) target="_blank" rel="noopener noreferrer" @endif>
+                                    {{ $aff->name }}
                                 </a>
                             @endforeach
                         </div>

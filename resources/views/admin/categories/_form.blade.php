@@ -7,8 +7,8 @@
     {{-- Keep existing slug on edit; create auto-generates from name in controller --}}
     <input type="hidden" id="category-slug" name="slug" value="{{ $existingSlug }}">
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="md:col-span-2">
             <label class="mb-1.5 block text-sm font-bold text-gray-700">Name <span class="text-red-500">*</span></label>
             <input type="text" id="category-name" name="name" value="{{ old('name', $category->name ?? '') }}" required
                    placeholder="e.g. Red Cross"
@@ -25,86 +25,99 @@
         </div>
     </div>
 
-    <div>
-        <label class="mb-1.5 block text-sm font-bold text-gray-700">Sort order</label>
-        <input type="number" name="sort_order" min="0"
-               value="{{ old('sort_order', $category->sort_order ?? 0) }}"
-               class="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
-        <p class="mt-1 text-xs text-gray-500">Smaller number shows first in the menu.</p>
-    </div>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="space-y-5 lg:col-span-2">
+            <div>
+                <label class="mb-1.5 block text-sm font-bold text-gray-700">Sort order</label>
+                <input type="number" name="sort_order" min="0"
+                       value="{{ old('sort_order', $category->sort_order ?? 0) }}"
+                       class="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500">
+                <p class="mt-1 text-xs text-gray-500">Smaller number shows first in the menu.</p>
+            </div>
 
-    <div>
-        <p class="mb-1 text-sm font-bold text-gray-800">Menu click action <span class="text-red-500">*</span></p>
-        <p class="mb-3 text-xs text-gray-500">What should open when someone clicks this item in the website menu?</p>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label data-link-card class="cursor-pointer rounded-lg border-2 p-3 transition {{ $linkType === 'category' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300' }}">
-                <input type="radio" name="link_type" value="category" class="sr-only" @checked($linkType === 'category') required>
-                <span class="block text-sm font-bold text-gray-900">Class list</span>
-                <span class="mt-1 block text-xs text-gray-500">Open a page with all classes in this category (most common)</span>
-            </label>
-            <label data-link-card class="cursor-pointer rounded-lg border-2 p-3 transition {{ $linkType === 'slug' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300' }}">
-                <input type="radio" name="link_type" value="slug" class="sr-only" @checked($linkType === 'slug')>
-                <span class="block text-sm font-bold text-gray-900">Single class</span>
-                <span class="mt-1 block text-xs text-gray-500">Open one specific class page directly</span>
-            </label>
-            <label data-link-card class="cursor-pointer rounded-lg border-2 p-3 transition {{ $linkType === 'route' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300' }}">
-                <input type="radio" name="link_type" value="route" class="sr-only" @checked($linkType === 'route')>
-                <span class="block text-sm font-bold text-gray-900">Special page</span>
-                <span class="mt-1 block text-xs text-gray-500">Open a fixed site page (example: Renewals)</span>
-            </label>
+            <div>
+                <p class="mb-1 text-sm font-bold text-gray-800">Menu click action <span class="text-red-500">*</span></p>
+                <p class="mb-3 text-xs text-gray-500">What should open when someone clicks this item in the website menu?</p>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <label data-link-card class="cursor-pointer rounded-lg border-2 p-3 transition {{ $linkType === 'category' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300' }}">
+                        <input type="radio" name="link_type" value="category" class="sr-only" @checked($linkType === 'category') required>
+                        <span class="block text-sm font-bold text-gray-900">Class list</span>
+                        <span class="mt-1 block text-xs text-gray-500">Open a page with all classes in this category (most common)</span>
+                    </label>
+                    <label data-link-card class="cursor-pointer rounded-lg border-2 p-3 transition {{ $linkType === 'slug' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300' }}">
+                        <input type="radio" name="link_type" value="slug" class="sr-only" @checked($linkType === 'slug')>
+                        <span class="block text-sm font-bold text-gray-900">Single class</span>
+                        <span class="mt-1 block text-xs text-gray-500">Open one specific class page directly</span>
+                    </label>
+                    <label data-link-card class="cursor-pointer rounded-lg border-2 p-3 transition {{ $linkType === 'route' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300' }}">
+                        <input type="radio" name="link_type" value="route" class="sr-only" @checked($linkType === 'route')>
+                        <span class="block text-sm font-bold text-gray-900">Special page</span>
+                        <span class="mt-1 block text-xs text-gray-500">Open a fixed site page (example: Renewals)</span>
+                    </label>
+                </div>
+                @error('link_type')<p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>@enderror
+            </div>
+
+            <div id="link-value-listing" class="{{ $linkType === 'category' ? '' : 'hidden' }}">
+                <input type="hidden" id="link-value-auto" name="link_value" value="{{ old('link_value', $category->link_value ?? $existingSlug) }}" @disabled($linkType !== 'category')>
+                <div class="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-900">
+                    Recommended: menu opens the list of classes assigned to this category.
+                </div>
+            </div>
+
+            <div id="link-value-slug" class="{{ $linkType === 'slug' ? '' : 'hidden' }}">
+                <label class="mb-1.5 block text-sm font-bold text-gray-700">Class page slug <span class="text-red-500">*</span></label>
+                <input type="text" id="link-value-slug-input" name="link_value"
+                       value="{{ old('link_value', $category->link_value ?? '') }}"
+                       placeholder="e.g. handle-with-care"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 font-mono text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                       @disabled($linkType !== 'slug')>
+                <p class="mt-1 text-xs text-gray-500">Must match the class Direct page slug (example: <code>handle-with-care</code>).</p>
+            </div>
+
+            <div id="link-value-route" class="{{ $linkType === 'route' ? '' : 'hidden' }}">
+                <label class="mb-1.5 block text-sm font-bold text-gray-700">Page route name <span class="text-red-500">*</span></label>
+                <input type="text" id="link-value-route-input" name="link_value"
+                       value="{{ old('link_value', $category->link_value ?? '') }}"
+                       placeholder="e.g. renewals"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 font-mono text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                       @disabled($linkType !== 'route')>
+                <p class="mt-1 text-xs text-gray-500">Examples: <code>renewals</code>, <code>intial-security</code></p>
+            </div>
+            @error('link_value')<p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>@enderror
         </div>
-        @error('link_type')<p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>@enderror
-    </div>
 
-    <div id="link-value-listing" class="{{ $linkType === 'category' ? '' : 'hidden' }}">
-        <input type="hidden" id="link-value-auto" name="link_value" value="{{ old('link_value', $category->link_value ?? $existingSlug) }}" @disabled($linkType !== 'category')>
-        <div class="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-900">
-            Recommended: menu opens the list of classes assigned to this category.
-        </div>
-    </div>
-
-    <div id="link-value-slug" class="{{ $linkType === 'slug' ? '' : 'hidden' }}">
-        <label class="mb-1.5 block text-sm font-bold text-gray-700">Class page slug <span class="text-red-500">*</span></label>
-        <input type="text" id="link-value-slug-input" name="link_value"
-               value="{{ old('link_value', $category->link_value ?? '') }}"
-               placeholder="e.g. handle-with-care"
-               class="w-full rounded-lg border border-gray-300 px-3 py-2.5 font-mono text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-               @disabled($linkType !== 'slug')>
-        <p class="mt-1 text-xs text-gray-500">Must match the class Direct page slug (example: <code>handle-with-care</code>).</p>
-    </div>
-
-    <div id="link-value-route" class="{{ $linkType === 'route' ? '' : 'hidden' }}">
-        <label class="mb-1.5 block text-sm font-bold text-gray-700">Page route name <span class="text-red-500">*</span></label>
-        <input type="text" id="link-value-route-input" name="link_value"
-               value="{{ old('link_value', $category->link_value ?? '') }}"
-               placeholder="e.g. renewals"
-               class="w-full rounded-lg border border-gray-300 px-3 py-2.5 font-mono text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-               @disabled($linkType !== 'route')>
-        <p class="mt-1 text-xs text-gray-500">Examples: <code>renewals</code>, <code>intial-security</code></p>
-    </div>
-    @error('link_value')<p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>@enderror
-
-    <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-        <p class="mb-2 text-sm font-bold text-gray-800">Visibility</p>
-        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
-            <label class="inline-flex items-center gap-2 text-sm text-gray-800">
-                <input type="hidden" name="show_in_nav" value="0">
-                <input type="checkbox" name="show_in_nav" value="1" class="rounded border-gray-400 text-green-600 focus:ring-green-500"
-                       @checked(old('show_in_nav', $category->show_in_nav ?? true))>
-                Show in public menu
-            </label>
-            <label class="inline-flex items-center gap-2 text-sm text-gray-800">
-                <input type="hidden" name="assignable" value="0">
-                <input type="checkbox" name="assignable" value="1" class="rounded border-gray-400 text-green-600 focus:ring-green-500"
-                       @checked(old('assignable', $category->assignable ?? true))>
-                Show in class form
-            </label>
-            <label class="inline-flex items-center gap-2 text-sm text-gray-800">
-                <input type="hidden" name="is_active" value="0">
-                <input type="checkbox" name="is_active" value="1" class="rounded border-gray-400 text-green-600 focus:ring-green-500"
-                       @checked(old('is_active', $category->is_active ?? true))>
-                Active
-            </label>
+        <div class="rounded-xl border border-gray-200 bg-slate-50 p-4">
+            <p class="mb-3 text-sm font-bold text-gray-800">Visibility</p>
+            <div class="space-y-3">
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white px-3 py-3">
+                    <input type="hidden" name="show_in_nav" value="0">
+                    <input type="checkbox" name="show_in_nav" value="1" class="mt-0.5 rounded border-gray-400 text-green-600 focus:ring-green-500"
+                           @checked(old('show_in_nav', $category->show_in_nav ?? true))>
+                    <span>
+                        <span class="block text-sm font-semibold text-gray-800">Show in public menu</span>
+                        <span class="block text-xs text-gray-500">Header dropdown link</span>
+                    </span>
+                </label>
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white px-3 py-3">
+                    <input type="hidden" name="assignable" value="0">
+                    <input type="checkbox" name="assignable" value="1" class="mt-0.5 rounded border-gray-400 text-green-600 focus:ring-green-500"
+                           @checked(old('assignable', $category->assignable ?? true))>
+                    <span>
+                        <span class="block text-sm font-semibold text-gray-800">Show in class form</span>
+                        <span class="block text-xs text-gray-500">When assigning a class category</span>
+                    </span>
+                </label>
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-white px-3 py-3">
+                    <input type="hidden" name="is_active" value="0">
+                    <input type="checkbox" name="is_active" value="1" class="mt-0.5 rounded border-gray-400 text-green-600 focus:ring-green-500"
+                           @checked(old('is_active', $category->is_active ?? true))>
+                    <span>
+                        <span class="block text-sm font-semibold text-gray-800">Active</span>
+                        <span class="block text-xs text-gray-500">Inactive items stay hidden</span>
+                    </span>
+                </label>
+            </div>
         </div>
     </div>
 </div>

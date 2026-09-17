@@ -34,31 +34,25 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                    @php
-                        $nraAffiliates = [
-                            ['initials' => 'JNRA', 'name' => 'Join NRA', 'url' => 'https://membership.nra.org/recruiters/Join/XI048340', 'blurb' => 'Join the National Rifle Association and support our mission to protect the Second Amendment.'],
-                            ['initials' => 'TNPTI', 'name' => 'TNPTI', 'url' => 'https://www.tnpti.com/', 'blurb' => 'Tennessee Peace Officer Training Institute — police training and certification.'],
-                            ['initials' => 'SSC', 'name' => 'SouthwindS Cattle Company', 'url' => 'https://www.southwindscattleco.com/', 'blurb' => 'Cattle ranching and agriculture in Tennessee.'],
-                            ['initials' => 'R1T', 'name' => 'Raven 1 Tactical', 'url' => 'https://raven1tactical.com/', 'blurb' => 'Tactical training and equipment for law enforcement and military.'],
-                            ['initials' => 'BL', 'name' => 'Blue Line Security', 'url' => 'https://www.nashvillebluelinesecurity.com/services', 'blurb' => 'Security services and training for businesses and individuals.'],
-                            ['initials' => 'TR', 'name' => 'Tactical Rifles and Ammo', 'url' => 'https://tacticalriflesandammollc.com/', 'blurb' => 'Tactical rifles and ammunition for law enforcement and military.'],
-                        ];
-                    @endphp
-                    @foreach ($nraAffiliates as $index => $affiliate)
+                    @forelse ($nraAffiliates as $index => $affiliate)
                         @php
                             $delay = 100 + ($index * 50);
-                            $initialLen = strlen($affiliate['initials']);
+                            $initialLen = strlen($affiliate->initials);
                             $initialClass = $initialLen <= 2 ? 'text-lg' : ($initialLen <= 3 ? 'text-sm' : 'text-xs');
                         @endphp
-                        <a href="{{ $affiliate['url'] }}" target="_blank" rel="noopener noreferrer" class="group block bg-gray-50 hover:bg-[var(--primary-color)]/10 border border-gray-200 hover:border-[var(--primary-color)] rounded-xl p-6 transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ $delay }}">
+                        <a href="{{ $affiliate->url }}" target="_blank" rel="noopener noreferrer" class="group block bg-gray-50 hover:bg-[var(--primary-color)]/10 border border-gray-200 hover:border-[var(--primary-color)] rounded-xl p-6 transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ $delay }}">
                             <div class="flex items-center gap-4 mb-3">
-                                <div class="w-12 h-12 rounded-lg bg-[var(--primary-color)] flex items-center justify-center text-white font-bold {{ $initialClass }} shrink-0 group-hover:scale-110 transition-transform">{{ $affiliate['initials'] }}</div>
-                                <h3 class="text-xl font-bold text-[var(--text-color)] group-hover:text-[var(--primary-color)] transition-colors">{{ $affiliate['name'] }}</h3>
+                                <div class="w-12 h-12 rounded-lg bg-[var(--primary-color)] flex items-center justify-center text-white font-bold {{ $initialClass }} shrink-0 group-hover:scale-110 transition-transform">{{ $affiliate->initials }}</div>
+                                <h3 class="text-xl font-bold text-[var(--text-color)] group-hover:text-[var(--primary-color)] transition-colors">{{ $affiliate->name }}</h3>
                             </div>
-                            <p class="text-[#666] text-sm group-hover:text-gray-700">{{ $affiliate['blurb'] }}</p>
+                            @if(filled($affiliate->blurb))
+                                <p class="text-[#666] text-sm group-hover:text-gray-700">{{ $affiliate->blurb }}</p>
+                            @endif
                             <span class="inline-flex items-center gap-1 text-[var(--primary-color)] font-semibold mt-3 text-sm">Visit site <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></span>
                         </a>
-                    @endforeach
+                    @empty
+                        <p class="col-span-full text-center text-[#666]">NRA resources will appear here once they are added in the admin panel.</p>
+                    @endforelse
                 </div>
             </div>
         </section>
