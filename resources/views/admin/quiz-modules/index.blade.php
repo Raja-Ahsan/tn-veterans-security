@@ -1,7 +1,7 @@
 @extends('admin.layouts.master')
 
-@section('title', 'Quiz Modules')
-@section('page-title', 'Quiz Modules')
+@section('title', 'Course Modules')
+@section('page-title', 'Course Modules')
 
 @section('content')
 @php
@@ -9,7 +9,7 @@
         'blended' => [
             'label' => 'Blended',
             'icon' => 'fa-layer-group',
-            'blurb' => 'Online modules plus in-person training / testing.',
+            'blurb' => 'Online modules (with embedded quizzes) plus in-person skills testing.',
             'active' => 'border-cyan-500 text-cyan-800 bg-cyan-50',
             'badge' => 'bg-cyan-100 text-cyan-800',
             'typeBadge' => 'bg-cyan-100 text-cyan-800',
@@ -18,7 +18,7 @@
         'in-person' => [
             'label' => 'In Person',
             'icon' => 'fa-chalkboard-user',
-            'blurb' => 'Classroom only. Students take their test in class — no online quiz modules.',
+            'blurb' => 'Classroom only. Students take their test in class — no online modules.',
             'active' => 'border-emerald-500 text-emerald-800 bg-emerald-50',
             'badge' => 'bg-emerald-100 text-emerald-800',
             'typeBadge' => 'bg-emerald-100 text-emerald-800',
@@ -30,7 +30,7 @@
 
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-        <h3 class="text-xl font-semibold text-gray-900">Build class modules by delivery type</h3>
+        <h3 class="text-xl font-semibold text-gray-900">Build course modules by delivery type</h3>
         <p class="mt-1 text-sm text-gray-500">{{ $currentMeta['blurb'] }}</p>
     </div>
 </div>
@@ -39,9 +39,9 @@
     <div class="flex gap-3">
         <i class="fas fa-info-circle mt-0.5 text-blue-500"></i>
         <ul class="list-disc space-y-0.5 pl-4 text-blue-800">
+            <li>Quizzes are <span class="font-medium">embedded inside</span> each blended course module — they are not a separate product.</li>
             <li>Check <span class="font-medium">Has online parts / quizzes</span> on a class to make it Blended, then add modules here.</li>
-            <li>Uncheck that option for an In Person class — students test in the classroom.</li>
-            <li>Each module can have multiple videos. Every video has its own quiz. Students must finish the video before the quiz, and pass before the next video.</li>
+            <li>Students cannot skip video lessons. Fail a module quiz → restart that whole module. Pass every module (default 90%) to unlock in-person skills testing.</li>
         </ul>
     </div>
 </div>

@@ -40,6 +40,7 @@ class AdminBookingsIndexSearchTest extends TestCase
             'status' => 'confirmed',
             'payment_status' => 'deposit_paid',
             'booking_type' => 'group',
+            'booking_date' => now()->toDateString(),
             'number_of_students' => 1,
             'total_amount' => 150,
         ]);
@@ -50,6 +51,7 @@ class AdminBookingsIndexSearchTest extends TestCase
             'status' => 'pending',
             'payment_status' => 'pending',
             'booking_type' => 'group',
+            'booking_date' => now()->toDateString(),
             'number_of_students' => 1,
             'total_amount' => 200,
         ]);
@@ -90,6 +92,7 @@ class AdminBookingsIndexSearchTest extends TestCase
             'status' => 'confirmed',
             'payment_status' => 'fully_paid',
             'booking_type' => 'group',
+            'booking_date' => now()->toDateString(),
             'number_of_students' => 1,
             'total_amount' => 150,
         ]);
@@ -100,6 +103,7 @@ class AdminBookingsIndexSearchTest extends TestCase
             'status' => 'pending',
             'payment_status' => 'pending',
             'booking_type' => 'group',
+            'booking_date' => now()->toDateString(),
             'number_of_students' => 1,
             'total_amount' => 100,
         ]);

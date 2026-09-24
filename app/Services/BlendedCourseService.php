@@ -622,14 +622,15 @@ class BlendedCourseService
             $progress->completed_at = now();
             $progress->video_watched = true;
             $progress->watched_at = $progress->watched_at ?? now();
-        } else {
-            // Fail → must rewatch this video before the next free retake.
-            $progress->video_watched = false;
-            $progress->watched_at = null;
-            $progress->last_position_seconds = 0;
+            $progress->save();
+
+            return;
         }
 
         $progress->save();
+
+        // State requirement: failing any module quiz restarts the whole module.
+        $this->restartModuleProgress($student, $module);
     }
 
     private function recordModuleQuizProgress(Student $student, CourseModule $module, int $score, bool $passed): void
@@ -648,9 +649,45 @@ class BlendedCourseService
         if ($passed) {
             $progress->is_completed = true;
             $progress->completed_at = now();
+            $progress->save();
+
+            return;
         }
 
         $progress->save();
+        $this->restartModuleProgress($student, $module);
+    }
+
+    /**
+     * Clear watch/completion state for every video in the module so the student
+     * must start the module from the beginning after a failed quiz.
+     * Attempt history and best scores are kept for admin reporting.
+     */
+    public function restartModuleProgress(Student $student, CourseModule $module): void
+    {
+        StudentVideoProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $module->id)
+            ->update([
+                'video_watched' => false,
+                'watched_at' => null,
+                'last_position_seconds' => 0,
+                'is_completed' => false,
+                'completed_at' => null,
+            ]);
+
+        $moduleProgress = StudentModuleProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_id', $module->id)
+            ->first();
+
+        if (! $moduleProgress || $moduleProgress->admin_override) {
+            return;
+        }
+
+        $moduleProgress->is_completed = false;
+        $moduleProgress->completed_at = null;
+        $moduleProgress->save();
     }
 
     private function markVideoCompletedWithoutQuiz(StudentVideoProgress $progress): void

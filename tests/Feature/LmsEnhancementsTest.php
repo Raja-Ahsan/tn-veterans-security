@@ -66,8 +66,7 @@ class LmsEnhancementsTest extends TestCase
             ->assertOk()
             ->assertSee('Downloadable materials')
             ->assertSee('handbook.pdf')
-            ->assertSee('80% required to pass')
-            ->assertSee('3 attempts');
+            ->assertSee('80% required to pass');
     }
 
     public function test_progress_summary_helper_counts_completed_modules(): void

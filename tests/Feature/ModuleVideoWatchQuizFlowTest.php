@@ -141,6 +141,51 @@ class ModuleVideoWatchQuizFlowTest extends TestCase
             ->assertRedirect(route('student.online-course.quiz.take', [$service, $module]));
     }
 
+    public function test_failing_later_video_quiz_restarts_the_whole_module(): void
+    {
+        Mail::fake();
+        Storage::fake('public');
+
+        [$student, $service, $module, $video1, $video2] = $this->seedTwoVideos();
+
+        $this->watch($student, $service, $module, $video1);
+        $this->passVideoQuiz($student, $service, $module, $video1);
+
+        $this->assertTrue(
+            (bool) StudentVideoProgress::query()
+                ->where('student_id', $student->id)
+                ->where('course_module_video_id', $video1->id)
+                ->value('is_completed')
+        );
+
+        $this->watch($student, $service, $module, $video2);
+        $this->failVideoQuiz($student, $service, $module, $video2);
+
+        $video1Progress = StudentVideoProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_video_id', $video1->id)
+            ->first();
+        $video2Progress = StudentVideoProgress::query()
+            ->where('student_id', $student->id)
+            ->where('course_module_video_id', $video2->id)
+            ->first();
+
+        $this->assertFalse((bool) $video1Progress?->is_completed);
+        $this->assertFalse((bool) $video1Progress?->video_watched);
+        $this->assertFalse((bool) $video2Progress?->is_completed);
+        $this->assertFalse((bool) $video2Progress?->video_watched);
+
+        $this->actingAs($student, 'student')
+            ->get(route('student.online-course.module', [$service, $module, 'video' => $video2->id]))
+            ->assertOk()
+            ->assertSee('Locked');
+
+        $this->actingAs($student, 'student')
+            ->get(route('student.online-course.module', [$service, $module]))
+            ->assertOk()
+            ->assertSee($video1->title);
+    }
+
     public function test_passing_all_videos_unlocks_the_next_module(): void
     {
         Mail::fake();

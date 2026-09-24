@@ -72,7 +72,7 @@ class AdminQuizModulesTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.quiz-modules.index'))
             ->assertOk()
-            ->assertSee('Quiz Modules')
+            ->assertSee('Course Modules')
             ->assertSee('Handgun Carry Permit')
             ->assertSee('Blended Firearms Safety')
             ->assertSee('Add module')
@@ -145,7 +145,8 @@ class AdminQuizModulesTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('admin.classes.course-modules.index', $service))
-            ->assertNotFound();
+            ->assertRedirect(route('admin.classes.edit', $service))
+            ->assertSessionHas('error');
     }
 
     public function test_manage_modules_page_loads_when_a_class_has_multiple_modules(): void
@@ -440,10 +441,37 @@ class AdminQuizModulesTest extends TestCase
                 'passing_score' => 90,
                 'max_attempts' => 1,
             ])
-            ->assertNotFound();
+            ->assertRedirect(route('admin.classes.edit', $service))
+            ->assertSessionHas('error');
 
         $this->assertDatabaseCount('course_modules', 0);
         $this->assertFalse((bool) $service->fresh()->has_online_parts);
+    }
+
+    public function test_module_show_redirects_to_edit(): void
+    {
+        $admin = User::factory()->create();
+        [$service, $module] = $this->seedVideo();
+
+        $this->actingAs($admin)
+            ->get(route('admin.classes.course-modules.show', [$service, $module]))
+            ->assertRedirect(route('admin.classes.course-modules.edit', [$service, $module]));
+    }
+
+    public function test_module_from_another_class_returns_not_found(): void
+    {
+        $admin = User::factory()->create();
+        [$service, $module] = $this->seedVideo();
+        $other = Service::query()->create([
+            'title' => 'Other Blended Class',
+            'is_active' => true,
+            'has_online_parts' => true,
+            'order' => 1,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.classes.course-modules.edit', [$other, $module]))
+            ->assertNotFound();
     }
 
     public function test_creating_a_blended_module_without_a_quiz_succeeds(): void

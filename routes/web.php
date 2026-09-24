@@ -493,6 +493,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/classes/{service}/course-modules/create', [App\Http\Controllers\Admin\CourseModuleController::class, 'create'])->name('classes.course-modules.create');
         Route::post('/classes/{service}/course-modules', [App\Http\Controllers\Admin\CourseModuleController::class, 'store'])->name('classes.course-modules.store');
         Route::post('/classes/{service}/course-modules/reorder', [App\Http\Controllers\Admin\CourseModuleController::class, 'reorder'])->name('classes.course-modules.reorder');
+        Route::get('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'show'])->name('classes.course-modules.show');
         Route::get('/classes/{service}/course-modules/{courseModule}/edit', [App\Http\Controllers\Admin\CourseModuleController::class, 'edit'])->name('classes.course-modules.edit');
         Route::put('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'update'])->name('classes.course-modules.update');
         Route::delete('/classes/{service}/course-modules/{courseModule}', [App\Http\Controllers\Admin\CourseModuleController::class, 'destroy'])->name('classes.course-modules.destroy');

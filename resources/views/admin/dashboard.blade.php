@@ -112,7 +112,7 @@
             <h3 class="text-lg font-bold text-gray-800">Classes by delivery</h3>
             <p class="text-sm text-gray-500">Quick counts for Blended and In Person offerings.</p>
         </div>
-        <a href="{{ route('admin.quiz-modules.index') }}" class="text-sm font-medium text-green-600 hover:underline">Quiz Modules →</a>
+        <a href="{{ route('admin.quiz-modules.index') }}" class="text-sm font-medium text-green-600 hover:underline">Course Modules →</a>
     </div>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         @foreach($deliveryCards as $format => $card)

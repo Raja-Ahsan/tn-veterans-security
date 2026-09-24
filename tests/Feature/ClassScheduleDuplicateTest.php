@@ -26,10 +26,11 @@ class ClassScheduleDuplicateTest extends TestCase
             'title' => 'Armed Guard Training',
             'is_active' => true,
         ]);
+        $classDate = now()->addMonth()->toDateString();
 
         ClassSchedule::query()->create([
             'service_id' => $service->id,
-            'class_date' => '2026-06-15',
+            'class_date' => $classDate,
             'start_time' => '12:12:00',
             'end_time' => '20:12:00',
             'duration_hours' => 8,
@@ -42,12 +43,12 @@ class ClassScheduleDuplicateTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('admin.class-schedules.store'), [
             'service_id' => $service->id,
-            'class_date' => '2026-06-15',
+            'class_date' => $classDate,
             'start_time' => '12:12',
             'duration_hours' => 8,
             'max_students' => 10,
             'min_students' => 2,
-            'locations' => ['Nashville'],
+            'location' => 'Nashville',
         ]);
 
         $response->assertSessionHasErrors('class_date');
@@ -61,10 +62,11 @@ class ClassScheduleDuplicateTest extends TestCase
             'title' => 'Armed Guard Training',
             'is_active' => true,
         ]);
+        $classDate = now()->addMonth()->toDateString();
 
         ClassSchedule::query()->create([
             'service_id' => $service->id,
-            'class_date' => '2026-06-15',
+            'class_date' => $classDate,
             'start_time' => '12:12:00',
             'end_time' => '20:12:00',
             'duration_hours' => 8,
@@ -77,12 +79,12 @@ class ClassScheduleDuplicateTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('admin.class-schedules.store'), [
             'service_id' => $service->id,
-            'class_date' => '2026-06-15',
+            'class_date' => $classDate,
             'start_time' => '12:12',
             'duration_hours' => 8,
             'max_students' => 10,
             'min_students' => 2,
-            'locations' => ['Memphis'],
+            'location' => 'Memphis',
         ]);
 
         $response->assertRedirect(route('admin.class-schedules.index'));

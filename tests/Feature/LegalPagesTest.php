@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LegalPagesTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_privacy_policy_page_is_publicly_accessible(): void
     {
         $this->get('/privacy-policy')

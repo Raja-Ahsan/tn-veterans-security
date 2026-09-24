@@ -8,6 +8,7 @@ use App\Models\CourseModuleVideo;
 use App\Models\ModuleQuizQuestion;
 use App\Models\Service;
 use App\Support\QuizQuestionPayload;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -16,16 +17,14 @@ class CourseModuleVideoController extends Controller
 {
     public function create(Service $service, CourseModule $courseModule)
     {
-        abort_unless($courseModule->service_id === $service->id, 404);
-        abort_unless($service->has_online_parts, 404);
+        $this->abortUnlessModuleAccessible($service, $courseModule);
 
         return view('admin.course-module-videos.create', compact('service', 'courseModule'));
     }
 
     public function store(Request $request, Service $service, CourseModule $courseModule)
     {
-        abort_unless($courseModule->service_id === $service->id, 404);
-        abort_unless($service->has_online_parts, 404);
+        $this->abortUnlessModuleAccessible($service, $courseModule);
 
         $this->prepareVideoRequest($request);
         $validated = $this->validateVideoRequest($request);
@@ -51,9 +50,7 @@ class CourseModuleVideoController extends Controller
 
     public function edit(Service $service, CourseModule $courseModule, CourseModuleVideo $courseModuleVideo)
     {
-        abort_unless($courseModule->service_id === $service->id, 404);
-        abort_unless($courseModuleVideo->course_module_id === $courseModule->id, 404);
-        abort_unless($service->has_online_parts, 404);
+        $this->abortUnlessVideoAccessible($service, $courseModule, $courseModuleVideo);
 
         $courseModuleVideo->load('quizQuestions');
 
@@ -62,9 +59,7 @@ class CourseModuleVideoController extends Controller
 
     public function update(Request $request, Service $service, CourseModule $courseModule, CourseModuleVideo $courseModuleVideo)
     {
-        abort_unless($courseModule->service_id === $service->id, 404);
-        abort_unless($courseModuleVideo->course_module_id === $courseModule->id, 404);
-        abort_unless($service->has_online_parts, 404);
+        $this->abortUnlessVideoAccessible($service, $courseModule, $courseModuleVideo);
 
         $this->prepareVideoRequest($request);
         $validated = $this->validateVideoRequest($request);
@@ -96,9 +91,7 @@ class CourseModuleVideoController extends Controller
 
     public function destroy(Service $service, CourseModule $courseModule, CourseModuleVideo $courseModuleVideo)
     {
-        abort_unless($courseModule->service_id === $service->id, 404);
-        abort_unless($courseModuleVideo->course_module_id === $courseModule->id, 404);
-        abort_unless($service->has_online_parts, 404);
+        $this->abortUnlessVideoAccessible($service, $courseModule, $courseModuleVideo);
 
         $courseModuleVideo->delete();
 
@@ -108,8 +101,7 @@ class CourseModuleVideoController extends Controller
 
     public function reorder(Request $request, Service $service, CourseModule $courseModule)
     {
-        abort_unless($courseModule->service_id === $service->id, 404);
-        abort_unless($service->has_online_parts, 404);
+        $this->abortUnlessModuleAccessible($service, $courseModule);
 
         if ($request->has('order')) {
             $validated = $request->validate([
@@ -323,5 +315,36 @@ class CourseModuleVideoController extends Controller
                 'order' => $index,
             ]);
         }
+    }
+
+    private function abortUnlessModuleAccessible(Service $service, CourseModule $courseModule): void
+    {
+        $this->abortUnlessBlended($service);
+        abort_unless($courseModule->service_id === $service->id, 404);
+    }
+
+    private function abortUnlessVideoAccessible(
+        Service $service,
+        CourseModule $courseModule,
+        CourseModuleVideo $courseModuleVideo
+    ): void {
+        $this->abortUnlessModuleAccessible($service, $courseModule);
+        abort_unless($courseModuleVideo->course_module_id === $courseModule->id, 404);
+    }
+
+    private function abortUnlessBlended(Service $service): void
+    {
+        if ($service->has_online_parts) {
+            return;
+        }
+
+        throw new HttpResponseException(
+            redirect()
+                ->route('admin.classes.edit', $service)
+                ->with(
+                    'error',
+                    'Enable “Has online parts / quizzes” on this class first. Modules and quizzes are built inside the blended course — they are not a separate quiz product.'
+                )
+        );
     }
 }

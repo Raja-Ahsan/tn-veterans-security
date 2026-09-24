@@ -59,15 +59,9 @@
                     Continue to next module <i class="fas fa-arrow-right text-xs"></i>
                 </a>
             @elseif(! $passed)
-                @php
-                    $retryParams = [$service, $courseModule];
-                    if ($moduleQuizSession->course_module_video_id) {
-                        $retryParams['video'] = $moduleQuizSession->course_module_video_id;
-                    }
-                @endphp
-                <a href="{{ route('student.online-course.module', $retryParams) }}"
+                <a href="{{ route('student.online-course.module', [$service, $courseModule]) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-dark)]">
-                    {{ $moduleQuizSession->course_module_video_id ? 'Rewatch video & try again' : 'Try quiz again' }}
+                    Restart this module
                 </a>
             @endif
 

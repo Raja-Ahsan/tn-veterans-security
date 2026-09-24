@@ -8,6 +8,8 @@ use App\Models\CourseModuleVideo;
 use App\Models\ModuleQuizQuestion;
 use App\Models\Service;
 use App\Support\QuizQuestionPayload;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -29,6 +31,17 @@ class CourseModuleController extends Controller
         $this->abortUnlessBlended($service);
 
         return view('admin.course-modules.create', compact('service'));
+    }
+
+    /**
+     * Convenience redirect — bookmarks / wrong links without /edit used to 404.
+     */
+    public function show(Service $service, CourseModule $courseModule): RedirectResponse
+    {
+        $this->abortUnlessBlended($service);
+        $this->abortUnlessModuleBelongsToService($service, $courseModule);
+
+        return redirect()->route('admin.classes.course-modules.edit', [$service, $courseModule]);
     }
 
     public function store(Request $request, Service $service)
@@ -62,6 +75,7 @@ class CourseModuleController extends Controller
     public function edit(Service $service, CourseModule $courseModule)
     {
         $this->abortUnlessBlended($service);
+        $this->abortUnlessModuleBelongsToService($service, $courseModule);
 
         $courseModule->load(['videos.quizQuestions', 'quizQuestions']);
 
@@ -71,6 +85,7 @@ class CourseModuleController extends Controller
     public function update(Request $request, Service $service, CourseModule $courseModule)
     {
         $this->abortUnlessBlended($service);
+        $this->abortUnlessModuleBelongsToService($service, $courseModule);
         $this->prepareModuleRequest($request);
 
         $validated = $this->validateModuleRequest($request);
@@ -103,6 +118,7 @@ class CourseModuleController extends Controller
     public function destroy(Service $service, CourseModule $courseModule)
     {
         $this->abortUnlessBlended($service);
+        $this->abortUnlessModuleBelongsToService($service, $courseModule);
         $this->deleteMaterialFiles($courseModule->materials ?? []);
         $courseModule->delete();
 
@@ -172,7 +188,23 @@ class CourseModuleController extends Controller
 
     private function abortUnlessBlended(Service $service): void
     {
-        abort_unless($service->has_online_parts, 404);
+        if ($service->has_online_parts) {
+            return;
+        }
+
+        throw new HttpResponseException(
+            redirect()
+                ->route('admin.classes.edit', $service)
+                ->with(
+                    'error',
+                    'Enable “Has online parts / quizzes” on this class first. Modules and quizzes are built inside the blended course — they are not a separate quiz product.'
+                )
+        );
+    }
+
+    private function abortUnlessModuleBelongsToService(Service $service, CourseModule $courseModule): void
+    {
+        abort_unless($courseModule->service_id === $service->id, 404);
     }
 
     /**

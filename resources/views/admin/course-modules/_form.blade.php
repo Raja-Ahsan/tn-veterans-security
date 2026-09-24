@@ -246,7 +246,7 @@
                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100 focus:ring-offset-0">
             </div>
         </div>
-        <p class="text-xs text-gray-500">After failed attempts, admin must reset the student for another try.</p>
+        <p class="text-xs text-gray-500">Failing a quiz restarts the whole module (student must rewatch from the first video).</p>
     </div>
 
     <div class="border-t border-gray-100 pt-5">

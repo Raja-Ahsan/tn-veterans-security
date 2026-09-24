@@ -13,7 +13,7 @@
     <div class="flex flex-wrap items-center gap-2">
         <a href="{{ route('admin.quiz-modules.index') }}"
            class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-            ← Quiz Modules
+            ← Course Modules
         </a>
         <a href="{{ route('admin.classes.edit', $service) }}"
            class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">

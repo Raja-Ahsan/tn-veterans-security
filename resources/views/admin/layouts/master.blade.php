@@ -57,7 +57,7 @@
                         <i class="fas fa-briefcase mr-3"></i> Classes
                     </a>
                     <a href="{{ route('admin.quiz-modules.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.quiz-modules.*', 'admin.classes.course-modules.*', 'admin.classes.blended-progress*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
-                        <i class="fas fa-question-circle mr-3"></i> Quiz Modules
+                        <i class="fas fa-book-open mr-3"></i> Course Modules
                     </a>
                     <a href="{{ route('admin.class-schedules.index') }}" class="block px-4 py-3 hover:bg-gray-700 sm:px-6 {{ request()->routeIs('admin.class-schedules.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                         <i class="fas fa-calendar-check mr-3"></i> Class Schedules
