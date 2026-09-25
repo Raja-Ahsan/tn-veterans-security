@@ -75,6 +75,11 @@ class Student extends Authenticatable
         return $this->hasMany(CourseCertificate::class);
     }
 
+    public function guardTrainingForms()
+    {
+        return $this->hasMany(GuardTrainingForm::class);
+    }
+
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
         Mail::to($this->email)->send(new StudentPasswordResetMail($this, $token));

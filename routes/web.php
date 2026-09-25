@@ -386,6 +386,7 @@ Route::prefix('student')->name('student.')->group(function () {
         Route::get('/online-courses', [App\Http\Controllers\Student\OnlineCoursesController::class, 'index'])->name('online-courses.index');
         Route::get('/certificates', [App\Http\Controllers\Student\CertificateController::class, 'index'])->name('certificates.index');
         Route::get('/certificates/{certificate}', [App\Http\Controllers\Student\CertificateController::class, 'show'])->name('certificates.show');
+        Route::get('/guard-training-forms/{guardTrainingForm}', [App\Http\Controllers\Student\GuardTrainingFormController::class, 'show'])->name('guard-training-forms.show');
         Route::post('/waitlist/{classSchedule}', [App\Http\Controllers\Student\WaitlistController::class, 'store'])->name('waitlist.store');
 
         Route::get('/courses/{service}/online', [App\Http\Controllers\Student\OnlineCourseController::class, 'index'])->name('online-course.index');
@@ -512,6 +513,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/certificates/{certificate}', [App\Http\Controllers\Admin\CertificateController::class, 'show'])->name('certificates.show');
         Route::get('/certificates/{certificate}/print', [App\Http\Controllers\Admin\CertificateController::class, 'print'])->name('certificates.print');
         Route::delete('/certificates/{certificate}', [App\Http\Controllers\Admin\CertificateController::class, 'destroy'])->name('certificates.destroy');
+
+        Route::get('/guard-training-forms', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'index'])->name('guard-training-forms.index');
+        Route::get('/guard-training-forms/create', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'create'])->name('guard-training-forms.create');
+        Route::post('/guard-training-forms', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'store'])->name('guard-training-forms.store');
+        Route::get('/guard-training-forms/{guardTrainingForm}', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'show'])->name('guard-training-forms.show');
+        Route::get('/guard-training-forms/{guardTrainingForm}/edit', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'edit'])->name('guard-training-forms.edit');
+        Route::put('/guard-training-forms/{guardTrainingForm}', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'update'])->name('guard-training-forms.update');
+        Route::post('/guard-training-forms/{guardTrainingForm}/publish', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'publish'])->name('guard-training-forms.publish');
+        Route::get('/guard-training-forms/{guardTrainingForm}/print', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'print'])->name('guard-training-forms.print');
+        Route::delete('/guard-training-forms/{guardTrainingForm}', [App\Http\Controllers\Admin\GuardTrainingFormController::class, 'destroy'])->name('guard-training-forms.destroy');
         Route::resource('class-schedules', App\Http\Controllers\Admin\ClassScheduleController::class)->names('class-schedules');
         Route::post('/class-schedules/{classSchedule}/travel-notify', [App\Http\Controllers\Admin\TravelClassController::class, 'notify'])->name('class-schedules.travel-notify');
         Route::post('/class-schedules/{classSchedule}/travel-cancel', [App\Http\Controllers\Admin\TravelClassController::class, 'cancel'])->name('class-schedules.travel-cancel');

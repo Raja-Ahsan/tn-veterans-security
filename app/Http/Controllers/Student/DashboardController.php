@@ -79,6 +79,14 @@ class DashboardController extends Controller
                 )->ofDelivery($format)->count(),
             ]);
 
+        $guardForms = \App\Models\GuardTrainingForm::query()
+            ->where('student_id', $student->id)
+            ->where('status', \App\Models\GuardTrainingForm::STATUS_PUBLISHED)
+            ->with('service:id,title')
+            ->orderByDesc('published_at')
+            ->limit(5)
+            ->get();
+
         return view('student.dashboard', compact(
             'student',
             'bookings',
@@ -90,7 +98,8 @@ class DashboardController extends Controller
             'calendarTitle',
             'calendarPrevMonth',
             'calendarNextMonth',
-            'deliveryCounts'
+            'deliveryCounts',
+            'guardForms'
         ));
     }
 
